@@ -19,6 +19,7 @@ global function WeaponGetDisplayGenAndLevelForXP
 global function WeaponGetDisplayGenAndLevel
 global function WeaponGetDisplayGenAndLevelForRawLevel
 global function WeaponGetMaxLevel
+global function WeaponGetMaxRawLevel
 
 global function GetAllWeaponXPItemRefs
 global function ShouldTrackXPForWeapon
@@ -273,4 +274,9 @@ string function WeaponGetDisplayGenAndLevelForRawLevel( int rawLevel )
 int function WeaponGetMaxLevel( string weaponClassName )
 {
 	return file.maxLevelPerGen
+}
+
+int function WeaponGetMaxRawLevel( string weaponClassName )
+{
+	return WeaponGetRawLevelForXP( weaponClassName, WeaponGetMaxXP( weaponClassName ) )
 }

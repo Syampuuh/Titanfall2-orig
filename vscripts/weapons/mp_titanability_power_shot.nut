@@ -1,7 +1,7 @@
 global function OnWeaponPrimaryAttack_power_shot
 global function MpTitanAbilityPowerShot_Init
-#if SERVER
 global function PowerShotCleanup
+#if SERVER
 global function OnWeaponNpcPrimaryAttack_power_shot
 #endif
 
@@ -60,30 +60,34 @@ var function OnWeaponPrimaryAttack_power_shot( entity weapon, WeaponPrimaryAttac
 	return weapon.GetAmmoPerShot()
 }
 
-#if SERVER
 void function PowerShotCleanup( entity owner, entity weapon, string modName, array<string> modsToAdd )
 {
 	if ( IsValid( owner ) && owner.IsPlayer() )
 	{
+		#if SERVER
 		owner.ClearMeleeDisabled()
 		owner.SetTitanDisembarkEnabled( true )
+		#endif
 	}
 	if ( IsValid( weapon ) )
 	{
-		if ( !weapon.e.gunShieldActive )
+		if ( !weapon.e.gunShieldActive && !weapon.HasMod( "SiegeMode" ) )
 		{
 			while( weapon.GetForcedADS() )
 				weapon.ClearForcedADS()
 		}
 
+		#if SERVER
 		array<string> mods = weapon.GetMods()
 		mods.fastremovebyvalue( modName )
 		foreach( mod in modsToAdd )
 			mods.append( mod )
 		weapon.SetMods( mods )
+		#endif
 	}
 }
 
+#if SERVER
 var function OnWeaponNpcPrimaryAttack_power_shot( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	OnWeaponPrimaryAttack_power_shot( weapon, attackParams )

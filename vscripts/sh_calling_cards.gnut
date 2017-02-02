@@ -244,7 +244,11 @@ int function CallsignIcons_GetCount()
 
 CallsignIcon function CallsignIcon_GetByIndex( int index )
 {
-	Assert( index < CallsignIcons_GetCount() )
+	// JFS: handle players with invalid indices
+	// Assert( index < CallsignIcons_GetCount() )
+
+	if ( index >= file.callsignIconRefs.len() )
+		index = 0
 
 	return file.callsignIcons[file.callsignIconRefs[index]]
 }

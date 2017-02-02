@@ -163,7 +163,7 @@ void function OnCamoSelectMenu_Open()
 	{
 		TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 
-		if ( uiGlobal.editingLoadoutProperty == "camoIndex" )
+		if ( uiGlobal.editingLoadoutProperty == "camoIndex" || uiGlobal.editingLoadoutProperty == "primeCamoIndex"  )
 		{
 			Hud_SetText( file.menuTitle, "#ITEM_TYPE_CAMO_SKIN_TITAN" )
 			UI_SetPresentationType( ePresentationType.TITAN_LOADOUT_EDIT )
@@ -178,7 +178,8 @@ void function OnCamoSelectMenu_Open()
 				file.skinItemData.append( displayData )
 			}
 
-			file.skinItemData.extend( GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_WARPAINT, loadout.titanClass ) )
+			if ( !IsTitanLoadoutPrime( loadout ) ) //warpaints are not usable for prime titans
+				file.skinItemData.extend( GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_WARPAINT, loadout.titanClass ) )
 		}
 		else if ( uiGlobal.editingLoadoutProperty == "primaryCamoIndex" )
 		{
@@ -254,7 +255,7 @@ void function OnCamoSelectMenu_NavigateBack()
 {
 	if ( uiGlobal.editingLoadoutType == "titan" )
 	{
-		if ( uiGlobal.editingLoadoutProperty == "camoIndex" )
+		if ( uiGlobal.editingLoadoutProperty == "camoIndex" || uiGlobal.editingLoadoutProperty == "primeCamoIndex" )
 			RunMenuClientFunction( "ClearTitanCamoPreview" )
 		else if ( uiGlobal.editingLoadoutProperty == "primaryCamoIndex" )
 			RunMenuClientFunction( "ClearAllTitanPreview" )
@@ -336,8 +337,10 @@ bool function CamoButton_Init( var button, int elemNum )
 	if ( uiGlobal.editingLoadoutType == "titan" )
 	{
 		TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-		if ( uiGlobal.editingLoadoutProperty == "camoIndex" )
+		int camoIndex = GetTitanCamoIndexFromLoadoutAndPrimeStatus( loadout )
+		if ( uiGlobal.editingLoadoutProperty == "camoIndex" || uiGlobal.editingLoadoutProperty ==  "primeCamoIndex" )
 		{
+			isSelected = camoIndex == persistentId
 		}
 		else if ( uiGlobal.editingLoadoutProperty == "primaryCamoIndex" )
 		{
@@ -435,7 +438,7 @@ void function CamoButton_GetFocus( var button, int elemNum )
 	{
 		TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 
-		if ( uiGlobal.editingLoadoutProperty == "camoIndex" )
+		if ( uiGlobal.editingLoadoutProperty == "camoIndex" || uiGlobal.editingLoadoutProperty == "primeCamoIndex" )
 		{
 			if ( itemType == eItemTypes.TITAN_WARPAINT )
 			{
@@ -574,7 +577,7 @@ void function CamoButton_Activate( var button, int elemNum )
 
 		if ( uiGlobal.editingLoadoutType == "titan" )
 		{
-			if ( uiGlobal.editingLoadoutProperty == "camoIndex" )
+			if ( uiGlobal.editingLoadoutProperty == "camoIndex" || uiGlobal.editingLoadoutProperty == "primeCamoIndex" )
 			{
 				EmitUISound( "Menu_LoadOut_TitanCamo_Select" )
 				RunMenuClientFunction( "SaveTitanCamoPreview" )

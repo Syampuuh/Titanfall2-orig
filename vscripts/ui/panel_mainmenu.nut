@@ -137,6 +137,7 @@ void function OnShowMainMenuPanel()
 
 	UpdateSPButtons()
 	thread UpdatePlayButton( file.mpButton )
+	thread MonitorTrialVersionChange()
 
 	#if DURANGO_PROG
 		SetLabelRuiText( file.activeProfile, Durango_GetGameDisplayName() )
@@ -316,7 +317,7 @@ void function UpdatePlayButton( var button )
 				file.mpButtonActivateFunc = null
 			}
 			else if ( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_IN_ERROR )
-			{			    
+			{
 				message = "#PSN_HAD_ERROR"
 				file.mpButtonActivateFunc = LaunchMP
 			}
@@ -349,7 +350,7 @@ void function UpdatePlayButton( var button )
 				// Their is a race on this. The function may not be completed.
 
 
-				// The LaunchMP handles this race and will retry/ issue an error dialog if needed. 
+				// The LaunchMP handles this race and will retry/ issue an error dialog if needed.
 				file.mpButtonActivateFunc = LaunchMP
 			}
 			else if ( !isStryderAuthenticated )
@@ -409,6 +410,14 @@ void function UpdatePlayButton( var button )
 			isLocked = file.mpButtonActivateFunc == null ? true : false
 			Hud_SetLocked( button, isLocked )
 		#endif
+
+		if ( Script_IsRunningTrialVersion() && !IsTrialPeriodActive() && file.mpButtonActivateFunc != LaunchGamePurchase )
+		{
+			buttonText = "#MENU_GET_THE_FULL_GAME"
+			file.mpButtonActivateFunc = LaunchGamePurchase
+			Hud_SetLocked( button, false )
+			message = ""
+		}
 
 		ComboButton_SetText( file.mpButton, buttonText )
 
@@ -500,6 +509,24 @@ void function Quit()
 }
 #endif // #if PC_PROG
 
+void function MonitorTrialVersionChange()
+{
+	bool isTrialVersion
+	bool lastIsTrialVersion = Script_IsRunningTrialVersion()
+
+	while ( GetTopNonDialogMenu() == file.menu )
+	{
+		isTrialVersion = Script_IsRunningTrialVersion()
+
+		if ( isTrialVersion != lastIsTrialVersion )
+			UpdateSPButtons()
+
+		lastIsTrialVersion = isTrialVersion
+
+		WaitFrame()
+	}
+}
+
 void function UpdateSPButtons()
 {
 	foreach( button in file.spButtons )
@@ -508,28 +535,37 @@ void function UpdateSPButtons()
 		Hud_SetEnabled( button, false )
 	}
 
-	int currentButton = 0
-	if ( HasValidSaveGame() )
+	int buttonIndex = 0
+
+	if ( Script_IsRunningTrialVersion() )
 	{
-		var button = file.spButtons[ currentButton ]
-		ComboButton_SetText( button, "#MENU_CONTINUE_GAME" )
-		Hud_SetEnabled( button, true )
-		file.spButtonFuncs[ currentButton ] = LaunchSPContinue
-		currentButton++
+		AddSPButton( buttonIndex, LaunchGamePurchase, "#MENU_GET_THE_FULL_GAME" )
+		buttonIndex++
 	}
-	if ( HasStartedGameEver() )
+	else
 	{
-		var button = file.spButtons[ currentButton ]
-		ComboButton_SetText( button, "#MENU_MISSION_SELECT" )
-		Hud_SetEnabled( button, true )
-		file.spButtonFuncs[ currentButton ] = LaunchSPMissionSelect
-		currentButton++
+		if ( HasValidSaveGame() )
+		{
+			AddSPButton( buttonIndex, LaunchSPContinue, "#MENU_CONTINUE_GAME" )
+			buttonIndex++
+		}
+
+		if ( HasStartedGameEver() )
+		{
+			AddSPButton( buttonIndex, LaunchSPMissionSelect, "#MENU_MISSION_SELECT" )
+			buttonIndex++
+		}
+
+		AddSPButton( buttonIndex, LaunchSPNew, "#MENU_NEW_GAME" )
 	}
-	var button = file.spButtons[ currentButton ]
-	ComboButton_SetText( button, "#MENU_NEW_GAME" )
+}
+
+void function AddSPButton( int index, void functionref() func, string text )
+{
+	var button = file.spButtons[ index ]
+	ComboButton_SetText( button, text )
 	Hud_SetEnabled( button, true )
-	file.spButtonFuncs[ currentButton ] = LaunchSPNew
-	currentButton++
+	file.spButtonFuncs[ index ] = func
 }
 
 void function DoNothing()

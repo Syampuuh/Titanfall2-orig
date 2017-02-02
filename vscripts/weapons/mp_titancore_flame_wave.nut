@@ -88,6 +88,7 @@ var function OnWeaponPrimaryAttack_titancore_flame_wave( entity weapon, WeaponPr
 	#if SERVER
 	//This wave attack is spawning 3 waves, and we want them all to only do damage once to any individual target.
 	entity inflictor = CreateDamageInflictorHelper( 10.0 )
+	entity scorchedEarthInflictor = CreateOncePerTickDamageInflictorHelper( 10.0 )
 	#endif
 
 	array<float> offsets = [ -1.0, 0.0, 1.0 ]
@@ -107,6 +108,8 @@ var function OnWeaponPrimaryAttack_titancore_flame_wave( entity weapon, WeaponPr
 				EmitSoundOnEntity( projectile, soundFXs[count] )
 				weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.5 )
 				thread BeginFlameWave( projectile, count, inflictor, attackParams.pos + offset, attackParams.dir )
+				if ( weapon.HasMod( "pas_scorch_flamecore" ) )
+					thread BeginScorchedEarth( projectile, count, scorchedEarthInflictor, attackParams.pos + offset, attackParams.dir )
 			#elseif CLIENT
 				ClientScreenShake( 8.0, 10.0, 1.0, Vector( 0.0, 0.0, 0.0 ) )
 			#endif
@@ -132,8 +135,18 @@ void function BeginFlameWave( entity projectile, int projectileCount, entity inf
 	projectile.Destroy()
 }
 
+void function BeginScorchedEarth( entity projectile, int projectileCount, entity inflictor, vector pos, vector dir )
+{
+	if ( !IsValid( projectile ) )
+		return
+	projectile.EndSignal( "OnDestroy" )
+	waitthread WeaponAttackWave( projectile, projectileCount, inflictor, pos, dir, CreateThermiteWallSegment )
+	projectile.Destroy()
+}
+
 bool function CreateFlameWaveSegment( entity projectile, int projectileCount, entity inflictor, entity movingGeo, vector pos, vector angles, int waveCount )
 {
+	array<string> mods = projectile.ProjectileGetMods()
 	projectile.SetOrigin( pos + < 0, 0, 100 > )
 	projectile.SetAngles( angles )
 

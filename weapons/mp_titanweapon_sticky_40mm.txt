@@ -23,6 +23,7 @@ WeaponData
 	"OnClientAnimEvent"								"OnClientAnimEvent_titanweapon_40mm"
 	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_titanweapon_40mm"
 	"OnProjectileCollision"							"OnProjectileCollision_titanweapon_sticky_40mm"
+	"OnWeaponChargeLevelIncreased"					"OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm"
 
 	"bolt_hitsize"									"4.0"
 
@@ -434,46 +435,6 @@ WeaponData
 			"ammo_clip_size"   							"16"
 			"ammo_default_total"						"1500"
 		}
-		burst
-		{
-			"impact_effect_table" 							"exp_small"
-			"burst_fire_count"								"3"
-			"burst_fire_delay"								".75"
-			"fire_rate"   									"8"
-
-			"viewkick_pitch_base" 							"-0.1"
-			"viewkick_pitch_random"   						"0.0"
-
-			"viewkick_yaw_base"   							"0.0"
-			"viewkick_yaw_random" 							"0.5"
-
-			"damage_near_value"   							"199"
-			"damage_far_value"								"199"
-			"damage_near_value_titanarmor"					"*0.5"
-			"damage_far_value_titanarmor" 					"*0.5"
-			"critical_hit_damage_scale"						"3.2"
-
-			"ammo_clip_size"								"21"
-
-			"explosion_damage"								"*0.4"
-			"explosion_damage_heavy_armor"					"*0.4"
-
-			"explosion_inner_radius"  						"*0.5"
-			"explosionradius" 								"*0.65"
-
-			"npc_full_auto_vs_heavy_armor"					"0"
-
-			"fire_sound_2_player_1p"						""
-			"fire_sound_2_player_3p"						""
-
-			"burst_or_looping_fire_sound_start_1p"			"Weapon_40mm_Fire_Burst_First_1P"
-			"burst_or_looping_fire_sound_middle_1p"			"Weapon_40mm_Fire_1P"
-			"burst_or_looping_fire_sound_end_1p"			"Weapon_40mm_Fire_Burst_Last_1P"
-
-			"burst_or_looping_fire_sound_start_3p"			"Weapon_40mm_Fire_Burst_3P"
-			"burst_or_looping_fire_sound_middle_3p"			"Weapon_40mm_Fire_3P"
-			"burst_or_looping_fire_sound_end_3p"			"Weapon_40mm_Fire_Burst_3P"
-		}
 		mortar_shots
 		{
 			"impact_effect_table" 							"40mm_mortar_shots"
@@ -515,13 +476,6 @@ WeaponData
 
 			"fire_sound_1_npc"								"Weapon_40mm_Fire_Amped_3P"
 		}
-		siege_mode
-		{
-			"fire_mode"										"auto"
-			"projectile_trail_effect_0" 					"Rocket_Smoke_SMALL_Titan_mod"
-			"damage_near_value_titanarmor"					"*1.5"
-			"damage_far_value_titanarmor" 					"*1.5"
-		}
 		sur_level_0
 		{
 			"ammo_clip_size"   								"4--"
@@ -546,6 +500,38 @@ WeaponData
 		{
 
 		}
+		pas_tone_burst
+		{
+			"charge_time" 									"2.0"
+			"charge_cooldown_time"							"0.5"
+			"charge_cooldown_delay"   						"0.0"
+			"charge_end_forces_fire"						"0"
+			"charge_require_input"							"0"
+			"npc_clear_charge_if_not_fired"					"1"
+			"charge_levels"									"3"
+			"charge_is_triggered_by_ADS"					"1"
+
+			"impact_effect_table" 							"exp_small"
+			"burst_fire_count"								"1"
+			"burst_fire_delay"								"0.75"
+			"fire_rate"   									"5"
+
+			"viewkick_pitch_base" 							"-0.1"
+			"viewkick_pitch_random"   						"0.0"
+
+			"viewkick_yaw_base"   							"0.0"
+			"viewkick_yaw_random" 							"0.5"
+
+			"burst_or_looping_fire_sound_start_1p"			"Weapon_40mm_Fire_1P"
+			"burst_or_looping_fire_sound_middle_1p"			"Weapon_40mm_Fire_1P"
+			"burst_or_looping_fire_sound_end_1p"			"Weapon_40mm_Fire_1P"
+
+			"burst_or_looping_fire_sound_start_3p"			"Weapon_40mm_Fire_3P"
+			"burst_or_looping_fire_sound_middle_3p"			"Weapon_40mm_Fire_3P"
+			"burst_or_looping_fire_sound_end_3p"			"Weapon_40mm_Fire_3P"
+
+			rui_crosshair_index					"1"
+		}
 	}
 
 	active_crosshair_count				"1"
@@ -564,6 +550,8 @@ WeaponData
 		    crosshairMovementX          crosshair_movement_x
 		    crosshairMovementY          crosshair_movement_y
 		    isActive					weapon_is_active
+		    chargeFrac                  player_chargeFrac
+		    clipAmmo					weapon_ammo
 		}
 
 		Crosshair_1
@@ -573,6 +561,17 @@ WeaponData
 			Args
 			{
 				isFiring				weapon_is_firing
+			}
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_40mm_burst"
+			"base_spread"				"0.5"
+			Args
+			{
+				isFiring				weapon_is_firing
+				//chargeLevel			player_chargeLevel
 			}
 		}
 	}

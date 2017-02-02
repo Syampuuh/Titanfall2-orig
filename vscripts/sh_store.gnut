@@ -1,0 +1,205 @@
+
+global function Store_Init
+global function Store_GetCustomizationRefs
+global function Store_GetPatchRefs
+global function Store_GetBannerRefs
+global function Store_GetCamoRefs
+
+global struct CamoRef
+{
+	string ref
+	string pilotRef
+	string titanRef
+}
+
+struct
+{
+	table<string, array<string> > customizationRefs
+	array<string> patchRefs
+	array<string> bannerRefs
+	array<CamoRef> camoRefs
+} file
+
+void function Store_Init()
+{
+	#if SERVER
+	AddClientCommandCallback( "SetHasSeenStore", ClientCommand_SetHasSeenStore )
+	AddClientCommandCallback( "StoreSetNewItemStatus", ClientCommand_StoreSetNewItemStatus )
+	#endif
+
+	file.customizationRefs[ "ion" ] <- []
+	file.customizationRefs[ "ion" ].append( "ion_nose_art_17" )
+	file.customizationRefs[ "ion" ].append( "ion_nose_art_18" )
+	file.customizationRefs[ "ion" ].append( "ion_nose_art_19" )
+	file.customizationRefs[ "ion" ].append( "ion_nose_art_20" )
+	file.customizationRefs[ "ion" ].append( "ion_nose_art_21" )
+	file.customizationRefs[ "ion" ].append( "ion_skin_10" )
+
+	file.customizationRefs[ "scorch" ] <- []
+	file.customizationRefs[ "scorch" ].append( "scorch_nose_art_15" )
+	file.customizationRefs[ "scorch" ].append( "scorch_nose_art_16" )
+	file.customizationRefs[ "scorch" ].append( "scorch_nose_art_17" )
+	file.customizationRefs[ "scorch" ].append( "scorch_nose_art_18" )
+	file.customizationRefs[ "scorch" ].append( "scorch_nose_art_19" )
+	file.customizationRefs[ "scorch" ].append( "scorch_skin_07" )
+
+	file.customizationRefs[ "northstar" ] <- []
+	file.customizationRefs[ "northstar" ].append( "northstar_nose_art_18" )
+	file.customizationRefs[ "northstar" ].append( "northstar_nose_art_19" )
+	file.customizationRefs[ "northstar" ].append( "northstar_nose_art_20" )
+	file.customizationRefs[ "northstar" ].append( "northstar_nose_art_21" )
+	file.customizationRefs[ "northstar" ].append( "northstar_nose_art_22" )
+	file.customizationRefs[ "northstar" ].append( "northstar_skin_10" )
+
+	file.customizationRefs[ "ronin" ] <- []
+	file.customizationRefs[ "ronin" ].append( "ronin_nose_art_16" )
+	file.customizationRefs[ "ronin" ].append( "ronin_nose_art_17" )
+	file.customizationRefs[ "ronin" ].append( "ronin_nose_art_18" )
+	file.customizationRefs[ "ronin" ].append( "ronin_nose_art_19" )
+	file.customizationRefs[ "ronin" ].append( "ronin_nose_art_20" )
+	file.customizationRefs[ "ronin" ].append( "ronin_skin_10" )
+
+	file.customizationRefs[ "tone" ] <- []
+	file.customizationRefs[ "tone" ].append( "tone_nose_art_17" )
+	file.customizationRefs[ "tone" ].append( "tone_nose_art_18" )
+	file.customizationRefs[ "tone" ].append( "tone_nose_art_19" )
+	file.customizationRefs[ "tone" ].append( "tone_nose_art_20" )
+	file.customizationRefs[ "tone" ].append( "tone_nose_art_21" )
+	file.customizationRefs[ "tone" ].append( "tone_skin_06" )
+
+	file.customizationRefs[ "legion" ] <- []
+	file.customizationRefs[ "legion" ].append( "legion_nose_art_17" )
+	file.customizationRefs[ "legion" ].append( "legion_nose_art_18" )
+	file.customizationRefs[ "legion" ].append( "legion_nose_art_19" )
+	file.customizationRefs[ "legion" ].append( "legion_nose_art_20" )
+	file.customizationRefs[ "legion" ].append( "legion_nose_art_21" )
+	file.customizationRefs[ "legion" ].append( "legion_skin_07" )
+
+	file.patchRefs.append( "gc_icon_64" )
+	file.patchRefs.append( "gc_icon_aces" )
+	file.patchRefs.append( "gc_icon_alien" )
+	file.patchRefs.append( "gc_icon_apex" )
+	file.patchRefs.append( "gc_icon_ares" )
+	file.patchRefs.append( "gc_icon_controller" )
+	file.patchRefs.append( "gc_icon_drone" )
+	file.patchRefs.append( "gc_icon_heartbreaker" )
+	file.patchRefs.append( "gc_icon_hexes" )
+	file.patchRefs.append( "gc_icon_kodai" )
+	file.patchRefs.append( "gc_icon_lastimosa" )
+	file.patchRefs.append( "gc_icon_lawai" )
+	file.patchRefs.append( "gc_icon_mcor" )
+	file.patchRefs.append( "gc_icon_phoenix" )
+	file.patchRefs.append( "gc_icon_pilot" )
+	file.patchRefs.append( "gc_icon_robot" )
+	file.patchRefs.append( "gc_icon_sentry" )
+	file.patchRefs.append( "gc_icon_super_spectre" )
+	file.patchRefs.append( "gc_icon_vinson" )
+	file.patchRefs.append( "gc_icon_wonyeon" )
+
+	file.bannerRefs.append( "callsign_106_col" )
+	file.bannerRefs.append( "callsign_107_col" )
+	file.bannerRefs.append( "callsign_108_col" )
+	file.bannerRefs.append( "callsign_109_col" )
+	file.bannerRefs.append( "callsign_110_col" )
+	file.bannerRefs.append( "callsign_111_col" )
+	file.bannerRefs.append( "callsign_112_col" )
+	file.bannerRefs.append( "callsign_113_col" )
+	file.bannerRefs.append( "callsign_114_col" )
+	file.bannerRefs.append( "callsign_115_col" )
+	file.bannerRefs.append( "callsign_116_col" )
+	file.bannerRefs.append( "callsign_117_col" )
+	file.bannerRefs.append( "callsign_118_col" )
+	file.bannerRefs.append( "callsign_119_col" )
+	file.bannerRefs.append( "callsign_120_col" )
+	file.bannerRefs.append( "callsign_121_col" )
+	file.bannerRefs.append( "callsign_122_col" )
+	file.bannerRefs.append( "callsign_123_col" )
+	file.bannerRefs.append( "callsign_124_col" )
+	file.bannerRefs.append( "callsign_125_col" )
+
+	for ( int i = 101; i <= 120; i++ )
+	{
+		AddCamoRef( i )
+	}
+}
+
+array<string> function Store_GetCustomizationRefs( string titanClass )
+{
+	return file.customizationRefs[ titanClass ]
+}
+
+array<string> function Store_GetPatchRefs()
+{
+	return file.patchRefs
+}
+
+array<string> function Store_GetBannerRefs()
+{
+	return file.bannerRefs
+}
+
+array<CamoRef> function Store_GetCamoRefs()
+{
+	return file.camoRefs
+}
+
+void function AddCamoRef( int index )
+{
+	CamoRef cref
+	cref.ref = "camo_skin" + index
+	cref.pilotRef = "pilot_camo_skin" + index
+	cref.titanRef = "titan_camo_skin" + index
+	file.camoRefs.append( cref )
+}
+
+#if SERVER
+bool function ClientCommand_SetHasSeenStore( entity player, array<string> args )
+{
+	player.SetPersistentVar( "hasSeenStore", true )
+
+	return true
+}
+
+bool function ClientCommand_StoreSetNewItemStatus( entity player, array<string> args )
+{
+	string menu = args[ 0 ]
+	string refParam
+
+	if ( args.len() >= 2 )
+		refParam = args[ 1 ]
+
+	switch ( menu )
+	{
+		case "StoreMenu_PrimeTitans":
+			Assert( refParam != "" )
+			SetItemNewStatus( player, refParam, "", true )
+			break
+
+		case "StoreMenu_CustomizationPreview":
+			Assert( refParam != "" )
+			foreach ( ref in file.customizationRefs[ refParam ] )
+			{
+				SetItemNewStatus( player, ref, refParam, true )
+			}
+			break
+
+		case "StoreMenu_Camo":
+			// Not implemented, way too many camos would show as new
+			break
+
+		case "StoreMenu_Callsign":
+			foreach ( ref in file.patchRefs )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+
+			foreach ( ref in file.bannerRefs )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+			break
+	}
+
+	return true
+}
+#endif

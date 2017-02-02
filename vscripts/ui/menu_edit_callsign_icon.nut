@@ -89,6 +89,8 @@ void function OnCallsignIconSelectMenu_Open()
 	file.selectionMade = false
 
 	RefreshCreditsAvailable()
+
+	uiGlobal.updateCachedNewItems = false
 }
 
 void function OnCallsignIconSelectMenu_Close()

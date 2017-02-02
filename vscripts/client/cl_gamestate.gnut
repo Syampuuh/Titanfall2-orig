@@ -15,6 +15,10 @@ global function PlayRoundWonConversationWithAnnouncementDelay
 
 global function UpdatePilotTitanStatusDisplay
 
+global function SetGameModeScoreBarUpdateRules
+
+global function DisplayPostMatchTop3
+
 const int PTS_TYPE_NONE 			= 0
 const int PTS_TYPE_PILOT 			= 1
 const int PTS_TYPE_DEAD 			= 2
@@ -42,6 +46,8 @@ struct
 	var letterBoxRui = null
 	bool thirtySecondWarningDone = false
 
+	void functionref( var ) gameModeScoreBarUpdateRules
+
 	table< int, PilotTitanStatus> pilotTitanStatus
 } file
 
@@ -58,6 +64,18 @@ function ClGameState_Init()
 
 	var rui = CreatePermanentCockpitRui( GetGameStateAsset(), 1000 )
 	file.gamestate_info = rui
+
+	if ( file.gameModeScoreBarUpdateRules == null )
+		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
+}
+
+void function GameModeScoreBarUpdateRules_Default( var rui )
+{
+}
+
+void function SetGameModeScoreBarUpdateRules( void functionref( var ) rules )
+{
+	file.gameModeScoreBarUpdateRules = rules
 }
 
 void function ClGameState_RegisterNetworkFunctions()
@@ -317,6 +335,9 @@ void function TEMP_UpdateRuiScores( entity player )
 
 	RuiSetFloat( file.gamestate_info, "rightTeamScore", float( GameRules_GetTeamScore( enemyTeam ) ) )
 
+	//Run any gamemode specific score bar logic (e.g. the bonus segment on the scorebar in bounty hunt ). No special logic is run by default.
+	file.gameModeScoreBarUpdateRules( file.gamestate_info )
+
 	if ( !endTime )
 		return
 
@@ -409,6 +430,10 @@ array<int> function GetPilotTitanStatusForTeam( int team )
 	int playerIndex = 0
 	foreach ( teamPlayer in GetPlayerArrayOfTeam( team ) )
 	{
+		//If titans are not available in the gamemode, do not show titan status ui.
+		if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+			continue
+
 		entity titan
 		if ( teamPlayer.GetPetTitan() )
 			titan = teamPlayer.GetPetTitan()
@@ -922,4 +947,56 @@ void function UpdateScoreboardBadRepPresentMessage()
 		player.cv.scoreboardBadRepPresentMessage.Show()
 	else
 		player.cv.scoreboardBadRepPresentMessage.Hide()
+}
+
+void function DisplayPostMatchTop3()
+{
+	array<entity> players = GetPlayerArray()
+	if ( players.len() >= 1 )
+	{
+		int localTeam = GetLocalClientPlayer().GetTeam()
+		var rui = RuiCreate( $"ui/scoreboard_postmatch_top3.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1001 )
+		string gamemode = GameRules_GetGameMode()
+		int functionref( entity, entity ) compareFunc = GameMode_GetScoreCompareFunc( gamemode )
+		if ( compareFunc == null )
+		{
+			printt( "gamemode doesn't have a compare func to display the top 3")
+			return
+		}
+		players.sort( compareFunc )
+		int playerCount = players.len()
+		int currentPlace = 1
+		for ( int i = 0; i < 3; i++ )
+		{
+			if ( i >= playerCount )
+				continue
+
+			string playerRank
+			if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
+				currentPlace += 1
+
+			switch( currentPlace )
+			{
+				case 1:
+					playerRank = "#GENERATION_NUMERIC_1"
+					break
+				case 2:
+					playerRank = "#GENERATION_NUMERIC_2"
+					break
+				case 3:
+					playerRank = "#GENERATION_NUMERIC_3"
+					break
+			}
+
+			float cardScale = currentPlace == 1 ? 1.0 : 0.9
+
+			RuiSetString( rui, "playerName" + i, players[i].GetPlayerName() )
+			RuiSetString( rui, "playerRank" + i, Localize( playerRank ) )
+			RuiSetFloat( rui, "cardScale" + i, cardScale )
+			RuiSetImage( rui, "cardImage" + i, CallingCard_GetImage( PlayerCallingCard_GetActive( players[i] ) ) )
+			RuiSetImage( rui, "iconImage" + i, CallsignIcon_GetImage( PlayerCallsignIcon_GetActive( players[i] ) ) )
+			RuiSetInt( rui, "layoutType" + i, CallingCard_GetLayout( PlayerCallingCard_GetActive( players[i] ) ) )
+			RuiSetBool( rui, "isFriendly" + i, localTeam == players[i].GetTeam() )
+		}
+	}
 }

@@ -1257,6 +1257,13 @@ function Vortex_ProjectileCommonSetup( entity projectile, impactData )
 // gives a refired projectile the correct impact effect table
 function Vortex_SetImpactEffectTable_OnProjectile( projectile, impactData )
 {
+	//Getting more info for bug 207595, don't check into Staging.
+	#if DEV
+	printt( "impactData.impact_effect_table ", impactData.impact_effect_table )
+	if ( impactData.impact_effect_table == "" )
+		PrintTable( impactData )
+	#endif
+
 	local fxTableHandle = GetImpactEffectTable( impactData.impact_effect_table )
 
 	projectile.SetImpactEffectTable( fxTableHandle )

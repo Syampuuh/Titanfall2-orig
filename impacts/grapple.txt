@@ -196,7 +196,7 @@ ImpactTable
 		"M" "SolidMetal.Grapple.Impact_3P_vs_3P"
 		"N" "Default.Grapple.Impact_3P_vs_3P"	// sand?
 		"O" "Default.Grapple.Impact_3P_vs_3P"
-		"P" "Android.Grapple.Impact_3P_vs_3P"
+		"P" "Android.Grapple.Impact_3P_vs_1P"
 
 		"R" "SolidMetal.Grapple.Impact_3P_vs_3P"
 		"S" "Default.Grapple.Impact_3P_vs_3P"

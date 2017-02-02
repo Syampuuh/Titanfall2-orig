@@ -429,8 +429,8 @@ WeaponData
 			"silenced"							"1"
 			"fire_sound_1_player_1p"			"weapon_shotgunpistol_fire_suppressed_1p"
 			"fire_sound_1_player_3p"			"weapon_shotgunpistol_fire_suppressed_3p"
-			"damage_near_value"   				"20"
-			"damage_far_value"					"15"
+			"damage_near_value"   				"17"
+			"damage_far_value"					"13"
 			//"bodygroup2_set"					"1"
 
 			//"rumble"  						"4"
@@ -499,10 +499,10 @@ WeaponData
 		}
 		burn_mod_shotgun_pistol
 		{
-			"damage_near_value"   							"35"
-			"damage_far_value"								"35"
-			"damage_near_value_titanarmor"					"50"
-			"damage_far_value_titanarmor" 					"40"
+			"damage_near_value"   							"++5"
+			"damage_far_value"								"++10"
+			"damage_near_value_titanarmor"					"++30"
+			"damage_far_value_titanarmor" 					"++30"
 			"is_burn_mod"									"1"
 
 			//Effects
@@ -510,7 +510,6 @@ WeaponData
 			"fx_muzzle_flash_world"							"P_wpn_muz_mastiff_amp"
 			"projectile_trail_effect_0" 					"P_mastiff_proj_amp"
 			"impact_effect_table" 							"titan_bullet_elec"
-
 		}
 	}
 

@@ -58,10 +58,12 @@ classes
 	import npc_titan_auto_atlas.txt
 	import npc_titan_auto_atlas_rocketeer.txt
 	import npc_titan_auto_atlas_stickybomb.txt
+	import npc_titan_auto_atlas_ion_prime.txt
 	import npc_titan_auto_atlas_tracker.txt
 	import npc_titan_auto_ogre.txt
 	import npc_titan_auto_ogre_fighter.txt
 	import npc_titan_auto_ogre_meteor.txt
+	import npc_titan_auto_ogre_scorch_prime.txt
 	import npc_titan_auto_ogre_minigun.txt
 	import npc_titan_auto_stryder.txt
 	import npc_titan_auto_stryder_arc.txt
@@ -104,9 +106,11 @@ classes
 	import npc_turret_sentry_windup.txt
 
 	import npc_titan_atlas_stickybomb_bounty.txt
+	import npc_titan_atlas_ion_prime_bounty.txt
 	import npc_titan_atlas_tracker_bounty.txt
 	import npc_titan_stryder_leadwall_bounty.txt
 	import npc_titan_stryder_sniper_bounty.txt
 	import npc_titan_ogre_meteor_bounty.txt
+	import npc_titan_ogre_scorch_prime_bounty.txt
 	import npc_titan_ogre_minigun_bounty.txt
 }

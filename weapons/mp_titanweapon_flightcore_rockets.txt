@@ -62,10 +62,10 @@ WeaponData
 
 	MP_BASE
 	{
-		"damage_near_value"   							"250"
-		"damage_far_value"								"250"
-		"damage_near_value_titanarmor"					"250"
-		"damage_far_value_titanarmor" 					"250"
+		"damage_near_value"   							"300"
+		"damage_far_value"								"300"
+		"damage_near_value_titanarmor"					"300"
+		"damage_far_value_titanarmor" 					"300"
 		"explosion_damage"								"55" //"400"
 		"explosion_damage_heavy_armor"					"300"
 

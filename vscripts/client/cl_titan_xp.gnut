@@ -10,7 +10,7 @@ void function ServerCallback_TitanXPAdded( int titanClassIndex, int totalXp, int
 	RuiSetGameTime( rui, "startTime", Time() )
 
 	string titanClass = shTitanXP.titanClasses[ titanClassIndex ]
-	string titanSetFile = GetSetFileForTitanClass( titanClass )
+	string titanSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass )
 	string titanName = Localize( expect string( GetPlayerSettingsFieldForClassName( titanSetFile, "printname" ) ) )
 
 	int numPips = TitanGetNumPipsForXP( titanClass, totalXp )
@@ -36,7 +36,7 @@ void function ServerCallback_TitanLeveledUp( int titanClassIndex, int gen, int l
 	}
 
 	string titanClass = shTitanXP.titanClasses[ titanClassIndex ]
-	string titanSetFile = GetSetFileForTitanClass( titanClass )
+	string titanSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass )
 	string titanName = Localize( expect string( GetPlayerSettingsFieldForClassName( titanSetFile, "printname" ) ) )
 
 	AnnouncementMessageSweep( GetLocalClientPlayer(), Localize( "#TITAN_LEVEL_UP_N", titanName ), TitanGetDisplayGenAndLevel( gen, level ), <0.99, 0.59, 0.0>, $"", "HUD_level_up_titan_1P" )
@@ -54,7 +54,7 @@ void function ServerCallback_TitanChallengeCompleted( int titanClassIndex, int r
 	}
 
 	string titanClass = shTitanXP.titanClasses[ titanClassIndex ]
-	string titanSetFile = GetSetFileForTitanClass( titanClass )
+	string titanSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass )
 	string titanName = Localize( expect string( GetPlayerSettingsFieldForClassName( titanSetFile, "printname" ) ) )
 
 	ItemDisplayData titanDisplayData = GetItemDisplayData( titanClass )
@@ -68,7 +68,7 @@ var function Display_TitanLeveledUp( int titanClassIndex, int gen, int level )
 	RuiSetGameTime( rui, "startTime", Time() )
 
 	string titanClass = shTitanXP.titanClasses[ titanClassIndex ]
-	string titanSetFile = GetSetFileForTitanClass( titanClass )
+	string titanSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass )
 	string titanName = Localize( expect string( GetPlayerSettingsFieldForClassName( titanSetFile, "printname" ) ) )
 
 	RuiSetString( rui, "levelupText", titanName + " leveled up! " + TitanGetDisplayGenAndLevel( gen, level ) )

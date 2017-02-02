@@ -886,12 +886,9 @@ function PlayNextActionMusicWhenDone( lengthOfMusic )
 }
 
 
-function LoopLobbyMusic()
+void function LoopLobbyMusic()
 {
-	local soundAlias = "music_lobby_ambient" //GetSoundAliasFromMusicPieceID( eMusicPieceID.LEVEL_INTRO )
-
-	if ( !soundAlias )
-		return
+	string soundAlias = "music_lobby_ambient" //GetSoundAliasFromMusicPieceID( eMusicPieceID.LEVEL_INTRO )
 
 	if ( level.currentMusicPlaying == soundAlias )
 	{
@@ -920,27 +917,9 @@ function LoopLobbyMusic()
 		if ( !IsValid( player ) )
 			return
 
-		local lengthOfMusic = GetSoundDuration( soundAlias )
-		EmitSoundOnEntity( player, soundAlias )
-		//printt( "Playing music : " + soundAlias + " , length of music is: " + lengthOfMusic )
-		if ( level.currentMusicPlaying )
-		{
-			//printt( "Stopping current sound: " + level.currentMusicPlaying )
-			FadeOutSoundOnEntity( player, level.currentMusicPlaying, DEFAULT_FADE_TIME )
-		}
+		var soundHandle = EmitSoundOnEntity( player, soundAlias )
 
-
-		level.currentMusicPlaying = soundAlias
-
-		wait ( lengthOfMusic + DEFAULT_MUSIC_GAP_TIME )
-
-		player = GetLocalClientPlayer()
-		if ( !IsValid( player ) )
-			return
-
-		FadeOutSoundOnEntity( player, level.currentMusicPlaying, DEFAULT_FADE_TIME ) //JFS. When a player goes into XBox menus the audio is stopped, but the client script is not. This can result in music pieces overlapping. This fix results in music stopping without finishing, but at least it doesn't overlap
-
-		level.currentMusicPlaying = null
+		WaitSignal( soundHandle, "OnSoundFinished" )
 	}
 
 }

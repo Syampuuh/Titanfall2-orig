@@ -35,6 +35,8 @@ global function FlashCockpitHealthGreen
 global function UpdateEjectHud_SetButtonPressTime
 global function UpdateEjectHud_SetButtonPressCount
 
+global function SetUnlimitedDash
+
 struct TitanCockpitManagedRUI
 {
 	bool exists = false
@@ -290,6 +292,14 @@ void function ShowRUIHUD( entity cockpit )
 	thread TitanCockpitHealthChangedThink( cockpit, player )
 
 	UpdateTitanCockpitVisibility()
+}
+
+void function SetUnlimitedDash( bool active )
+{
+	if ( file.cockpitLowerRui == null )
+		return
+
+	RuiSetBool( file.cockpitLowerRui, "hasUnlimitedDash", active )
 }
 
 void function UpdateEjectHud_SetManualEjectStartTime( entity player )
@@ -769,7 +779,7 @@ void function PlayerPressed_Eject( entity player )
 string function RollRandomEjectString()
 {
 	const int COCKPIT_EJECT_COMMON_COUNT = 6
-	const int COCKPIT_EJECT_RARE_COUNT = 27
+	const int COCKPIT_EJECT_RARE_COUNT = 32
 	const float CHANCE_FOR_RARE = 0.15
 
 	float randForType = RandomFloat( 1.0 )

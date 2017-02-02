@@ -92,6 +92,8 @@ void function OnCallsignCardSelectMenu_Open()
 	file.selectionMade = false
 
 	RefreshCreditsAvailable()
+
+	uiGlobal.updateCachedNewItems = false
 }
 
 void function OnCallsignCardSelectMenu_Close()

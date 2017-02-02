@@ -13,6 +13,7 @@ struct
 void function ClGamemodeAITDM_Init()
 {
 	AddCallback_OnClientScriptInit( OverrideMinimapPackages )
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function OverrideMinimapPackages( entity player )

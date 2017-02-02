@@ -87,6 +87,9 @@ void function TitanMeleeAttack( entity titan )
 	if ( titan.IsPhaseShifted() )
 		return
 
+	if ( !titan.PlayerMelee_IsAttackActive() ) //JFS, Defensive fix for 209347
+	    return
+
 	bool didHitATarget = false
 	bool didHitAnEnemyTitan = false
 
@@ -100,6 +103,10 @@ void function TitanMeleeAttack( entity titan )
 		entity targetEnt = hit.ent
 		if ( !CodeCallback_IsValidMeleeAttackTarget( titan, targetEnt ) )
 			continue
+
+		Assert( titan.PlayerMelee_IsAttackActive() )
+		if ( !titan.PlayerMelee_IsAttackActive() ) //JFS, Defensive fix for 209347
+		    return
 
 		vector damageOrigin = hit.visiblePosition
 
@@ -132,10 +139,18 @@ void function TitanMeleeAttack( entity titan )
 		else if ( targetEnt.IsTitan() )
 		{
 			TitanAttackTitan( titan, meleeWeapon, targetEnt, damageOrigin )
-			if ( CodeCallback_IsValidMeleeExecutionTarget( titan, targetEnt ) )
+
+			bool meleeButtonHeldCheck
+			#if HOLD_BUTTON_FOR_TITAN_EXECUTION
+				meleeButtonHeldCheck = titan.IsInputCommandHeld( IN_MELEE )
+			#else
+				meleeButtonHeldCheck = true
+			#endif
+
+			if ( meleeButtonHeldCheck && CodeCallback_IsValidMeleeExecutionTarget( titan, targetEnt ) )
 			{
 				#if SERVER
-				AttemptScriptedExecution( titan, targetEnt )
+					AttemptScriptedExecution( titan, targetEnt )
 				#endif
 				return
 			}
@@ -158,6 +173,10 @@ void function TitanMeleeAttack( entity titan )
 	bool didHitTheWorld = false
 	if ( !didHitATarget )
 	{
+		Assert( titan.PlayerMelee_IsAttackActive() )
+		if ( !titan.PlayerMelee_IsAttackActive() ) //JFS, Defensive fix for 209347
+		    return
+
 		vector traceDir = titan.GetViewVector()
 		float attackRange = meleeWeapon.GetMeleeAttackRange()
 		vector traceEnd = (traceStartPos + traceDir * attackRange)

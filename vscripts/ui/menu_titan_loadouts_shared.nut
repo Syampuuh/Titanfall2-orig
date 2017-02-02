@@ -51,7 +51,7 @@ void function UpdateTitanLoadoutButtons( int selectedIndex, var[NUM_PERSISTENT_T
 		//Hud_SetPanelAlpha( button, 0 )
 
 		Hud_SetSelected( button, index == selectedIndex )
-		Hud_SetNew( button, ButtonShouldShowNew( eItemTypes.TITAN, loadout.titanClass ) )
+		Hud_SetNew( button, ButtonShouldShowNew( eItemTypes.TITAN, loadout.titanClass ) || ButtonShouldShowNew( eItemTypes.PRIME_TITAN, loadout.primeTitanRef ) )
 
 		Hud_SetEnabled( button, true )
 		Hud_SetVisible( button, true )
@@ -87,7 +87,8 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 	{
 		string propertyName = Hud_GetScriptID( elem )
 		string itemRef = GetTitanLoadoutValue( loadout, propertyName )
-		int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, loadout.setFile )
+		string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
+		int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, nonPrimeSetFile )
 		asset image = GetImage( itemType, itemRef )
 
 		var rui = Hud_GetRui( elem )
@@ -237,7 +238,9 @@ void function UpdateTitanItemButton( var button, TitanLoadoutDef loadout )
 {
 	string propertyName = Hud_GetScriptID( button )
 	string itemRef = GetTitanLoadoutValue( loadout, propertyName )
-	int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, loadout.setFile )
+	IsTitanLoadoutPrime( loadout )
+	string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
+	int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, nonPrimeSetFile )
 	asset image = GetImage( itemType, itemRef )
 
 	var rui = Hud_GetRui( button )

@@ -120,11 +120,11 @@ void function Scorch_SelfDamageReduction( entity target, var damageInfo )
 	{
 		entity soul = attacker.GetTitanSoul()
 		if ( IsValid( soul ) && SoulHasPassive( soul, ePassives.PAS_SCORCH_SELFDMG ) )
-			DamageInfo_ScaleDamage( damageInfo, 0.50 )
+			DamageInfo_ScaleDamage( damageInfo, 0.20 )
 	}
 	else
 	{
-		DamageInfo_ScaleDamage( damageInfo, 0.50 )
+		DamageInfo_ScaleDamage( damageInfo, 0.20 )
 	}
 }
 

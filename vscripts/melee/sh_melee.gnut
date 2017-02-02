@@ -44,8 +44,6 @@ global function IsAttackerRef
 const SMOOTH_TIME = 0.2
 const INSTA_KILL_TIME_THRESHOLD = 0.35
 const BUG_REPRO_MOVEMELEE = 19114
-const MIN_FOV_HUMAN_DEFAULT = 0.77
-const MIN_FOV_HUMAN_VS_PROWLER = 0.40
 
 global struct SyncedMelee
 {
@@ -734,14 +732,6 @@ void function AddSyncedMelee( SyncedMeleeChooser chooser, SyncedMelee melee )
 	chooser.syncedMelees.append( melee )
 }
 
-float function GetMeleeMinimumFOV( entity attacker, entity target )
-{
-	if ( ( attacker.IsPlayer() ) && ( target.GetClassName() == "npc_prowler") )
-		return MIN_FOV_HUMAN_VS_PROWLER
-
-	return MIN_FOV_HUMAN_DEFAULT
-}
-
 SyncedMelee ornull function FindBestSyncedMelee( entity attacker, entity target, SyncedMeleeChooser actions )
 {
 	#if CLIENT
@@ -771,11 +761,6 @@ SyncedMelee ornull function FindBestSyncedMelee( entity attacker, entity target,
 
 	vector angles = attacker.EyeAngles()
 	vector forward = AnglesToForward( angles )
-
-	// is the target in my fov?
-	float minFOV = GetMeleeMinimumFOV( attacker, target )
-	if ( forward.Dot( absTargetToPlayerDir * -1 ) < minFOV )
-		return null
 
 	vector relTargetToPlayerDir = CalcRelativeVector( < 0, target.EyeAngles().y, 0 >, absTargetToPlayerDir )
 

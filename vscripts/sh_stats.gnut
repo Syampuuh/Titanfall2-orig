@@ -266,9 +266,13 @@ void function InitStatsTables()
 
 	foreach ( titan, chassis in GetCapitalizedTitanTypes() )
 	{
-		AddPersistentStat( "titan_stats", "pilots",			chassis,	"titanStats[" + chassis + "].pilots", "#UNLOCK_TITAN_PILOT_KILLS" )
-		AddPersistentStat( "titan_stats", "titansTotal",	chassis,	"titanStats[" + chassis + "].titansTotal", "#UNLOCK_TITAN_TITAN_KILLS" )
-		AddPersistentStat( "titan_stats", "titanDamage",	chassis,	"titanStats[" + chassis + "].titanDamage", "#UNLOCK_TITAN_TITAN_DAMAGE" )
+		AddPersistentStat( "titan_stats", "pilots",				chassis,	"titanStats[" + chassis + "].pilots", "#UNLOCK_TITAN_PILOT_KILLS" )
+		AddPersistentStat( "titan_stats", "titansTotal",		chassis,	"titanStats[" + chassis + "].titansTotal", "#UNLOCK_TITAN_TITAN_KILLS" )
+		AddPersistentStat( "titan_stats", "titanDamage",		chassis,	"titanStats[" + chassis + "].titanDamage", "#UNLOCK_TITAN_TITAN_DAMAGE" )
+		AddPersistentStat( "titan_stats", "coresEarned",		chassis,	"titanStats[" + chassis + "].coresEarned" )
+		AddPersistentStat( "titan_stats", "pilotsAsPrime",		chassis,	"titanStats[" + chassis + "].pilotsAsPrime", "#UNLOCK_TITAN_PRIME_PILOT_KILLS" )
+		AddPersistentStat( "titan_stats", "titansAsPrime",		chassis,	"titanStats[" + chassis + "].titansAsPrime", "#UNLOCK_TITAN_PRIME_TITAN_KILLS" )
+		AddPersistentStat( "titan_stats", "executionsAsPrime",	chassis,	"titanStats[" + chassis + "].executionsAsPrime", "#UNLOCK_TITAN_PRIME_EXECUTIONS" )
 	}
 
 	//##############################################

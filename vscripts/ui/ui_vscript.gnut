@@ -110,6 +110,21 @@ global struct PanelDef
 	var defaultFocus
 }
 
+global struct PieChartEntry
+{
+	string displayName
+	float numValue
+}
+
+global struct PieChartData
+{
+	array<PieChartEntry> entries
+	array labelColor = [46, 49, 51, 255]
+	bool timeBased = false
+	int colorShift = 0
+	float sum = 0.0
+}
+
 global struct UIGlobals
 {
 	table	menus = {}
@@ -130,7 +145,6 @@ global struct UIGlobals
 	float	dialogInputEnableTime = 0.0
 	bool	loadoutSelectionFinished = false
 	bool	lobbyMenusLeftOpen = false
-	var		weaponStatListType = null // would be nice to make this a string
 	bool	playingMusic = false
 	var		mainMenuFocus = null
 	int 	announcementVersionSeen = -1
@@ -151,6 +165,8 @@ global struct UIGlobals
 	int		editingSubitemType = -1
 	var		editingParentItemRef = null
 	int 	editingWeaponCategory = -1
+
+	int		entitlementId = -1
 
 	bool	EOGAutoAdvance = true
 	bool	EOGOpenInLobby = false
@@ -213,6 +229,8 @@ global struct UIGlobals
 	int 	launching = eLaunching.FALSE
 	bool 	triedNucleusRegistration = false
 	int 	consoleSettingMenu = eConsoleSettingsMenu.FALSE
+
+	bool	updateCachedNewItems = true
 }
 
 global UIGlobals uiGlobal
@@ -264,6 +282,7 @@ void function UICodeCallback_UIInit()
 	thread UpdateClientMenuOpenState()
 
 	InitGamepadConfigs()
+	Store_Init()
 	InitMenus()
 
 	if ( !IsSingleplayer() )

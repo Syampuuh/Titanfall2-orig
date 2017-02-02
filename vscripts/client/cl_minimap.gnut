@@ -307,7 +307,6 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 		while ( IsValid( ent ) )
 		{
 			WaitSignal( ent, "SettingsChanged", "OnDeath" )
-			RuiSetBool( rui, "isAlive", IsAlive( ent ) )
 		}
 	}
 	else

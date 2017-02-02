@@ -64,7 +64,7 @@ void function ClCaptureTheFlag_Init()
 
 	file.imcFlagRui = CreateCockpitRui( $"ui/ctf_flag_marker.rpak", 200 )
 	file.milFlagRui = CreateCockpitRui( $"ui/ctf_flag_marker.rpak", 200 )
-
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 
@@ -491,6 +491,7 @@ void function CTF_DisplayReturnFlagProgressBar( float endTime )
 	var rui = CreateCockpitRui( $"ui/ctf_flag_return.rpak" )
 	RuiSetString( rui, "returnFlagText", "#CTF_RETURN_FLAG" )
 	RuiSetGameTime( rui, "endTime", endTime )
+	RuiSetFloat( rui, "flagReturnTime", CTF_GetFlagReturnTime() )
 
 	OnThreadEnd(
 		function() : ( rui )

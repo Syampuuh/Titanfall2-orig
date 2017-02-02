@@ -1,5 +1,5 @@
-
 global function InitEditTitanLoadoutMenu
+global function	RefreshPrimeTitanToggleDisplay
 
 struct {
 	var menu
@@ -13,6 +13,7 @@ struct {
 	var weaponCamoButton
 	var camoSkinButton
 	var noseArtButton
+	var primeTitanButton
 	bool menuClosing = false
 } file
 
@@ -56,9 +57,16 @@ void function InitEditTitanLoadoutMenu()
 
 	file.noseArtButton = Hud_GetChild( file.loadoutPanel, "ButtonNoseArt" )
 	RuiSetImage( Hud_GetRui( file.noseArtButton ), "buttonImage", $"rui/menu/common/noseart_appearance_button" )
-	AddButtonEventHandler( file.noseArtButton, UIE_GET_FOCUS, OnEditTitanCamoSkinButton_Focus )
+	AddButtonEventHandler( file.noseArtButton, UIE_GET_FOCUS, OnEditTitanNoseArtButton_Focus )
 	AddButtonEventHandler( file.noseArtButton, UIE_LOSE_FOCUS, OnEditTitanCamoSkinButton_LoseFocus )
 	AddButtonEventHandler( file.noseArtButton, UIE_CLICK, OnEditTitanNoseArtButton_Activate )
+
+	file.primeTitanButton = Hud_GetChild( file.loadoutPanel, "ButtonPrimeTitan" )
+	RuiSetImage( Hud_GetRui( file.primeTitanButton ), "buttonImage",  $"rui/menu/common/prime_toggle_off" )
+	RuiSetImage( Hud_GetRui( file.primeTitanButton ), "camoImage", $"trans_camo" )
+	AddButtonEventHandler( file.primeTitanButton, UIE_GET_FOCUS, OnPrimeTitanButton_Focus )
+	AddButtonEventHandler( file.primeTitanButton, UIE_LOSE_FOCUS, OnEditTitanCamoSkinButton_LoseFocus )
+	AddButtonEventHandler( file.primeTitanButton, UIE_CLICK, OnPrimeTitanButton_Activate )
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
@@ -93,16 +101,39 @@ void function OnOpenEditTitanLoadoutMenu()
 	UpdateTitanXP( file.xpPanel, uiGlobal.editingLoadoutIndex )
 	Hud_SetNew( file.camoSkinButton, ButtonShouldShowNew( eItemTypes.CAMO_SKIN_TITAN, "", loadout.titanClass ) || ButtonShouldShowNew( eItemTypes.TITAN_WARPAINT, "", loadout.titanClass ) )
 	Hud_SetNew( file.weaponCamoButton, ButtonShouldShowNew( eItemTypes.CAMO_SKIN, "", loadout.titanClass ) )
-	Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.TITAN_NOSE_ART, "", loadout.titanClass ) )
+	if ( IsTitanLoadoutPrime( loadout ) )
+		Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.PRIME_TITAN_NOSE_ART, "", loadout.primeTitanRef ) )
+	else
+		Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.TITAN_NOSE_ART, "", loadout.titanClass ) )
+
+	Hud_SetNew( file.primeTitanButton, ButtonShouldShowNew( eItemTypes.PRIME_TITAN, loadout.primeTitanRef, "" ) )
+
+	UpdateTitanCosmeticButtons()
+
+	UI_SetPresentationType( ePresentationType.TITAN_LOADOUT_EDIT )
+
+	Hud_SetText( file.appearanceLabel, "" )
+
+	RefreshCreditsAvailable()
+}
+
+void function UpdateTitanCosmeticButtons()
+{
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+
+	bool isLoadoutPrime = IsTitanLoadoutPrime( loadout )
 
 	asset titanCamoImage
-	if ( loadout.camoIndex == 0 && loadout.skinIndex == 0 )
+	int camoIndex = GetCachedTitanLoadoutCamoIndex( uiGlobal.editingLoadoutIndex ) //Needs to account for prime/not prime status
+	int skinIndex = GetCachedTitanLoadoutSkinIndex( uiGlobal.editingLoadoutIndex ) //Needs to account for prime/not prime status
+	int decalIndex = GetCachedTitanLoadoutDecalIndex( uiGlobal.editingLoadoutIndex ) //Needs to account for prime/not prime status
+	if ( camoIndex == 0 && skinIndex == 0 )
 	{
 		titanCamoImage = $"rui/menu/common/appearance_button_swatch"
 	}
-	else if ( loadout.camoIndex > 0 )
+	else if ( camoIndex > 0 )
 	{
-		titanCamoImage = CamoSkin_GetImage( CamoSkins_GetByIndex( loadout.camoIndex ) )
+		titanCamoImage = CamoSkin_GetImage( CamoSkins_GetByIndex( camoIndex ) )
 	}
 	else
 	{
@@ -111,7 +142,7 @@ void function OnOpenEditTitanLoadoutMenu()
 		foreach ( data in titanSkinRefs )
 		{
 			ItemData skin = GetItemData( data.ref )
-			if ( skin.i.skinIndex != loadout.skinIndex )
+			if ( skin.i.skinIndex != skinIndex )
 				continue
 
 			skinRef = data.ref
@@ -123,14 +154,92 @@ void function OnOpenEditTitanLoadoutMenu()
 
 	RuiSetImage( Hud_GetRui( file.camoSkinButton ), "camoImage", titanCamoImage )
 
+	asset noseArtImage
+	asset buttonImage
+	if ( decalIndex == 0 )
+	{
+		noseArtImage = $"rui/menu/common/appearance_button_swatch"
+		buttonImage = $"rui/menu/common/noseart_appearance_button"
+	}
+	else
+	{
+		array<ItemDisplayData> titanNoseArts
+		string titanRef
+		if ( isLoadoutPrime )
+		{
+			titanNoseArts = GetVisibleItemsOfType( eItemTypes.PRIME_TITAN_NOSE_ART, loadout.primeTitanRef )
+			titanRef = loadout.primeTitanRef
+		}
+		else
+		{
+		 	titanNoseArts = GetVisibleItemsOfType( eItemTypes.TITAN_NOSE_ART, loadout.titanClass )
+		 	titanRef = loadout.titanClass
+		}
+		string noseArt = ""
+		foreach ( data in titanNoseArts )
+		{
+			if ( NoseArtRefToIndex( titanRef, data.ref ) != decalIndex )
+				continue
+
+			noseArt = data.ref
+			break
+		}
+		Assert( noseArt != "" )
+		noseArtImage = GetItemImage( noseArt )
+		buttonImage = $"trans_menu"
+	}
+
+	RuiSetImage( Hud_GetRui( file.noseArtButton ), "camoImage", noseArtImage )
+
+	//Disable nosearts for PrimeTitans for now until we get a chance to make them work
+	Hud_SetLocked( file.noseArtButton, isLoadoutPrime )
+	if ( isLoadoutPrime )
+		buttonImage =  $"rui/menu/common/button_locked"
+
+	RuiSetImage( Hud_GetRui( file.noseArtButton ), "buttonImage", buttonImage )
 	asset primaryCamoImage = loadout.primaryCamoIndex > 0 ? CamoSkin_GetImage( CamoSkins_GetByIndex( loadout.primaryCamoIndex ) ) : $"rui/menu/common/appearance_button_swatch"
 	RuiSetImage( Hud_GetRui( file.weaponCamoButton ), "camoImage", primaryCamoImage )
 
-	UI_SetPresentationType( ePresentationType.TITAN_LOADOUT_EDIT )
+	if ( Script_IsRunningTrialVersion() )
+	{
+		Hud_Hide(  file.primeTitanButton )
 
-	Hud_SetText( file.appearanceLabel, "" )
+	}
+	else
+	{
+		bool hasPrimeTItanLoadout = TitanClassHasPrimeTitan( loadout.titanClass )
 
-	RefreshCreditsAvailable()
+		if ( !TitanClassHasPrimeTitan( loadout.titanClass ) )
+		{
+			Hud_Hide(  file.primeTitanButton )
+		}
+		else
+		{
+			string primeTitanRef = GetPrimeTitanRefForTitanClass( loadout.titanClass )
+			Hud_Show(  file.primeTitanButton )
+			if ( IsItemLocked( GetUIPlayer(), primeTitanRef ) )
+			{
+				//Uncomment to show locked icon instead.
+				/*RuiSetImage( Hud_GetRui( file.primeTitanButton ), "buttonImage", $"rui/menu/common/button_locked" )
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "camoImage", $"rui/menu/common/appearance_button_swatch" ) //This is mainly to get the frame of the button. Using $"trans_camo" makes the button have no border*/
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "buttonImage", $"rui/menu/common/prime_toggle_off" )
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "camoImage", $"trans_camo" )
+				Hud_SetLocked( file.primeTitanButton, true )
+			}
+			else if ( isLoadoutPrime )
+			{
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "buttonImage", $"rui/menu/common/prime_toggle_on" )
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "camoImage", $"trans_camo" )
+				Hud_SetLocked( file.primeTitanButton, false )
+			}
+			else
+			{
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "buttonImage", $"rui/menu/common/prime_toggle_off" )
+				RuiSetImage( Hud_GetRui( file.primeTitanButton ), "camoImage", $"trans_camo" )
+				Hud_SetLocked( file.primeTitanButton, false )
+			}
+		}
+	}
 }
 
 void function OnEditTitanCamoSkinButton_LoseFocus( var button )
@@ -150,13 +259,61 @@ void function OnEditTitanCamoSkinButton_Focus( var button )
 		case "ButtonCamoSkin":
 			desc = "#ITEM_TYPE_CAMO_SKIN_TITAN_CHOICE"
 		break
-		case "ButtonNoseArt":
-			desc = "#ITEM_TYPE_TITAN_NOSE_ART_CHOICE"
-		break
 		case "ButtonWeaponCamo":
 			desc = "#ITEM_TYPE_CAMO_SKIN_CHOICE"
 		break
 	}
+	var rui = Hud_GetRui( file.descriptionBox )
+	RuiSetString( rui, "messageText", desc )
+	Hud_Show( file.hintIcon )
+	Hud_Show( file.hintBox )
+}
+
+void function OnEditTitanNoseArtButton_Focus( var button )
+{
+	string desc
+
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+
+	if ( IsTitanLoadoutPrime( loadout ) )
+		desc = "ITEM_TYPE_DISABLED_FOR_PRIME_TITAN"
+	else
+		desc = "#ITEM_TYPE_TITAN_NOSE_ART_CHOICE"
+
+	var rui = Hud_GetRui( file.descriptionBox )
+	RuiSetString( rui, "messageText", desc )
+	Hud_Show( file.hintIcon )
+	Hud_Show( file.hintBox )
+}
+
+void function OnPrimeTitanButton_Focus( var button )
+{
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+	string desc
+	if ( !TitanClassHasPrimeTitan( loadout.titanClass ) )
+	{
+		desc = "#ITEM_TYPE_PRIME_TITAN_PRIME_TITAN_COMING_SOON"
+
+	}
+	else
+	{
+		string primeTitanRef = GetPrimeTitanRefForTitanClass( loadout.titanClass )
+		if ( IsItemLocked( GetUIPlayer(), primeTitanRef ) )
+		{
+			desc = "#ITEM_TYPE_PRIME_TITAN_PURCHASE_TO_USE_PRIME_TITAN"
+		}
+		else if ( IsTitanLoadoutPrime( loadout ) )
+		{
+			desc = "#ITEM_TYPE_PRIME_TITAN_USE_REGULAR_TITAN"
+		}
+		else
+		{
+			desc = "#ITEM_TYPE_PRIME_TITAN_USE_PRIME_TITAN"
+		}
+
+	}
+
+
 	var rui = Hud_GetRui( file.descriptionBox )
 	RuiSetString( rui, "messageText", desc )
 	Hud_Show( file.hintIcon )
@@ -171,14 +328,99 @@ void function OnEditTitanWeaponSkinButton_Activate( var button )
 
 void function OnEditTitanCamoSkinButton_Activate( var button )
 {
-	uiGlobal.editingLoadoutProperty = "camoIndex"
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+	if ( IsTitanLoadoutPrime( loadout ) )
+		uiGlobal.editingLoadoutProperty = "primeCamoIndex"
+	else
+		uiGlobal.editingLoadoutProperty = "camoIndex"
 	AdvanceMenu( GetMenu( "CamoSelectMenu" ) )
 }
 
 void function OnEditTitanNoseArtButton_Activate( var button )
 {
-	uiGlobal.editingLoadoutProperty = "decalIndex"
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+	if ( IsTitanLoadoutPrime( loadout ) )
+		return //uiGlobal.editingLoadoutProperty = "primeDecalIndex
+	else
+		uiGlobal.editingLoadoutProperty = "decalIndex"
 	AdvanceMenu( GetMenu( "NoseArtSelectMenu" ) )
+}
+
+void function OnPrimeTitanButton_Activate( var button )
+{
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+	if ( !TitanClassHasPrimeTitan( loadout.titanClass ) )
+		return
+
+	ClearNewStatus( button, loadout.primeTitanRef )
+
+	entity player = GetUIPlayer()
+
+	string primeTitanRef = GetPrimeTitanRefForTitanClass( loadout.titanClass )
+	if ( IsItemLocked( player, primeTitanRef ) )
+	{
+#if PC_PROG
+		if ( !Origin_IsOverlayAvailable() )
+		{
+			DialogData dialogData
+			dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+			AddDialogButton( dialogData, "#OK" )
+
+			OpenDialog( dialogData )
+			return
+		}
+#endif
+		OpenStoreMenu( "StoreMenu_PrimeTitans" )
+
+		return
+	}
+
+	uiGlobal.editingLoadoutProperty = "isPrime"
+	Assert( uiGlobal.editingLoadoutType == "titan" )
+
+	int count = PersistenceGetEnumCount( "titanIsPrimeTitan" )
+	string isPrime = loadout.isPrime
+	int index = PersistenceGetEnumIndexForItemName( "titanIsPrimeTitan", isPrime )
+
+	// cycle through the options
+	index++
+	index %= count
+	isPrime = PersistenceGetEnumItemNameForIndex( "titanIsPrimeTitan", index )
+
+	if ( !IsLobby() && uiGlobal.editingLoadoutIndex == uiGlobal.titanSpawnLoadoutIndex )
+		uiGlobal.updateTitanSpawnLoadout = true
+
+	SetCachedLoadoutValue( player, uiGlobal.editingLoadoutType, uiGlobal.editingLoadoutIndex, "isPrime", isPrime )
+	/*string appropriateSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, IsTitanLoadoutPrime( loadout ) )
+	SetCachedLoadoutValue( player, uiGlobal.editingLoadoutType, uiGlobal.editingLoadoutIndex, "setFile", appropriateSetFile )*/
+
+	OnPrimeTitanButton_Focus( button )
+
+	UpdateTitanCosmeticButtons()
+
+	bool newNoseArt = ShouldCosmeticButtonShowNew( player, loadout.titanClass, eItemTypes.TITAN_NOSE_ART, isPrime == "titan_is_prime" )
+	bool newCamoSkin = ShouldCosmeticButtonShowNew( player, loadout.titanClass, eItemTypes.CAMO_SKIN_TITAN, isPrime == "titan_is_prime" )
+	bool newWarpaint = ShouldCosmeticButtonShowNew( player, loadout.titanClass, eItemTypes.TITAN_WARPAINT, isPrime == "titan_is_prime" )
+	Hud_SetNew( file.noseArtButton, newNoseArt )
+	Hud_SetNew( file.camoSkinButton, newCamoSkin || newWarpaint )
+}
+
+bool function ShouldCosmeticButtonShowNew( entity player, string parentRef, int subitemType, bool isPrimeTitan )
+{
+	ItemData itemData = GetItemData( parentRef )
+	foreach ( subitem in itemData.subitems )
+	{
+		if ( GetSubitemType( parentRef, subitem.ref ) != subitemType )
+			continue
+
+		if ( isPrimeTitan && ( subitem.itemType == eItemTypes.TITAN_WARPAINT || subitem.itemType == eItemTypes.TITAN_NOSE_ART ) )
+			continue
+
+		if ( IsItemNew( player, subitem.ref, parentRef ) )
+			return true
+	}
+
+	return false
 }
 
 void function OnCloseEditTitanLoadoutMenu()
@@ -191,7 +433,8 @@ void function OnTitanLoadoutButton_Focus( var button )
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 	string propertyName = Hud_GetScriptID( button )
 	string itemRef = GetTitanLoadoutValue( loadout, propertyName )
-	int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, loadout.setFile )
+	string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
+	int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, nonPrimeSetFile )
 	string desc = GetItemDescription( itemRef )
 	var rui = Hud_GetRui( file.descriptionBox )
 	RuiSetString( rui, "messageText", desc )
@@ -234,4 +477,12 @@ void function PlayMeetTitanVideo( var button )
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 
 	PlayVideoMenu( "meet_" + loadout.titanClass, true )
+}
+
+void function RefreshPrimeTitanToggleDisplay()
+{
+	if ( !Hud_IsFocused( file.primeTitanButton ) )
+		return
+
+	OnPrimeTitanButton_Focus( file.primeTitanButton )
 }

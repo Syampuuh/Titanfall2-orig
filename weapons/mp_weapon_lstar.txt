@@ -617,8 +617,8 @@ WeaponData
 
 			"damage_near_value"   							"25"
 			"damage_far_value"								"25"
-			"damage_near_value_titanarmor"					"235"
-			"damage_far_value_titanarmor" 					"215"
+			"damage_near_value_titanarmor"					"185"
+			"damage_far_value_titanarmor" 					"165"
 
 			//EFfects
 			"projectile_trail_effect_0" 					"P_projectile_lstar_burn"
@@ -761,6 +761,7 @@ WeaponData
 		{
 			vis							player_zoomfrac
 			ammo						weapon_ammo
+			clipSize					weapon_clipSize
 		}
 	}
 

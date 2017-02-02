@@ -394,8 +394,8 @@ bool function ShouldUpdateMenuForDialogFooterVisibility( var menu )
 	if ( menu == GetMenu( "Dialog" ) )
 		return true
 
-	//if ( menu == GetMenu( "AnnouncementDialog" ) )
-	//	return true
+	if ( menu == GetMenu( "AnnouncementDialog" ) )
+		return true
 
 	if ( menu == GetMenu( "ConnectingDialog" ) )
 		return true
@@ -485,7 +485,7 @@ void function LeaveDialog()
 					AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
 			}
 		}
-		else // This is a match or a match lobby
+		else
 		{
 			Assert( !InPendingOpenInvite() )
 
@@ -498,14 +498,20 @@ void function LeaveDialog()
 			}
 			else
 			{
+				string confirmSoloText = "#YES_LEAVE_MATCH"
+				string confirmPartyText = "#YES_LEAVE_MATCH_AND_PARTY"
+				if ( level.ui.penalizeDisconnect && !IsPrivateMatch() )
+				{
+					dialogData.message = "#LEAVING_MATCH_LOSS_WARNING"
+					dialogData.messageColor = [ENEMY_R, ENEMY_G * 0.7, ENEMY_B * 0.7, 255]
+					confirmSoloText = "#YES_LEAVE_MATCH_WITH_LOSS"
+					confirmPartyText = "#YES_LEAVE_MATCH_AND_PARTY_WITH_LOSS"
+				}
+
 				if ( PartyHasMembers() )
-				{
-					AddDialogButton( dialogData, "#YES_LEAVE_MATCH_AND_PARTY", LeaveMatchAndParty )
-				}
+					AddDialogButton( dialogData, confirmPartyText, LeaveMatchAndParty )
 				else
-				{
-					AddDialogButton( dialogData, "#YES_LEAVE_MATCH", LeaveMatch )
-				}
+					AddDialogButton( dialogData, confirmSoloText, LeaveMatch )
 			}
 		}
 	}
@@ -516,13 +522,6 @@ void function LeaveDialog()
 
 		AddDialogButton( dialogData, "#CANCEL" )
 		AddDialogButton( dialogData, "#YES_RETURN_TO_TITLE_MENU", Disconnect )
-	}
-
-	if ( isMP && !IsLobby() && !IsPrivateMatch() )
-	{
-		if ( level.ui.penalizeDisconnect )
-			dialogData.message = "#LEAVING_MATCH_LOSS_WARNING"
-		dialogData.messageColor = [255, 0, 0, 255]
 	}
 
 	OpenDialog( dialogData )
@@ -536,7 +535,7 @@ void function CancelRestartingMatchmaking()
 void function CancelSearch()
 {
 	CloseActiveMenu() // "SearchMenu"
-	StopMatchmaking()
+	CancelMatchmaking()
 }
 
 void function LeaveMatch()
@@ -548,7 +547,7 @@ void function LeaveMatch()
 		Durango_LeaveParty()
 	#endif // #if DURANGO_PROG
 
-	StopMatchmaking()
+	CancelMatchmaking()
 	ClientCommand( "LeaveMatch" )
 
 	ShowLeavingDialog()
@@ -611,7 +610,7 @@ void function ShowMatchConnectDialog()
 
 void function CancelMatchSearch()
 {
-	StopMatchmaking()
+	CancelMatchmaking()
 	ClientCommand( "CancelMatchSearch" )
 	CloseActiveMenu()
 }
@@ -643,12 +642,12 @@ void function OpenAnnouncementDialog()
 {
 	DialogData dialogData
 	dialogData.menu = GetMenu( "AnnouncementDialog" )
-	dialogData.header = "ANNOUNCEMENT"
+	dialogData.header = "#ANNOUNCEMENT"
 	dialogData.message = GetConVarString( "announcement" )
 	dialogData.image = $"ui/menu/common/dialog_announcement_1"
-#if !DEV
-	dialogData.inputDisableTime = 2.0
-#endif // #if !DEV
+//#if !DEV
+//	dialogData.inputDisableTime = 2.0
+//#endif // #if !DEV
 
 #if PC_PROG
 	AddDialogButton( dialogData, "#DISMISS", UpdateAnnouncementVersionSeen )

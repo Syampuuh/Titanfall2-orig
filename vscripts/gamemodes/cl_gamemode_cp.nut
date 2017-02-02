@@ -29,6 +29,7 @@ void function ClGamemodeCP_Init()
 
 	AddCallback_OnClientScriptInit( ClGamemodeCP_OnClientScriptInit )
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, ClGamemodeCP_OnWinnerDetermined )
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function CLCapturePoint_RegisterNetworkFunctions()
@@ -178,7 +179,8 @@ void function OnHardpointCreatedThread( entity hardpoint )
 
 	while ( GetGameState() <= eGameState.Playing )
 	{
-		RuiSetBool( rui, "isTitan", player.IsTitan() )
+		if ( IsValid( player ) )
+			RuiSetBool( rui, "isTitan", player.IsTitan() )
 		WaitFrame()
 	}
 

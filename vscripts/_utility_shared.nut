@@ -2723,9 +2723,27 @@ string function GenerateTitanOSAlias( entity player, string aliasSuffix )
 	}
 	else
 	{
+
+		/* TODO: Old way of generating TitanOSAlias, delete if regarded as safe
 		int titanOSVoiceIndex = player.GetVoicePackIndex()
 		string titanOSEnumItemName = PersistenceGetEnumItemNameForIndex( "titanVoice", titanOSVoiceIndex )
-		string modifiedAlias = "diag_gs_titan" + TITAN_OS_VOICE_PACK[ titanOSEnumItemName ] + "_" + aliasSuffix
+		string modifiedAlias = "diag_gs_titan" + TITAN_OS_VOICE_PACK[ titanOSEnumItemName ] + "_" + aliasSuffix*/
+
+		entity titan
+		if ( player.IsTitan() )
+			titan = player
+		else
+			titan = player.GetPetTitan()
+
+		Assert( IsValid( titan ) )
+		string titanCharacterName = GetTitanCharacterName( titan )
+
+		string primeTitanString = ""
+
+		if ( IsTitanPrimeTitan( titan ) )
+			primeTitanString = "_prime"
+
+		string modifiedAlias = "diag_gs_titan" + titanCharacterName + primeTitanString + "_" + aliasSuffix
 		return modifiedAlias
 	}
 	unreachable
@@ -3890,4 +3908,23 @@ string function GetTitanCharacterName( entity titan )
 	}
 
 	return GetTitanCharacterNameFromSetFile( setFile )
+}
+
+bool function IsTitanPrimeTitan( entity titan )
+{
+	Assert( titan.IsTitan() )
+	string setFile
+
+	if ( titan.IsPlayer() )
+	{
+		setFile = titan.GetPlayerSettings()
+	}
+	else
+	{
+		string aiSettingsFile = titan.GetAISettingsName()
+		setFile = expect string( Dev_GetAISettingByKeyField_Global( aiSettingsFile, "npc_titan_player_settings" ) )
+	}
+
+	return  Dev_GetPlayerSettingByKeyField_Global( setFile, "isPrime" ) == 1
+
 }

@@ -2,7 +2,10 @@ untyped
 
 global function ClMainHud_Init
 
-global function InitChatHUD
+#if PC_PROG
+	global function InitChatHUD
+	global function UpdateChatHUDVisibility
+#endif // PC_PROG
 
 global function MainHud_AddPlayer
 global function MainHud_AddClient
@@ -1666,32 +1669,37 @@ void function UpdateLastTitanStanding()
 	GetLocalClientPlayer().Signal( "UpdateLastTitanStanding" )
 }
 
-
-function InitChatHUD()
-{
-	local chat = HudElement( "IngameTextChat" )
-
-	if ( IsLobby() )
+#if PC_PROG
+	void function InitChatHUD()
 	{
-		chat.Hide()
-		return
+		UpdateChatHUDVisibility()
+
+		if ( IsLobby() )
+			return
+
+		local screenSize = Hud.GetScreenSize()
+		local resMultiplier = screenSize[1] / 1080.0
+		int width = 630
+		int height = 225
+
+		if ( GameRules_GetGameMode() == "cp" )
+			height = 173
+		else if ( GameRules_GetGameMode() == "ctf" )
+			height = 146
+
+		HudElement( "IngameTextChat" ).SetSize( width * resMultiplier, height * resMultiplier )
 	}
 
-	chat.Show()
+	void function UpdateChatHUDVisibility()
+	{
+		local chat = HudElement( "IngameTextChat" )
 
-	local screenSize = Hud.GetScreenSize()
-	local resMultiplier = screenSize[1] / 1080.0
-	int width = 630
-	int height = 225
-
-	if ( GameRules_GetGameMode() == "cp" )
-		height = 173
-	else if ( GameRules_GetGameMode() == "ctf" )
-		height = 146
-
-	chat.SetSize( width * resMultiplier, height * resMultiplier )
-}
-
+		if ( IsLobby() || clGlobal.isMenuOpen )
+			chat.Hide()
+		else
+			chat.Show()
+	}
+#endif // PC_PROG
 
 bool function IsMainVGUI( var vgui )
 {

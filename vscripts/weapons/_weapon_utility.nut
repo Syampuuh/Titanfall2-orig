@@ -1711,7 +1711,7 @@ function ClusterRocketBurst( entity clusterExplosionEnt, vector origin, damage, 
 		}
 	)
 
-	while ( counter <= numBursts / popcornInfo.groupSize )
+	while ( IsValid( clusterBurstEnt ) && counter <= numBursts / popcornInfo.groupSize )
 	{
 		randVec = RandomVecInDome( popcornInfo.normal )
 		randRangeMod = RandomFloat( 1.0 )

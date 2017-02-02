@@ -21,6 +21,9 @@ WeaponData
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_titanweapon_sniper"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_titanweapon_sniper"
 	"OnWeaponChargeLevelIncreased"					"OnWeaponChargeLevelIncreased_titanweapon_sniper"
+	"OnWeaponStartZoomIn"							"OnWeaponStartZoomIn_titanweapon_sniper"
+	"OnWeaponStartZoomOut"							"OnWeaponStartZoomOut_titanweapon_sniper"
+	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_titanweapon_sniper"
 
 	// Menu Stats
 	"stat_damage" 									"95"
@@ -170,8 +173,8 @@ WeaponData
 	"ads_fov_zoomfrac_start"						"0.0"
 	"ads_fov_zoomfrac_end"							"1.0"
 
-	"charge_time" 									"2.25"
-	"charge_levels"									"5"
+	"charge_time" 		"2.25"
+	"charge_levels"		"5"
 	"charge_cooldown_time"							"0.5"
 	"charge_cooldown_delay"   						"0.0"
 	"charge_is_triggered_by_ADS"					"1"
@@ -487,6 +490,13 @@ WeaponData
 		pas_northstar_weapon
 		{
 			"pass_through_depth"							"500"		// Not sure how long a dropship is, probably the biggest entity
+		}
+		pas_northstar_optics
+		{
+			"threat_scope_enabled"			"1"
+			"threat_scope_bounds_width"		"1.5"
+			"threat_scope_bounds_height"	"1.1"
+			"threat_scope_fadeWithDistance"	"0"
 		}
 	}
 

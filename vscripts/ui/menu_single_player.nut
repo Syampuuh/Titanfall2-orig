@@ -19,7 +19,9 @@ struct SPLevelStartStruct
 
 struct
 {
+	var menu
 	GridMenuData gridData
+	bool isGridInitialized = false
 	array<SPLevelStartStruct> mainLevels
 	table< int, array<SPLevelStartStruct> > allLevels
 	int lastLevelSelected = 0
@@ -38,6 +40,7 @@ struct
 void function InitSinglePlayerMenu()
 {
 	var menu = GetMenu( "SinglePlayerMenu" )
+	file.menu = menu
 
 	file.levelPartSelectFunc.append( LevelPartSelect_Pt1 )
 	file.levelPartSelectFunc.append( LevelPartSelect_Pt2 )
@@ -87,7 +90,6 @@ void function InitSinglePlayerMenu()
 	file.gridData.buttonFadeCallback = SP_FadeDefaultElementChildren
 	file.gridData.getFocusCallback = SPButton_GetFocus
 	file.gridData.clickCallback = SPButton_Click
-	GridMenuInit( menu, file.gridData )
 
 	var elem = Hud_GetChild( menu, "MasterIcon" )
 	var rui = Hud_GetRui( elem )
@@ -168,19 +170,18 @@ void function SPButton_GetFocus( var button, int elemNum )
 		file.lastLevelSelected = elemNum
 	}
 
-	var menu = GetMenu( "SinglePlayerMenu" )
-	HudElem_SetText( GetMenuChild( menu, "ContentDescriptionTitle" ), levelName )
-	HudElem_SetText( GetMenuChild( menu, "ContentDescription" ), desc )
+	HudElem_SetText( GetMenuChild( file.menu, "ContentDescriptionTitle" ), levelName )
+	HudElem_SetText( GetMenuChild( file.menu, "ContentDescription" ), desc )
 
 	string difficulty = GetBestCompletedDifficultyForLevel( elemNum )
 
 	if ( difficulty == "" || elemNum == 0 )
 	{
-		HudElem_SetText( GetMenuChild( menu, "CompletedDescription" ), "" )
+		HudElem_SetText( GetMenuChild( file.menu, "CompletedDescription" ), "" )
 	}
 	else
 	{
-		HudElem_SetText( GetMenuChild( menu, "CompletedDescription" ), Localize( "#MENU_COMPLETED", Localize( difficulty ) ) )
+		HudElem_SetText( GetMenuChild( file.menu, "CompletedDescription" ), Localize( "#MENU_COMPLETED", Localize( difficulty ) ) )
 	}
 }
 
@@ -304,7 +305,7 @@ void function TrainingStart_NormalMode()
 	file.playIntro = true
 	StartLevelNormal()
 
-	if ( uiGlobal.activeMenu == GetMenu( "SinglePlayerMenu" ) )
+	if ( uiGlobal.activeMenu == file.menu )
 		CloseActiveMenu()
 }
 
@@ -312,7 +313,7 @@ void function TrainingStart_GauntletMode()
 {
 	file.selectedStartPoint = "Gauntlet Mode"
 	LoadSPLevel()
-	if ( uiGlobal.activeMenu == GetMenu( "SinglePlayerMenu" ) )
+	if ( uiGlobal.activeMenu == file.menu )
 		CloseActiveMenu()
 }
 
@@ -427,7 +428,7 @@ void function RunDifficulty()
 		LoadSPLevel()
 	}
 
-	if ( uiGlobal.activeMenu == GetMenu( "SinglePlayerMenu" ) )
+	if ( uiGlobal.activeMenu == file.menu )
 		CloseActiveMenu()
 }
 
@@ -468,17 +469,21 @@ void function StartLevelMaster()
 
 void function OnOpenSinglePlayerMenu()
 {
-	var menu = GetMenu( "SinglePlayerMenu" )
+	if ( !file.isGridInitialized )
+	{
+		GridMenuInit( file.menu, file.gridData )
+		file.isGridInitialized = true
+	}
 
 	file.lastLevelUnlocked = GetLastLevelUnlocked()
 
-	Grid_InitPage( menu, file.gridData )
+	Grid_InitPage( file.menu, file.gridData )
 
 	int levelFocus = minint( file.lastLevelUnlocked, file.lastLevelSelected )
 
 	int row = Grid_GetRowFromElementNumber( levelFocus, file.gridData )
 	int col = Grid_GetColumnFromElementNumber( levelFocus, file.gridData )
-	Hud_SetFocused( Grid_GetButtonAtRowColumn( menu, row, col ) )
+	Hud_SetFocused( Grid_GetButtonAtRowColumn( file.menu, row, col ) )
 }
 
 bool function GetCompletedMasterForLevel( int elemNum )

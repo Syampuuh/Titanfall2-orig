@@ -59,5 +59,9 @@ WeaponData
 		{
 			"hud_icon"										"rui/titan_loadout/tactical/titan_tactical_ammo_swap_inv"
 		}
+		SiegeMode
+		{
+
+		}
 	}
 }

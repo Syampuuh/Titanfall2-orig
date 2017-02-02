@@ -480,11 +480,13 @@ WeaponData
 			//SETTINGS
 			"is_burn_mod"					"1"
 
-			"damage_near_value"   							"50"
-			"damage_far_value"								"35"
-			"damage_near_value_titanarmor"					"200"
-			"damage_far_value_titanarmor" 					"170"
+			"damage_near_value"   							"++5"
+			"damage_far_value"								"++5"
+			"damage_near_value_titanarmor"					"++100"
+			"damage_far_value_titanarmor" 					"++100"
 		}
+
+
 		tactical_cdr_on_kill
 		{
 

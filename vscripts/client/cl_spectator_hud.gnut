@@ -16,8 +16,20 @@ void function ClSpectatorHud_Init()
 		AddOnSpectatorTargetChangedCallback( SpectatorTargetChanged_UpdateSpectatorHud )
 
 		CreateSpectatorHud( GetLocalClientPlayer() )
+
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	}
 }
+
+void function EntitiesDidLoad()
+{
+	if ( !IsRoundWinningKillReplayEnabled() ) //Need to check in EntitiesDidLoad as opposed to main() since the .nv isn't set yet in main()
+		return
+
+	AddCallback_KillReplayStarted( RoundWinningKillReplayStart_HideSpectatorHud )
+	AddCallback_KillReplayEnded( RoundWinningKillReplayEnd_ShowSpectatorHud )
+}
+
 
 void function CreateSpectatorHud( entity clientPlayer ) //We never actually destroy the rui, we just depend on code rui variable sys.player.isSpectator to hide and show as appropriate
 {
@@ -63,7 +75,7 @@ void function UpdateSpectatorHud( entity player, entity currentTarget )
 
 	CallingCard callingCard = PlayerCallingCard_GetActive( currentTarget )
 	CallsignIcon callsignIcon = PlayerCallsignIcon_GetActive( currentTarget )
-	var rui = RuiCreate( $"ui/callsign_spectator_left.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	var rui = RuiCreate( $"ui/callsign_spectator_bottom_right.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetGameTime( rui, "endTime", Time() + 99999 )
 	RuiSetString( rui, "playerName", playerName )
@@ -92,3 +104,31 @@ void function CleanUpCallingCard()
 		file.callingCardRui = null
 	}
 }
+
+void function RoundWinningKillReplayStart_HideSpectatorHud() //TODO: JFS. Should fix rui's sys.player.isSpectator to return false when player is in RoundWinningKillReplay
+{
+	if ( IsRoundWinningKillReplayEnabled() == false )
+		return
+
+	if ( IsReplayRoundWinning() == false )
+		return
+
+	Assert( file.spectatorHud != null )
+
+	RuiSetFloat( file.spectatorHud, "roundWinningKillReplayAlpha", 0.0 )
+
+}
+
+void function RoundWinningKillReplayEnd_ShowSpectatorHud() //TODO: JFS. Should fix rui's sys.player.isSpectator to return false when player is in RoundWinningKillReplay
+{
+	Assert( file.spectatorHud != null )
+
+	if ( IsRoundWinningKillReplayEnabled() == false )
+		return
+
+	if ( IsReplayRoundWinning() == false )
+		return
+
+	RuiSetFloat( file.spectatorHud, "roundWinningKillReplayAlpha", 1.0 )
+}
+

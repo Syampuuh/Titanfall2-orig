@@ -6,6 +6,9 @@ global const bool FACTION_DIALOGUE_ENABLED = true
 global const bool GRUNT_CHATTER_MP_ENABLED = true
 global const bool SPECTRE_CHATTER_MP_ENABLED = true
 global const bool ANTI_RODEO_SMOKE_ENABLED = true
+global const bool HOLD_BUTTON_FOR_TITAN_EXECUTION = false
+global const bool TITAN_EXECUTION_ATTACKER_IS_INVULNERABLE = true
+global const bool TITAN_EXECUTION_GIVES_BATTERY = false
 
 global const bool HAS_GAMEMODES = true // don't use this too much! I only added this to handle cl_main_hud, which is planned for a bigger refactor in the future
 global const bool HAS_AI_SQUAD_LIMITS = true

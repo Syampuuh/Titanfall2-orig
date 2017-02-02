@@ -151,9 +151,9 @@ var function OnWeaponPrimaryAttack_titanweapon_predator_cannon( entity weapon, W
 				EmitSoundAtPosition( TEAM_UNASSIGNED, attackParams.pos, "Weapon_Predator_Powershot_ShortRange_3P" )
 
 			ShotgunBlast( weapon, attackParams.pos, attackParams.dir, 16, DF_GIB | DF_EXPLOSION | DF_KNOCK_BACK, 1.0, 10.0 )
-#if SERVER
+
 			PowerShotCleanup( owner, weapon, "CloseRangePowerShot", [] )
-#endif
+
 			return 1
 		}
 		else
@@ -173,9 +173,9 @@ var function OnWeaponPrimaryAttack_titanweapon_predator_cannon( entity weapon, W
 				bolt.kv.gravity = -0.1
 			}
 		}
-		#if SERVER
+
 		PowerShotCleanup( owner, weapon, "LongRangePowerShot", [ "LongRangeAmmo" ] )
-		#endif
+
 		return 1
 	}
 	else

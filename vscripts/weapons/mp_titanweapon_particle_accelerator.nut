@@ -14,7 +14,8 @@ global function PROTO_GetHeatMeterCharge
 global function OnWeaponNpcPrimaryAttack_titanweapon_particle_accelerator
 #endif
 
-const ADS_SHOT_COUNT = 3
+const ADS_SHOT_COUNT_NORMAL = 3
+const ADS_SHOT_COUNT_UPGRADE = 5
 const TPAC_PROJECTILE_SPEED = 8000
 const TPAC_PROJECTILE_SPEED_NPC = 5000
 const LSTAR_LOW_AMMO_WARNING_FRAC = 0.25
@@ -30,10 +31,12 @@ const CRITICAL_ENERGY_RESTORE_AMOUNT = 20
 const SPLIT_SHOT_CRITICAL_ENERGY_RESTORE_AMOUNT = 5
 
 struct {
-	float[ADS_SHOT_COUNT] boltOffsets = [
+	float[ADS_SHOT_COUNT_UPGRADE] boltOffsets = [
 		0.0,
 		0.022,
-		-0.022
+		-0.022,
+		0.044,
+		-0.044,
 	]
 } file
 
@@ -54,7 +57,10 @@ function MpTitanWeaponParticleAccelerator_Init()
 void function OnWeaponStartZoomIn_titanweapon_particle_accelerator( entity weapon )
 {
 	array<string> mods = weapon.GetMods()
-	mods.append( "proto_particle_accelerator" )
+	if ( weapon.HasMod( "pas_ion_weapon_ads" ) )
+		mods.append( "proto_particle_accelerator_pas" )
+	else
+		mods.append( "proto_particle_accelerator" )
 	weapon.SetMods( mods )
 
 	#if CLIENT
@@ -71,6 +77,7 @@ void function OnWeaponStartZoomOut_titanweapon_particle_accelerator( entity weap
 {
 	array<string> mods = weapon.GetMods()
 	mods.fastremovebyvalue( "proto_particle_accelerator" )
+	mods.fastremovebyvalue( "proto_particle_accelerator_pas" )
 	weapon.SetMods( mods )
 	//weapon.StopWeaponEffect( $"wpn_arc_cannon_charge_fp", $"wpn_arc_cannon_charge" )
 	weapon.StopWeaponEffect( TPA_ADS_EFFECT_1P, TPA_ADS_EFFECT_3P )
@@ -122,6 +129,7 @@ function FireWeaponPlayerAndNPC( entity weapon, WeaponPrimaryAttackParams attack
 
 	entity owner = weapon.GetWeaponOwner()
     bool inADS = weapon.IsWeaponInAds()
+	int ADS_SHOT_COUNT = weapon.HasMod( "pas_ion_weapon_ads" ) ? ADS_SHOT_COUNT_UPGRADE : ADS_SHOT_COUNT_NORMAL
 
 	if ( shouldCreateProjectile )
 	{

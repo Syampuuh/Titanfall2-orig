@@ -48,6 +48,7 @@ void function Server_Lobby_Init()
 	UIVars_Init()
 	Playlist_Init()
 	MenuCallbacks_Init()
+	Store_Init()
 
 	Lobby_Init()
 }
@@ -152,6 +153,7 @@ void function Server_MP_Init()
 	DropPodFireteam_Init()
 	Objective_Init()
 	PainDeathSounds_Init()
+	Store_Init()
 
 	Sentry_Turrets_Init()
 	Harvester_GlobalInit()
@@ -263,7 +265,7 @@ void function Server_MP_Init()
 	FactionDialogue_Init()
 	SpectreChatter_MP_Init()
 	GruntChatter_MP_Init()
-	
+
 	PIN_Init()
 
 	// NOTE this should run after level scripts get a chance to override default behavior

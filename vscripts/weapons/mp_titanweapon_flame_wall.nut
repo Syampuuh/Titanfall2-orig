@@ -130,7 +130,18 @@ bool function CreateThermiteWallSegment( entity projectile, int projectileCount,
 			return false
 
 		array<string> mods = projectile.ProjectileGetMods()
-		float duration = mods.contains( "pas_scorch_firewall" ) ? PAS_SCORCH_FIREWALL_DURATION : FLAME_WALL_THERMITE_DURATION
+		float duration
+		int damageSource
+		if ( mods.contains( "pas_scorch_flamecore" ) )
+		{
+			damageSource = eDamageSourceId.mp_titancore_flame_wave
+			duration = 1.0
+		}
+		else
+		{
+			damageSource = eDamageSourceId.mp_titanweapon_flame_wall
+			duration = mods.contains( "pas_scorch_firewall" ) ? PAS_SCORCH_FIREWALL_DURATION : FLAME_WALL_THERMITE_DURATION
+		}
 
 		if ( IsSingleplayer() )
 		{
@@ -144,7 +155,7 @@ bool function CreateThermiteWallSegment( entity projectile, int projectileCount,
 		//regular script path
 		if ( !movingGeo )
 		{
-			thermiteParticle = CreateThermiteTrail( pos, angles, owner, inflictor, duration, FLAME_WALL_FX, eDamageSourceId.mp_titanweapon_flame_wall )
+			thermiteParticle = CreateThermiteTrail( pos, angles, owner, inflictor, duration, FLAME_WALL_FX, damageSource )
 			EffectSetControlPointVector( thermiteParticle, 1, projectile.proj.savedOrigin )
 			AI_CreateDangerousArea_Static( thermiteParticle, projectile, METEOR_THERMITE_DAMAGE_RADIUS_DEF, TEAM_INVALID, true, true, pos )
 		}
@@ -153,11 +164,11 @@ bool function CreateThermiteWallSegment( entity projectile, int projectileCount,
 			if ( GetMapName() == "sp_s2s" )
 			{
 				angles = <0,90,0>//wind dir
-				thermiteParticle = CreateThermiteTrailOnMovingGeo( movingGeo, pos, angles, owner, inflictor, duration, FLAME_WALL_FX_S2S, eDamageSourceId.mp_titanweapon_flame_wall )
+				thermiteParticle = CreateThermiteTrailOnMovingGeo( movingGeo, pos, angles, owner, inflictor, duration, FLAME_WALL_FX_S2S, damageSource )
 			}
 			else
 			{
-				thermiteParticle = CreateThermiteTrailOnMovingGeo( movingGeo, pos, angles, owner, inflictor, duration, FLAME_WALL_FX, eDamageSourceId.mp_titanweapon_flame_wall )
+				thermiteParticle = CreateThermiteTrailOnMovingGeo( movingGeo, pos, angles, owner, inflictor, duration, FLAME_WALL_FX, damageSource )
 			}
 
 			if ( movingGeo == projectile.proj.savedMovingGeo )
@@ -211,6 +222,7 @@ void function FlameWall_DamagedTarget( entity ent, var damageInfo )
 		return
 
 	Thermite_DamagePlayerOrNPCSounds( ent )
+	Scorch_SelfDamageReduction( ent, damageInfo )
 }
 
 #endif

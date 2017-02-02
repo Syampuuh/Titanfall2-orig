@@ -188,7 +188,7 @@ bool function FillInCommunityMembership( UserInfoPanel userInfoPanel, CommunityM
 void function FillInUserInfoPanel( UserInfoPanel userInfoPanel, CommunityUserInfo userInfo )
 {
 	file.currentUserIsStreaming = userInfo.isLivestreaming > 0
-	
+
 	Hud_SetText( userInfoPanel.Name, userInfo.name )
 	string killsText = "" + userInfo.kills
 	Hud_SetText( userInfoPanel.Kills, killsText )
@@ -221,6 +221,8 @@ void function FillInUserInfoPanel( UserInfoPanel userInfoPanel, CommunityUserInf
 	{
 		CommunityMembership ornull communityInfo = GetCommunityUserMembershipInfo( userInfo.hardware, userInfo.uid, i )
 		Assert( communityInfo, "got a null communityMembershipInfo struct from GetCommunityUserMembershipInfo when it shouldn't be null here" )
+		if ( !communityInfo )
+			continue;
 		expect CommunityMembership( communityInfo )
 		string membershipLevel = communityInfo.membershipLevel
 		if ( membershipLevel == "owner" )
@@ -394,7 +396,7 @@ void function FillInRemoteMatchInfoPanel( RemoteMatchInfo info, RemoteMatchInfoP
 
 	Hud_SetText( panel.PlaylistName, GetPlaylistDisplayName( info.playlist ) )
 	Hud_SetText( panel.MapName, Localize( "#" + info.map ) )
-	Hud_SetText( panel.ModeName, info.gamemode )
+	Hud_SetText( panel.ModeName, GAMETYPE_TEXT[ info.gamemode ] )
 	int minsLeft = info.timeLeftSecs / 60
 	int secsLeft = info.timeLeftSecs % 60
 	string timeLeft = "" + minsLeft
@@ -700,7 +702,7 @@ void function UpdateOpenInvites( OpenInvite openInvite, string message, string p
 				}
 				else
 				{
-					callsignIcon = CallsignIcon_GetByRef( "gc_icon_question" )
+					callsignIcon = CallsignIcon_GetByRef( "gc_icon_happyface" )
 					RuiSetBool( rui, "isViewPlayer", false )
 					RuiSetImage( rui, "playerImage", callsignIcon.image )
 				}

@@ -27,6 +27,9 @@ void function OnProjectileCollision_weapon_grenade_sonar( entity projectile, vec
 	projectile.proj.onlyAllowSmartPistolDamage = false
 
 	#endif
+	if ( IsHumanSized( hitEnt ) )//Don't stick on Pilots/Grunts/Spectres. Causes pulse blade to fall into ground
+		return
+
 	bool didStick = PlantStickyGrenade( projectile, pos, normal, hitEnt, hitbox, 4.0, false )
 
 	if ( !didStick )
@@ -228,7 +231,7 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 			file.entitySonarHandles[ent].append( statusEffectHandle )
 
 			#if BATTLECHATTER_ENABLED
-				if ( !ent.IsTitan() )
+				if ( !ent.IsTitan() && IsValid( sonarOwner ) ) //Sonar owner can disconnect etc so need to check for that
 					PlayBattleChatterLine( sonarOwner, "bc_pPulseBladeSpotEnemy" )
 			#endif
 		}

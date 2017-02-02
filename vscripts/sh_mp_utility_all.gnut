@@ -132,10 +132,10 @@ function Daily_SecondsTillDayEnd()
 	return currentDayStart + SECONDS_PER_DAY - Daily_GetCurrentTime()
 }
 
-function GetPersistenceEnumAsArray( persistenceEnumName )
+array<string> function GetPersistenceEnumAsArray( string persistenceEnumName )
 {
 	int enumSize = PersistenceGetEnumCount( persistenceEnumName )
-	local returnArray = []
+	array<string> returnArray
 	for ( int i = 0; i < enumSize; i++ )
 	{
 		returnArray.append( PersistenceGetEnumItemNameForIndex( persistenceEnumName, i ) )

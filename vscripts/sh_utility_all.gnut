@@ -993,6 +993,14 @@ bool function IsPlayerFemale( entity player )
 	return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
 }
 
+bool function IsPlayerPrimeTitan( entity player )
+{
+	if ( !player.IsTitan() )
+		return false
+
+	return player.Dev_GetPlayerSettingByKeyField( "isPrime" ) == 1
+}
+
 int function GetCollectibleLevelIndex( string mapName )
 {
 	foreach( int i, table data in LEVEL_UNLOCKS_COUNT )
@@ -1081,6 +1089,11 @@ int function GetCollectiblesFoundForLevel( string mapName )
 
 int function GetCombinedCollectiblesFoundForLevel( string mapName )
 {
+#if UI || CLIENT
+	if ( Script_IsRunningTrialVersion() )
+		return 0
+#endif
+
 	array<string> bsps = GetBSPsForLevel( mapName )
 	int count = 0
 	foreach( string bsp in bsps )
@@ -1235,6 +1248,13 @@ asset function GetWeaponModel( string weaponName )
 	asset modelName = GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "playermodel" )
 
 	return modelName
+}
+
+string function GetTitanClassFromSetFile( string setFile ) //JFS: As of right now titanClass is really just the same thing as "titanCharacterName". Should change this for next game if needed.
+{
+	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "titanCharacterName" )
+	expect string( result )
+	return result
 }
 
 
@@ -1402,6 +1422,11 @@ int function GetBSPNum( string uniqueIdentifier )
 
 bool function GetCompletedDifficultyForBSPNum( int bspNum, string pvar )
 {
+#if UI || CLIENT
+	if ( Script_IsRunningTrialVersion() )
+		return false
+#endif
+
 	int bitfield = GetConVarInt( pvar )
 
 	return (( bitfield & (1 << bspNum) ) >= 1 )

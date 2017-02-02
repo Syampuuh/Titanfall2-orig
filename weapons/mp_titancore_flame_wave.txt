@@ -111,4 +111,12 @@ WeaponData
 	"npc_vortex_block"								"0"
 	"npc_min_range"   								"0"
 	"npc_max_range"   								"1700"
+
+	Mods
+	{
+		pas_scorch_flamecore
+		{
+
+		}
+	}
 }

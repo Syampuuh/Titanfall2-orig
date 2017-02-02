@@ -74,7 +74,7 @@ void function GunShieldThink( entity weapon, entity owner, float duration )
 			if ( IsValid( weapon ) )
 			{
 				weapon.e.gunShieldActive = false
-				if ( !weapon.HasMod( "LongRangePowerShot" ) && !weapon.HasMod( "CloseRangePowerShot" ) )
+				if ( !weapon.HasMod( "LongRangePowerShot" ) && !weapon.HasMod( "CloseRangePowerShot" ) && !weapon.HasMod( "SiegeMode" ) )
 				{
 					while( weapon.GetForcedADS() )
 						weapon.ClearForcedADS()

@@ -38,12 +38,15 @@ void function InitVideoMenu()
 	button = Hud_GetChild( menu, "SldAdaptiveRes" );
 	SetupButton( Hud_GetChild( button, "BtnDropButton" ), "#ADAPTIVE_RES", "#ADAPTIVE_RES_DESC" )
 	AddButtonEventHandler( button, UIE_CHANGE, AdaptiveRes_Changed )
-
 	AddButtonEventHandler( Hud_GetChild( menu, "TextEntryAdaptiveRes" ), UIE_CHANGE, AdaptiveResText_Changed )
+
+	button = Hud_GetChild( menu, "SldFOV" )
+	SetupButton( Hud_GetChild( button, "BtnDropButton" ), "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC" )
+	AddButtonEventHandler( button, UIE_CHANGE, FOV_Changed )
+	AddButtonEventHandler( Hud_GetChild( menu, "TextEntrySldFOV" ), UIE_CHANGE, FOVTextEntry_Changed )
 
 	SetupButton( Hud_GetChild( menu, "SwchResolution" ), "#RESOLUTION", "#ADVANCED_VIDEO_MENU_RESOLUTION_DESC" )
 	SetupButton( Hud_GetChild( Hud_GetChild( menu, "SldBrightness" ), "BtnDropButton" ), "#BRIGHTNESS", "#ADVANCED_VIDEO_MENU_BRIGHTNESS_DESC" )
-	SetupButton( Hud_GetChild( Hud_GetChild( menu, "SldFOV" ), "BtnDropButton" ), "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchColorBlindMode" ), "#COLORBLIND_MODE", "#OPTIONS_MENU_COLORBLIND_TYPE_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchSprintCameraSmoothing" ), "#SMOOTH_SPRINT_CAMERA", "#OPTIONS_MENU_SMOOTH_SPRINT_CAMERA" )
 	SetupButton( Hud_GetChild( menu, "SwchVSync" ), "#VSYNC", "#ADVANCED_VIDEO_MENU_VSYNC_DESC" )
@@ -267,6 +270,16 @@ void function AdaptiveRes_Changed( var button )
 void function AdaptiveResText_Changed( var button )
 {
 	VideoOptions_AdaptiveResTextChanged( file.menu )
+}
+
+void function FOV_Changed( var button )
+{
+	VideoOptions_FOVChanged( file.menu )
+}
+
+void function FOVTextEntry_Changed( var button )
+{
+	VideoOptions_FOVTextChanged( file.menu )
 }
 
 void function SetupButton( var button, string buttonText, string description )

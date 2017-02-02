@@ -170,12 +170,14 @@ void function UpdatePlaylistButtons()
 					var rui = Hud_GetRui( button )
 					RuiSetInt( rui, "specialObjectCount", Player_GetColiseumTicketCount( GetUIPlayer() ) )
 					RuiSetImage( rui, "specialObjectIcon", $"rui/menu/common/ticket_icon" )
+					RuiSetFloat( rui, "specialAlpha", 1.0 )
 				}
 				else
 				{
 					var rui = Hud_GetRui( button )
 					RuiSetInt( rui, "specialObjectCount", 0 )
 					RuiSetImage( rui, "specialObjectIcon", $"" )
+					RuiSetFloat( rui, "specialAlpha", 0.0 )
 				}
 
 				int costOverride = -1
@@ -262,6 +264,8 @@ array<string> function GetVisiblePlaylists()
 
 	array<string> list = []
 
+	bool rearrangeForAngelCity = false
+
 	for ( int i=0; i<numPlaylists; i++ )
 	{
 		string name = string( GetPlaylistName(i) )
@@ -270,7 +274,31 @@ array<string> function GetVisiblePlaylists()
 		if ( visible )
 		{
 			// printt( name )
+			if ( IsItemInEntitlementUnlock( name ) && IsValid( GetUIPlayer() ) )
+	 		{
+	 			if ( IsItemLocked( GetUIPlayer(), name ) )
+	 			{
+	 				continue
+	 			}
+	 			else if ( name == "angel_city_247" )
+	 			{
+	 				rearrangeForAngelCity = true
+	 			}
+	 		}
+
 			list.append( name )
+		}
+	}
+
+	if ( rearrangeForAngelCity )
+	{
+		string playlistReplacement = GetCurrentPlaylistVarString( "angel_city_replacement", "" )
+		int playlistReplacementIdx = GetCurrentPlaylistVarInt( "angel_city_replacement_index", 3 )
+		if ( playlistReplacement != "" && list.contains( playlistReplacement ) )
+		{
+			int idx = list.find( playlistReplacement )
+			list.remove( idx )
+			list.insert( playlistReplacementIdx, playlistReplacement )
 		}
 	}
 

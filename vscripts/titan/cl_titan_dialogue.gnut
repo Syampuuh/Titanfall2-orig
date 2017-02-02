@@ -38,6 +38,9 @@ function TitanCockpit_PlayDialog( entity player, string conversationName )
 	if ( player != GetLocalViewPlayer() )
 		return
 
+	if ( !player.IsTitan() && !IsAlive( player.GetPetTitan() )  ) //No titan to talk too, so bail out. For SP when BT talks to you via scripted moments this function isn't called anyway
+		return
+
 	if ( !GetGlobalNetBool( "titanOSDialogueEnabled" ) )
 		return
 
@@ -52,7 +55,7 @@ function TitanCockpit_PlayDialog( entity player, string conversationName )
 	int priority = expect int( GetConversationPriority( conversationName ) )
 	string soundAlias = GenerateTitanOSAlias( player, conversationName )
 	entity titan = player.GetPetTitan()
-	if ( IsAlive( titan ) )
+	if ( IsAlive( titan ) ) //TODO: Should probably play on the soul instead of playing on the weapon. Next game.
 	{
 		entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
 		if ( IsValid( weapon ) )

@@ -7,6 +7,7 @@ void function ClGamemodeLTS_Init()
 	AddCreateCallback( "item_powerup", CreateCallback_BatterySpawner )
 	if ( GAMETYPE == LTS_BOMB )
 		ClGamemodeLTSBomb_Init()
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function LTS_GameStateChanged()

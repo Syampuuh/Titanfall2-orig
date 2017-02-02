@@ -66,6 +66,12 @@ Scripts:
 	sh_death_hints.gnut
 ]
 
+When: "(SERVER && MP) || UI"
+Scripts:
+[
+	sh_store.gnut
+]
+
 When: "MP || UI"
 Scripts:
 [
@@ -836,6 +842,8 @@ Scripts:
 	ui/menu_edit_callsign_card.nut
 	ui/menu_edit_callsign_icon.nut
     ui/menu_postgame.nut
+    ui/menu_knowledgebase.nut
+    ui/menu_knowledgebase_submenu.nut
     ui/panel_summary.nut
     ui/panel_scoreboard.nut
     ui/menu_armory.nut
@@ -847,6 +855,7 @@ Scripts:
 	ui/menu_eog_xp.nut
 	ui/menu_faction_choice.nut
 	ui/menu_controls.nut
+	ui/menu_controls_advanced_look.nut
 	ui/menu_gamepad_layout.nut
 	ui/menu_generation_respawn.nut
 	ui/menu_ingame.nut
@@ -868,15 +877,20 @@ Scripts:
 	ui/menu_sp_loadout_titan_tutorial.nut
 	ui/menu_sp_training.gnut
 	ui/menu_stats.nut
+	ui/menu_store.nut
+	ui/menu_store_prime_titans.nut
+	ui/menu_store_customization.nut
+	ui/menu_store_customization_preview.nut
+	ui/menu_store_camo.nut
+	ui/menu_store_callsign.nut
 	ui/menu_advanced_hud.nut
 	ui/menu_inbox.nut
-	ui/menu_stats_distance.nut
-	ui/menu_stats_kills.nut
 	ui/menu_stats_misc.nut
 	ui/menu_stats_overview.nut
 	ui/menu_stats_time.nut
 	ui/menu_stats_utility.nut
 	ui/menu_stats_weapons.nut
+	ui/menu_stats_titans.nut
 	ui/menu_pilot_loadouts_shared.nut
 	ui/menu_pilot_loadouts.nut
 	ui/menu_edit_pilot_loadouts.nut

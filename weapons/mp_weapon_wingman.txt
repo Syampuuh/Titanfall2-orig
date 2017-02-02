@@ -428,6 +428,7 @@ WeaponData
 			"fire_sound_2_npc"					"Weapon_Wingman_FireSuppressed_NPC"
 			"damage_near_value"   				"40"
 			"damage_far_value"					"20"
+			"damage_very_far_value"				"10"
 			"bodygroup2_set"					"1"
 
 			//"rumble"  						"4"
@@ -513,11 +514,14 @@ WeaponData
 
 			"is_burn_mod"		"1"
 
-			"damage_near_value"   							"100"
-			"damage_far_value"								"50"
-   	 		"damage_very_far_value"							"35"
-			"damage_near_value_titanarmor"					"350"
-			"damage_far_value_titanarmor" 					"300"
+			"damage_near_value"   							"++45"
+			"damage_far_value"								"++5"
+			"damage_very_far_value"							"++5"
+			"damage_near_value_titanarmor"					"++100"
+			"damage_far_value_titanarmor" 					"++100"
+
+
+
 		}
 	}
 

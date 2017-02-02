@@ -145,7 +145,6 @@ void function OnAbilityChargeEnd_TitanCore( entity weapon )
 	if ( titan == null )
 		return
 
-	CoreDeactivate( titan, weapon )
 	CoreChargeEnd( titan, weapon )
 }
 
@@ -201,7 +200,7 @@ void function CoreActivate( entity player )
 	// printt( "activate" )
 	entity soul = player.GetTitanSoul()
 
-	if ( IsValid( soul ) )
+	if ( IsValid( soul ) && !player.ContextAction_IsMeleeExecution() )
 	{
 		if ( TitanDamageRewardsTitanCoreTime() )
 			SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
@@ -216,14 +215,15 @@ void function CoreDeactivate( entity player, entity weapon )
 	Assert( player.IsTitan() )
 	entity soul = player.GetTitanSoul();
 
-	if ( IsValid( soul ) )
+	if ( IsValid( soul ) && !player.ContextAction_IsMeleeExecution() )
 	{
 		if ( TitanDamageRewardsTitanCoreTime() )
 		{
 			if ( SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ) )
-				SoulTitanCore_SetNextAvailableTime( soul, 0.2 )
-			else
-				SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
+			{
+				SoulTitanCore_SetNextAvailableTime( soul, 0.3 )
+				GiveOffhandElectricSmoke( player )
+			}
 		}
 		else if ( IsValid( player ) )
 		{

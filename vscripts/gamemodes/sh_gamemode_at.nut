@@ -4,6 +4,7 @@ global function IsValidAttritionPointKill
 global function GetAttritionScore
 global function GetAttritionScoreEventName
 global function GetAttritionScoreEventNameFromAI
+global function SpawnArrayFromSpawnData
 
 global function GetHUDImageFromBossID
 global function GetHealthBarImageFromBossID
@@ -623,78 +624,88 @@ void function AT_InitWaveInfo()
 	//spawnData.append( CreateSpawnData( "npc_soldier", 4, 4, false ) ) //420
 	//spawnData.append( CreateSpawnData( "npc_turret_mega", 1, 1, false ) ) //100
 
-	spawnData.append( CreateSpawnData( "npc_soldier", 32, 8, false ) ) //420
-	spawnData.append( CreateSpawnData( "npc_spectre", 12, 8, false ) ) //300
+	spawnData.append( CreateSpawnData( "npc_soldier", 32, 8, false ) ) //320
+	spawnData.append( CreateSpawnData( "npc_spectre", 12, 8, false ) ) //240
 	PackSpawnDataArray( sd, spawnData )
 	sd.append( spawnData )
 	bossSpawnData = []
 	//bossSpawnData.append( CreateSpawnData( "npc_super_spectre", 1, 1, true ) )
-	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //400
+	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //500
 	PackSpawnDataArray( bsd, bossSpawnData )
 	//bsd.append( bossSpawnData )
 	AddATWave( 45.0, sd, 60.0, bsd )
-	//AI COST: 720
-	//BOSS COST: 400
-	//RATIO: 1.8
+	//AI COST: 560 ( 1120 w/ bonus )
+	//BOSS COST: 500 ( 1000 w/ bonus )
+	//RATIO: 1.44
 
+	//TOTAL 1060 ( 2120 w/ bonus )
 
 	sd = []
 	bsd = []
 	spawnData = []
-	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //300
-	//spawnData.append( CreateSpawnData( "npc_turret_mega", 2, 2, false ) ) //100
+	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //200
+	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_stalker", 4, 4, false ) ) //240
+
 	PackSpawnDataArray( sd, spawnData )
 	//sd.append( spawnData )
 	spawnData = []
-	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //300
-	//spawnData.append( CreateSpawnData( "npc_turret_mega", 2, 2, false ) ) //100
+	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //200
+	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_stalker", 4, 4, false ) ) //240
+
 	PackSpawnDataArray( sd, spawnData )
 	//sd.append( spawnData )
 	bossSpawnData = []
-	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true) ) //400
+	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true) ) //500
 	PackSpawnDataArray( bsd, bossSpawnData )
 	//bsd.append( bossSpawnData )
 	bossSpawnData = []
-	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //400
+	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //500
 	PackSpawnDataArray( bsd, bossSpawnData )
 	//bsd.append( bossSpawnData )
 	AddATWave( 45.0, sd, 75.0, bsd )
-	//AI COST: 1400
-	//BOSS COST: 800
-	//RATIO: 1.75
+	//AI COST: 1360 ( 2720 w/ bonus )
+	//BOSS COST: 1000 ( 2000 w/ bonus )
+	//RATIO: 1.12
+
+	//TOTAL 3180 ( 6360 w/ bonus ) ( One team must only have 1360 for the other team to win )
 
 	sd = []
 	bsd = []
 	spawnData = []
-	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_stalker", 8, 4, false ) ) //120
-	spawnData.append( CreateSpawnData( "npc_super_spectre", 2, 1, false ) ) //100
+	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //200
+	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_stalker", 4, 4, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_super_spectre", 1, 1, false ) ) //100
 	//spawnData.append( CreateSpawnData( "npc_turret_mega", 2, 2, false ) ) //100
 	PackSpawnDataArray( sd, spawnData )
 	//sd.append( spawnData )
 	spawnData = []
-	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //300
-	spawnData.append( CreateSpawnData( "npc_stalker", 8, 4, false ) ) //120
-	spawnData.append( CreateSpawnData( "npc_super_spectre", 2, 1, false ) ) //100
+	spawnData.append( CreateSpawnData( "npc_soldier", 20, 12, false ) ) //200
+	spawnData.append( CreateSpawnData( "npc_spectre", 12, 12, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_stalker", 4, 4, false ) ) //240
+	spawnData.append( CreateSpawnData( "npc_super_spectre", 1, 1, false ) ) //100
 	//spawnData.append( CreateSpawnData( "npc_turret_mega", 2, 2, false ) ) //100
 	PackSpawnDataArray( sd, spawnData )
 	//sd.append( spawnData )
 	bossSpawnData = []
-	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //400
+	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //500
 	PackSpawnDataArray( bsd, bossSpawnData )
 	//bsd.append( bossSpawnData )
 	bossSpawnData = []
-	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //400
+	bossSpawnData.append( CreateSpawnData( "npc_titan", 1, 1, true ) ) //500
 	//bsd.append( bossSpawnData )
 	PackSpawnDataArray( bsd, bossSpawnData )
 	AddATWave( 45.0, sd, 90.0, bsd )
-	//AI COST: 1840
-	//BOSS COST: 800
-	//RATIO: 2.3
+	//AI COST: 1760 ( 3520 w/ bonus )
+	//BOSS COST: 1000 ( 2000 w/ bonus )
+	//RATIO: 1.76
+
+	//TOTAL AI COST: 3440 ( 6880 w/ bonus )
+	//TOTAL BOSS COST: 2500 ( 5000 w/ bonus )
+
+	//TOTAL: 5940 ( 11,880 w/ bonus )
 
 	sd = []
 	bsd = []
@@ -872,6 +883,25 @@ float function AT_GetCampProgressFrac( int campIndex )
 		return GetGlobalNetFloat( "AcampProgress" )
 	else
 		return GetGlobalNetFloat( "BcampProgress" )
+
+	unreachable
+}
+
+array<AT_SpawnData> function SpawnArrayFromSpawnData( AT_SpawnData spawnData )
+{
+	foreach ( AT_WaveData waveData in file.waveData )
+	{
+		foreach ( array<AT_SpawnData> sData in waveData.spawnDataArrays )
+		{
+			foreach ( AT_SpawnData ssData in sData )
+			{
+				if ( ssData == spawnData )
+					return sData
+			}
+		}
+	}
+
+	Assert( 0, "No wave data contains this spawn data" )
 
 	unreachable
 }

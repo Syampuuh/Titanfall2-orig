@@ -32,7 +32,13 @@ var function OnWeaponPrimaryAttack_TitanHover( entity weapon, WeaponPrimaryAttac
 		soundInfo.descent_3p = "titan_flight_descent_3p"
 		soundInfo.landing_1p = "core_ability_land_1p"
 		soundInfo.landing_3p = "core_ability_land_3p"
-		thread FlyerHovers( flyer, soundInfo )
+		float horizontalVelocity
+		entity soul = flyer.GetTitanSoul()
+		if ( IsValid( soul ) && SoulHasPassive( soul, ePassives.PAS_NORTHSTAR_FLIGHTCORE ) )
+			horizontalVelocity = 300.0
+		else
+			horizontalVelocity = 200.0
+		thread FlyerHovers( flyer, soundInfo, 3.0, horizontalVelocity )
 	#endif
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )

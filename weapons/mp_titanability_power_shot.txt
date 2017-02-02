@@ -119,5 +119,15 @@ WeaponData
 		{
 			"hud_icon"										"rui/titan_loadout/ordnance/concussive_shot_long"
 		}
+		SiegeMode
+		{
+			"regen_ammo_refill_rate"						"*10"
+		}
+		pas_legion_chargeshot
+		{
+			"ammo_per_shot"									"40"
+			"ammo_min_to_fire"								"40"
+			"regen_ammo_refill_rate"						"*0.5"
+		}
 	}
 }

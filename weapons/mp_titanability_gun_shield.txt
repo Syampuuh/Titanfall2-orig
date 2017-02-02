@@ -65,5 +65,9 @@ WeaponData
 		{
 			"fire_rate"								"*4.0"
 		}
+		SiegeMode
+		{
+			"regen_ammo_refill_rate"						"*10"
+		}
 	}
 }

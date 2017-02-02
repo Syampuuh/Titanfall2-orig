@@ -6,7 +6,7 @@ global function AddPanelFooterOption
 global function UpdateFooterOptions
 global function SetFooterText
 
-const MAX_FOOTER_OPTIONS = 6
+const MAX_FOOTER_OPTIONS = 8
 
 void function InitFooterOptions()
 {
@@ -152,7 +152,7 @@ void function ClearRegisteredInputs()
 void function UpdateFooterOptions()
 {
 	var menu = uiGlobal.activeMenu
-	if ( menu == null || !Hud_HasChild( menu, "FooterButtons" ) )
+	if ( menu == null )
 		return
 
 	var panel
@@ -166,6 +166,9 @@ void function UpdateFooterOptions()
 	// Clear all existing registered input
 	ClearRegisteredInputs()
 	Signal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" )
+
+	if ( !Hud_HasChild( menu, "FooterButtons" ) ) // Dialogs don't quite use proper menu footers yet, but they still should clear registered inputs when opened so we early out here after that is complete
+		return
 
 	array<InputDef> footerData
 	table<int, void functionref( var )> registeredInput
@@ -227,9 +230,6 @@ void function UpdateFooterOptions()
 
 			//printt( "Setting up menu", menu.GetHudName(), footerData[i].gamepadLabel, footerData[i].mouseLabel )
 
-			Assert( numGamepadOptions <= MAX_FOOTER_OPTIONS, "More than MAX_FOOTER_OPTIONS (" + MAX_FOOTER_OPTIONS + ") gamepad options added to menu: " + menu.GetHudName() )
-			Assert( numMouseOptions <= MAX_FOOTER_OPTIONS, "More than MAX_FOOTER_OPTIONS (" + MAX_FOOTER_OPTIONS + ") mouse options added to menu: " + menu.GetHudName() )
-
 			if ( footerData[i].gamepadLabel != "" ) // Allow mouse only display. Ex: On PC we sometimes need to show instructions which do not have a gamepad equivalent.
 			{
 				gamepadInfo.append( i )
@@ -241,6 +241,9 @@ void function UpdateFooterOptions()
 				mouseInfo.append( i )
 				numMouseOptions++
 			}
+
+			Assert( numGamepadOptions <= MAX_FOOTER_OPTIONS, "More than MAX_FOOTER_OPTIONS (" + MAX_FOOTER_OPTIONS + ") gamepad options added to menu: " + menu.GetHudName() )
+			Assert( numMouseOptions <= MAX_FOOTER_OPTIONS, "More than MAX_FOOTER_OPTIONS (" + MAX_FOOTER_OPTIONS + ") mouse options added to menu: " + menu.GetHudName() )
 
 			lastValidInput = input
 		}
@@ -324,13 +327,17 @@ void function UpdateFooterSizes()
 		{
 			if ( Hud_HasChild( uiGlobal.activeMenu, "FooterButtons" ) )
 			{
+				int extraSpace = int( ContentScaledX( 13 ) ) // The width being determined by vgui auto_wide_tocontents isn't always enough. The PS4 controller "[  ] Postgame report" footer on PC has cut off display without this because the image assumes the wrong width.
+
 				var panel = Hud_GetChild( uiGlobal.activeMenu, "FooterButtons" )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton0" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer0" ) ) )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton1" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer1" ) ) )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton2" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer2" ) ) )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton3" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer3" ) ) )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton4" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer4" ) ) )
-				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton5" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer5" ) ) )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton0" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer0" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton1" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer1" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton2" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer2" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton3" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer3" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton4" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer4" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton5" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer5" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton6" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer6" ) ) + extraSpace )
+				Hud_SetWidth( Hud_GetChild( panel, "RuiFooterButton7" ), Hud_GetWidth( Hud_GetChild( panel, "FooterSizer7" ) ) + extraSpace )
 			}
 			else if ( Hud_HasChild( uiGlobal.activeMenu, "DialogFooterButtons" ) )
 			{

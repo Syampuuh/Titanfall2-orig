@@ -1,342 +1,190 @@
-untyped
+//TODO: Kills Per Minute stat
 
-global function UpdateViewStatsWeaponsMenu
-
-
-//ToDo: Kills Per Minute stat
-
-const MAX_LIST_ITEMS = 40
-const PWS_SCROLL_START_TOP = 2
-const WEAPON_LIST_VISIBLE = 6
-const PWS_MENU_MOVE_TIME = 0.15
-const BUTTON_POPOUT_FRACTION = 0.19
-
-table pws = {
-	weaponMenuInitComplete = false,
-
-	allPilotWeapons = [],
-	allTitanWeapons = [],
-
-	buttonElems = [],
-	buttonSpacing = null,
-	buttonPopOutDist = null,
-	selectedIndex = 0,
-	numListButtonsUsed = MAX_LIST_ITEMS,
-
-	bindings = false
-}
+global function InitViewStatsWeaponsMenu
 
 struct
 {
+	var menu
+	GridMenuData gridData
+	bool isGridInitialized = false
 	array<ItemDisplayData> allPilotWeapons
-	array<ItemDisplayData> allTitanWeapons
 } file
 
-void function OnOpenViewStatsWeapons()
+void function InitViewStatsWeaponsMenu()
 {
 	var menu = GetMenu( "ViewStats_Weapons_Menu" )
-	var titleLabel = Hud_GetChild( menu, "MenuTitle" )
+	file.menu = menu
 
-	if ( uiGlobal.weaponStatListType == "pilot" )
-	{
-		UpdateButtons( file.allPilotWeapons )
-		Hud_SetText( titleLabel, "#STATS_PILOT_WEAPONS" )
-	}
-	else if ( uiGlobal.weaponStatListType == "titan" )
-	{
-		UpdateButtons( file.allTitanWeapons )
-		Hud_SetText( titleLabel, "#STATS_TITAN_WEAPONS" )
-	}
-	else
-		Assert(0, "invalid " + uiGlobal.weaponStatListType )
+	Hud_SetText( Hud_GetChild( file.menu, "MenuTitle" ), "#STATS_PILOT_WEAPONS" )
 
-	UpdateButtonsForSelection( 0, true )
+	file.gridData.rows = 5
+	file.gridData.columns = 1
+	//file.gridData.numElements // Set in OnViewStatsWeapons_Open after itemdata exists
+	file.gridData.pageType = eGridPageType.VERTICAL
+	file.gridData.tileWidth = 224
+	file.gridData.tileHeight = 112
+	file.gridData.paddingVert = 6
+	file.gridData.paddingHorz = 6
 
-	if ( !pws.bindings )
-	{
-		pws.bindings = true
-		RegisterButtonPressedCallback( MOUSE_WHEEL_UP, WeaponSelectNextUp )
-		RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, WeaponSelectNextDown )
-		RegisterButtonPressedCallback( KEY_UP, WeaponSelectNextUp )
-		RegisterButtonPressedCallback( KEY_DOWN, WeaponSelectNextDown )
-	}
+	Grid_AutoAspectSettings( menu, file.gridData )
+
+	file.gridData.initCallback = WeaponButton_Init
+	file.gridData.getFocusCallback = WeaponButton_GetFocus
+	file.gridData.clickCallback = WeaponButton_Activate
+
+	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnViewStatsWeapons_Open )
+
+	AddMenuFooterOption( file.menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 }
 
-void function OnCloseViewStatsWeapons()
+void function OnViewStatsWeapons_Open()
 {
-	if ( pws.bindings )
-	{
-		DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, WeaponSelectNextUp )
-		DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, WeaponSelectNextDown )
-		DeregisterButtonPressedCallback( KEY_UP, WeaponSelectNextUp )
-		DeregisterButtonPressedCallback( KEY_DOWN, WeaponSelectNextDown )
-		pws.bindings = false
-	}
-}
-
-// TODO: This effectively only runs once, but to make it a real Init function requires moving the call for UI InitItems().
-function UpdateViewStatsWeaponsMenu()
-{
-	if ( pws.weaponMenuInitComplete )
-		return
-
-	var menu = GetMenu( "ViewStats_Weapons_Menu" )
-
-	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenViewStatsWeapons )
-	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnCloseViewStatsWeapons )
-
-	var buttonPanel = GetElem( menu, "WeaponButtonsNestedPanel" )
-	for ( int i = 0; i < MAX_LIST_ITEMS; i++ )
-	{
-		var button = Hud_GetChild( buttonPanel, "BtnWeapon" + i )
-		Assert( button != null )
-
-		button.s.dimOverlay <- Hud_GetChild( button, "DimOverlay" )
-		button.s.weaponImageNormal <- Hud_GetChild( button, "WeaponImageNormal" )
-		button.s.weaponImageFocused <- Hud_GetChild( button, "WeaponImageFocused" )
-		button.s.weaponImageSelected <- Hud_GetChild( button, "WeaponImageSelected" )
-		button.s.ref <- null
-
-		Hud_AddEventHandler( button, UIE_CLICK, WeaponButtonClicked )
-		Hud_AddEventHandler( button, UIE_GET_FOCUS, WeaponButtonFocused )
-
-		pws.buttonElems.append( button )
-	}
-
-	Hud_AddEventHandler( GetElem( menu, "BtnScrollUpPC" ), UIE_CLICK, WeaponSelectNextUp )
-	Hud_AddEventHandler( GetElem( menu, "BtnScrollDownPC" ), UIE_CLICK, WeaponSelectNextDown )
-
-	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-
-	pws.buttonSpacing = pws.buttonElems[1].GetBasePos()[1] - pws.buttonElems[0].GetBasePos()[1]
-	pws.buttonPopOutDist = pws.buttonElems[0].GetBaseWidth() * BUTTON_POPOUT_FRACTION
+	UI_SetPresentationType( ePresentationType.NO_MODELS )
 
 	// Get Pilot weapon list
 	file.allPilotWeapons = GetVisibleItemsOfType( eItemTypes.PILOT_PRIMARY )
 	file.allPilotWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_SECONDARY ) )
+	file.allPilotWeapons.sort( SortItemsAlphabetically )
 	//file.allPilotWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_ORDNANCE ) )
 	//file.allPilotWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_SPECIAL ) )
 
-	// Get Titan weapon list
-	file.allTitanWeapons = GetVisibleItemsOfType( eItemTypes.TITAN_PRIMARY )
-	file.allTitanWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_ORDNANCE ) )
-	//file.allTitanWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_SPECIAL ) )
+	file.gridData.numElements = file.allPilotWeapons.len()
 
-	pws.weaponMenuInitComplete = true
+	if ( !file.isGridInitialized )
+	{
+		GridMenuInit( file.menu, file.gridData )
+		file.isGridInitialized = true
+	}
+
+	file.gridData.currentPage = 0
+
+	Grid_InitPage( file.menu, file.gridData )
+	Hud_SetFocused( Grid_GetButtonForElementNumber( file.menu, 0 ) )
+	UpdateStatsForWeapon( file.allPilotWeapons[ 0 ].ref )
 }
 
-function WeaponButtonClicked( button )
+bool function WeaponButton_Init( var button, int elemNum )
 {
-	int id = int( Hud_GetScriptID( button ) )
-	if ( !IsControllerModeActive() )
-		UpdateButtonsForSelection( id )
+	string ref = file.allPilotWeapons[ elemNum ].ref
+	int itemType = GetItemType( ref )
+
+	var rui = Hud_GetRui( button )
+	asset image = GetImage( itemType, ref )
+	RuiSetImage( rui, "buttonImage", image )
+
+	Hud_SetEnabled( button, true )
+	Hud_SetVisible( button, true )
+
+	return true
 }
 
-function WeaponButtonFocused( button )
+void function WeaponButton_GetFocus( var button, int elemNum )
 {
-	int id = int( Hud_GetScriptID( button ) )
 	if ( IsControllerModeActive() )
-		UpdateButtonsForSelection( id )
+		UpdateStatsForWeapon( file.allPilotWeapons[ elemNum ].ref )
 }
 
-function WeaponSelectNextUp( button )
+void function WeaponButton_Activate( var button, int elemNum )
 {
-	if ( pws.selectedIndex == 0 )
-		return
-	UpdateButtonsForSelection( pws.selectedIndex - 1 )
+	if ( !IsControllerModeActive() )
+		UpdateStatsForWeapon( file.allPilotWeapons[ elemNum ].ref )
 }
 
-function WeaponSelectNextDown( button )
-{
-	if ( pws.selectedIndex + 1 >= pws.numListButtonsUsed )
-		return
-	UpdateButtonsForSelection( pws.selectedIndex + 1 )
-}
-
-function UpdateButtons( array<ItemDisplayData> weaponList )
-{
-	Assert( weaponList.len() > 0 && weaponList.len() < MAX_LIST_ITEMS )
-	pws.numListButtonsUsed = 0
-
-	entity player = GetUIPlayer()
-	if ( player == null )
-		return
-
-	foreach ( index, item in weaponList )
-	{
-		if ( !PersistenceEnumValueIsValid( "loadoutWeaponsAndAbilities", item.ref ) )
-			continue
-
-		local button = pws.buttonElems[ index ]
-		Hud_SetEnabled( button, true )
-		Hud_Show( button )
-
-		button.s.ref = item.ref
-		local image = GetItemImage( item.ref )
-		Assert( image != null )
-		button.s.weaponImageNormal.SetImage( image )
-		button.s.weaponImageFocused.SetImage( image )
-		button.s.weaponImageSelected.SetImage( image )
-
-		if ( IsItemLocked( player, item.ref ) )
-		{
-			Hud_SetAlpha( button.s.weaponImageNormal, 200 )
-			Hud_SetAlpha( button.s.weaponImageFocused, 200 )
-			Hud_SetAlpha( button.s.weaponImageSelected, 200 )
-		}
-		else
-		{
-			Hud_SetAlpha( button.s.weaponImageNormal, 255 )
-			Hud_SetAlpha( button.s.weaponImageFocused, 255 )
-			Hud_SetAlpha( button.s.weaponImageSelected, 255 )
-		}
-
-		pws.numListButtonsUsed++
-	}
-
-	// Hide / Disable buttons we wont be using
-	for ( local i = pws.numListButtonsUsed ; i < MAX_LIST_ITEMS ; i++ )
-	{
-		local button = pws.buttonElems[ i ]
-		Hud_SetEnabled( button, false )
-		Hud_Hide( button )
-	}
-}
-
-function UpdateButtonsForSelection( index, instant = false )
-{
-	if ( !IsFullyConnected() )
-		return
-
-	Assert( pws.selectedIndex < pws.buttonElems.len() )
-	EmitUISound( "EOGSummary.XPBreakdownPopup" )
-
-	//pws.buttonElems[ pws.selectedIndex ].s.selectOverlay.Hide()
-	//pws.buttonElems[ index ].s.selectOverlay.Show()
-	pws.selectedIndex = index
-
-	pws.buttonElems[ pws.selectedIndex ].SetScale( 1.5, 1.5 )
-
-	foreach( index, button in pws.buttonElems )
-	{
-		local distFromSelection = abs( index - pws.selectedIndex )
-
-		local isSelected = index == pws.selectedIndex ? true : false
-		Hud_SetSelected( button, isSelected )
-
-		// Button dim
-		float dimAlpha = GraphCapped( distFromSelection, 0, 5, 0, 150 )
-		Hud_SetAlpha( button.s.dimOverlay, dimAlpha )
-
-		// Figure out button positioning
-		local baseX = pws.buttonElems[0].GetBasePos()[0]
-		local topY = pws.buttonElems[0].GetBasePos()[1]
-		local shiftCount = max( 0, pws.selectedIndex - PWS_SCROLL_START_TOP )
-		local maxShiftCount = pws.numListButtonsUsed - WEAPON_LIST_VISIBLE
-		shiftCount = clamp( shiftCount, 0, maxShiftCount )
-		local shiftDist = pws.buttonSpacing * shiftCount
-		if ( index < pws.selectedIndex )
-			shiftDist += pws.buttonSpacing * 0.25
-		else if ( index > pws.selectedIndex )
-			shiftDist -= pws.buttonSpacing * 0.25
-
-		// Button popout
-		local goalPosX = baseX
-		if ( distFromSelection == 0 )
-			goalPosX += pws.buttonPopOutDist
-		else if ( distFromSelection == 1 )
-			goalPosX += pws.buttonPopOutDist * 0.2
-
-		// Button scroll pos
-		local baseY = topY + ( pws.buttonSpacing * index )
-		local goalPosY = baseY - shiftDist
-
-		if ( instant )
-			button.SetPos( goalPosX, goalPosY )
-		else
-			button.MoveOverTime( goalPosX, goalPosY, PWS_MENU_MOVE_TIME, INTERPOLATOR_DEACCEL )
-	}
-
-	// Update stats pane to match the button ref item
-	UpdateStatsForWeapon( expect string( pws.buttonElems[ pws.selectedIndex ].s.ref ) )
-}
-
-function UpdateStatsForWeapon( string weaponRef )
+void function UpdateStatsForWeapon( string weaponRef )
 {
 	entity player = GetUIPlayer()
 	if ( player == null )
 		return
-
-	var menu = GetMenu( "ViewStats_Weapons_Menu" )
-
-	// Get required data needed for some calculations
-	local hoursUsed = GetPlayerStatFloat( player, "weapon_stats", "hoursUsed", weaponRef )
-	local shotsFired = GetPlayerStatInt( player, "weapon_stats", "shotsFired", weaponRef )
-	local shotsHit = GetPlayerStatInt( player, "weapon_stats", "shotsHit", weaponRef )
-	local headshots = GetPlayerStatInt( player, "weapon_stats", "headshots", weaponRef )
-	local crits = GetPlayerStatInt( player, "weapon_stats", "critHits", weaponRef )
 
 	// Name
-	Hud_SetText( Hud_GetChild( menu, "WeaponName" ), GetItemName( weaponRef ) )
+	Hud_SetText( Hud_GetChild( file.menu, "WeaponName" ), GetItemName( weaponRef ) )
 
 	// Image
-	local image = GetItemImage( weaponRef )
-	var weaponImageElem = Hud_GetChild( menu, "WeaponImageLarge" )
-	weaponImageElem.SetImage( image )
-	Hud_SetAlpha( weaponImageElem, 255 )
+	asset image = GetItemImage( weaponRef )
+	var imageElem = Hud_GetChild( file.menu, "WeaponImageLarge" )
+	Hud_SetImage( imageElem, image )
 
 	// Locked info
-	var lockLabel = GetElementsByClassname( menu, "LblWeaponLocked" )[0]
-	int levelReq = GetUnlockLevelReq( weaponRef )
-	Hud_Hide( lockLabel )
-	if ( levelReq > player.GetLevel() )
+	var lockLabel = GetElementsByClassname( file.menu, "LblWeaponLocked" )[0]
+
+	if ( IsItemLocked( player, weaponRef ) )
 	{
-		Hud_SetAlpha( weaponImageElem, 200 )
-		Hud_SetText( lockLabel, "#LOUADOUT_UNLOCK_REQUIREMENT_LEVEL", levelReq )
+		Hud_SetAlpha( imageElem, 200 )
+		Hud_SetText( lockLabel, "#LOUADOUT_UNLOCK_REQUIREMENT_LEVEL", GetUnlockLevelReq( weaponRef ) )
 		Hud_Show( lockLabel )
 	}
+	else
+	{
+		Hud_SetAlpha( imageElem, 255 )
+		Hud_Hide( lockLabel )
+	}
 
-	// Time Used
-	SetStatsLabelValue( menu, "TimeUsed", 				StatToTimeString( "weapon_stats", "hoursEquipped", weaponRef ) )
+	// Get required data needed for some calculations
+	//float hoursUsed = GetPlayerStatFloat( player, "weapon_stats", "hoursUsed", weaponRef )
+	string timeUsed = StatToTimeString( "weapon_stats", "hoursUsed", weaponRef )
+	int shotsHit = GetPlayerStatInt( player, "weapon_stats", "shotsHit", weaponRef )
+	int headshots = GetPlayerStatInt( player, "weapon_stats", "headshots", weaponRef )
+	int crits = GetPlayerStatInt( player, "weapon_stats", "critHits", weaponRef )
 
-	// Shots Fired / Accuracy
-	SetStatsLabelValue( menu, "ShotsFired", 			shotsFired )
-	SetStatsLabelValue( menu, "Accuracy", 				[ "#STATS_PERCENTAGE", GetPercent( shotsHit, shotsFired, 0 ) ] )
-
-	// Headshots / Accuracy
-	local headshotWeapon = GetWeaponInfoFileKeyField_Global( weaponRef, "allow_headshots" ) == 1
+	string headShotsValue = Localize( "#STATS_NOT_APPLICABLE" )
+	bool headshotWeapon = GetWeaponInfoFileKeyField_Global( weaponRef, "allow_headshots" ) == true
 	if ( headshotWeapon )
-	{
-		SetStatsLabelValue( menu, "Headshots", 				headshots )
-		SetStatsLabelValue( menu, "HeadshotAccuracy", 		[ "#STATS_PERCENTAGE", GetPercent( headshots, shotsFired, 0 ) ] )
-	}
-	else
-	{
-		SetStatsLabelValue( menu, "Headshots", 				"#STATS_NOT_APPLICABLE" )
-		SetStatsLabelValue( menu, "HeadshotAccuracy", 		"#STATS_NOT_APPLICABLE" )
-	}
+		headShotsValue = string( headshots )
 
-	// Crits / Accuracy
-	local critHitWeapon = GetWeaponInfoFileKeyField_Global( weaponRef, "critical_hit" ) == 1
+	string critHitsValue = Localize( "#STATS_NOT_APPLICABLE" )
+	bool critHitWeapon = GetWeaponInfoFileKeyField_Global( weaponRef, "critical_hit" ) == true
 	if ( critHitWeapon )
+		critHitsValue = string( crits )
+
+	SetStatBoxDisplay( Hud_GetChild( file.menu, "Stat0" ), Localize( "#STATS_HEADER_TIME_USED" ), 		timeUsed )
+	SetStatBoxDisplay( Hud_GetChild( file.menu, "Stat1" ), Localize( "#STATS_HEADER_SHOTS_HIT" ), 		string( shotsHit ) )
+	SetStatBoxDisplay( Hud_GetChild( file.menu, "Stat2" ), Localize( "#STATS_HEADER_HEADSHOTS" ), 		headShotsValue )
+	SetStatBoxDisplay( Hud_GetChild( file.menu, "Stat3" ), Localize( "#STATS_HEADER_CRITICAL_HITS" ), 	critHitsValue )
+
+	string nextUnlockRef = GetNextUnlockForWeaponLevel( player, weaponRef, WeaponGetRawLevel( player, weaponRef ) + 1 )
+	if ( nextUnlockRef != "" )
 	{
-		SetStatsLabelValue( menu, "CriticalHits", 			crits )
-		SetStatsLabelValue( menu, "CriticalHitAccuracy", 	[ "#STATS_PERCENTAGE", GetPercent( crits, shotsFired, 0 ) ] )
-	}
-	else
-	{
-		SetStatsLabelValue( menu, "CriticalHits", 			"#STATS_NOT_APPLICABLE" )
-		SetStatsLabelValue( menu, "CriticalHitAccuracy", 	"#STATS_NOT_APPLICABLE" )
+		var rui = Hud_GetRui( Hud_GetChild( file.menu, "NextUnlock" ) )
+
+		if ( nextUnlockRef == "random" )
+		{
+			RuiSetString( rui, "unlockName", "" )
+			RuiSetImage( rui, "unlockImage", $"rui/menu/common/unlock_random" )
+		}
+		else
+		{
+			ItemDisplayData displayData
+			if ( IsSubItemType( GetItemType( nextUnlockRef ) ) )
+				displayData = GetItemDisplayData( nextUnlockRef, weaponRef )
+			else
+				displayData = GetItemDisplayData( nextUnlockRef )
+
+			RuiSetString( rui, "unlockName", displayData.name )
+			RuiSetImage( rui, "unlockImage", displayData.image )
+
+			vector aspect = GetItemImageAspect( nextUnlockRef )
+
+			float mult = 1.0
+			if ( aspect.x > aspect.y )
+				mult = 120.0 / aspect.x
+			else
+				mult = 120.0 / aspect.y
+
+			aspect.x *= mult
+			aspect.y *= mult
+
+			RuiSetFloat2( rui, "unlockImageSize", aspect )
+		}
+		//printt( displayData.image )
 	}
 
 	// Total Kills Stats
-	SetStatsLabelValue( menu, "Column0Value0", 				GetPlayerStatInt( player, "weapon_kill_stats", "total", weaponRef ) )
-	SetStatsLabelValue( menu, "Column0Value1", 				GetPlayerStatInt( player, "weapon_kill_stats", "pilots", weaponRef ) )
-	SetStatsLabelValue( menu, "Column0Value2", 				GetPlayerStatInt( player, "weapon_kill_stats", "grunts", weaponRef ) )
-	SetStatsLabelValue( menu, "Column0Value3", 				GetPlayerStatInt( player, "weapon_kill_stats", "spectres", weaponRef ) )
-	SetStatsLabelValue( menu, "Column0Value4", 				GetPlayerStatInt( player, "weapon_kill_stats", "marvins", weaponRef ) )
+	SetStatsLabelValue( file.menu, "KillsValue0", 				GetPlayerStatInt( player, "weapon_kill_stats", "total", weaponRef ) )
+	SetStatsLabelValue( file.menu, "KillsValue1", 				GetPlayerStatInt( player, "weapon_kill_stats", "pilots", weaponRef ) )
+	SetStatsLabelValue( file.menu, "KillsValue2", 				GetPlayerStatInt( player, "weapon_kill_stats", "titansTotal", weaponRef ) )
+	SetStatsLabelValue( file.menu, "KillsValue3", 				GetPlayerStatInt( player, "weapon_kill_stats", "ai", weaponRef ) )
 
-	{
+	/*{
 		// Titan Kills Stats
 		local kills_ion = GetPlayerStatInt( player, "weapon_kill_stats", "titans_ion", weaponRef )
 		local kills_scorch = GetPlayerStatInt( player, "weapon_kill_stats", "titans_scorch", weaponRef )
@@ -346,10 +194,10 @@ function UpdateStatsForWeapon( string weaponRef )
 		local kills_legion = GetPlayerStatInt( player, "weapon_kill_stats", "titans_legion", weaponRef )
 		local kills_titan_total = kills_ion + kills_scorch + kills_northstar + kills_ronin + kills_tone + kills_legion
 
-		SetStatsLabelValue( menu, "Column1Value0", 				kills_titan_total )
-		//SetStatsLabelValue( menu, "Column1Value1", 				kills_stryder )
-		//SetStatsLabelValue( menu, "Column1Value2", 				kills_atlas )
-		//SetStatsLabelValue( menu, "Column1Value3", 				kills_ogre )
+		SetStatsLabelValue( file.menu, "Column1Value0", 				kills_titan_total )
+		//SetStatsLabelValue( file.menu, "Column1Value1", 				kills_stryder )
+		//SetStatsLabelValue( file.menu, "Column1Value2", 				kills_atlas )
+		//SetStatsLabelValue( file.menu, "Column1Value3", 				kills_ogre )
 	}
 
 	{
@@ -363,11 +211,12 @@ function UpdateStatsForWeapon( string weaponRef )
 		local kills_legion = GetPlayerStatInt( player, "weapon_kill_stats", "npcTitans_legion", weaponRef )
 		local kills_titan_total = kills_ion + kills_scorch + kills_northstar + kills_ronin + kills_tone + kills_legion
 
-		SetStatsLabelValue( menu, "Column2Value0", 				kills_titan_total )
-		//SetStatsLabelValue( menu, "Column2Value1", 				kills_npc_stryder )
-		//SetStatsLabelValue( menu, "Column2Value2", 				kills_npc_atlas )
-		//SetStatsLabelValue( menu, "Column2Value3", 				kills_npc_ogre )
+		SetStatsLabelValue( file.menu, "Column2Value0", 				kills_titan_total )
+		//SetStatsLabelValue( file.menu, "Column2Value1", 				kills_npc_stryder )
+		//SetStatsLabelValue( file.menu, "Column2Value2", 				kills_npc_atlas )
+		//SetStatsLabelValue( file.menu, "Column2Value3", 				kills_npc_ogre )
 	}
+	*/
 }
 
 

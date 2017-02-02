@@ -73,9 +73,12 @@ struct
 	var pilotButton
 	var titanButton
 	var boostsButton
+	var storeButton
 	var factionButton
 	var bannerButton
 	var patchButton
+	var statsButton
+	var browseNetworkButton
 
 	var playHeader
 	var customizeHeader
@@ -115,6 +118,7 @@ const table<asset> mapImages =
 	mp_drydock = $"loadscreens/mp_drydock_lobby",
 	mp_crashsite3 = $"loadscreens/mp_crashsite3_lobby",
 	mp_complex3 = $"loadscreens/mp_complex3_lobby",
+	mp_angel_city = $"loadscreens/mp_angle_city_r2_lobby",
 }
 
 void function MenuPrivateMatch_Init()
@@ -148,6 +152,7 @@ asset function GetMapImageForMapName( string mapName )
 
 	return $""
 }
+
 
 void function InitPrivateMatchMenu()
 {
@@ -289,25 +294,13 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
+	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
 //	file.armoryButton = armoryButton
 //	Hud_AddEventHandler( armoryButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ArmoryMenu" ) ) )
 
-	headerIndex++
-	buttonIndex = 0
-	file.networksHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_COMMS" )
-	file.inboxHeaderIndex = headerIndex
-	var networksInbox = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INBOX" )
-	file.inboxButton = networksInbox
-	Hud_AddEventHandler( networksInbox, UIE_CLICK, OnInboxButton_Activate )
-	var switchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_SWITCHCOMMUNITY" )
-	Hud_AddEventHandler( switchButton, UIE_CLICK, OnSwitchButton_Activate )
-	file.factionButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FACTION" )
-	Hud_AddEventHandler( file.factionButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "FactionChoiceMenu" ) ) )
 
-	// var networksMoreButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_MORE" )
-	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
-	// file.networksMoreButton = networksMoreButton
 
 	headerIndex++
 	buttonIndex = 0
@@ -316,8 +309,31 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	Hud_AddEventHandler( file.bannerButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "CallsignCardSelectMenu" ) ) )
 	file.patchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_PATCH" )
 	Hud_AddEventHandler( file.patchButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "CallsignIconSelectMenu" ) ) )
+	file.factionButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FACTION" )
+	Hud_AddEventHandler( file.factionButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "FactionChoiceMenu" ) ) )
+	file.statsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STATS" )
+	Hud_AddEventHandler( file.statsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ViewStatsMenu" ) ) )
+
 
 	file.callsignCard = Hud_GetChild( menu, "CallsignCard" )
+
+	headerIndex++
+	buttonIndex = 0
+	file.networksHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_NETWORKS" )
+	file.inboxHeaderIndex = headerIndex
+	var networksInbox = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INBOX" )
+	file.inboxButton = networksInbox
+	Hud_AddEventHandler( networksInbox, UIE_CLICK, OnInboxButton_Activate )
+	var switchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_SWITCHCOMMUNITY" )
+	Hud_AddEventHandler( switchButton, UIE_CLICK, OnSwitchButton_Activate )
+	var browseButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_BROWSE_NETWORKS" )
+//	file.lobbyButtons.append( browseButton )
+	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
+	file.browseNetworkButton = browseButton
+	// var networksMoreButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_MORE" )
+	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
+	// file.networksMoreButton = networksMoreButton
+
 	headerIndex++
 	buttonIndex = 0
 	var settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
@@ -334,6 +350,8 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	#endif
 	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
 	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
+	var knbButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
+	Hud_AddEventHandler( knbButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
 	ComboButtons_Finalize( comboStruct )
 }
@@ -388,24 +406,35 @@ void function OnLobbyMenu_Open()
 
 	if ( IsFullyConnected() )
 	{
-		UpdateCallsignElement( file.callsignCard )
-		RefreshCreditsAvailable()
-
 		entity player = GetUIPlayer()
 		if ( !IsValid( player ) )
 			return
 
-		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player))
+		while ( player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION )
+		{
+			WaitFrame()
+		}
+
+		UpdateCallsignElement( file.callsignCard )
+		RefreshCreditsAvailable()
+
+		bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+
+		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player ) || !hasSeenStore )
 		ComboButton_SetNew( file.pilotButton, HasAnyNewPilotItems( player ) )
 		ComboButton_SetNew( file.titanButton, HasAnyNewTitanItems( player ) )
 		ComboButton_SetNew( file.boostsButton, HasAnyNewBoosts( player ) )
+		ComboButton_SetNew( file.storeButton, !hasSeenStore )
 
-		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
-		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+//		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
+//		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
 
-		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ))
+		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ) || HasAnyNewFactions( player ))
 		ComboButton_SetNew( file.bannerButton, HasAnyNewCallsignBanners( player ) )
 		ComboButton_SetNew( file.patchButton, HasAnyNewCallsignPatches( player ) )
+		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+
+		thread PrivateLobby_UpdateInboxButtons()
 	}
 }
 
@@ -1344,4 +1373,41 @@ function UpdatePlayerInfo()
 		RefreshCreditsAvailable()
 		WaitFrame()
 	}
+}
+
+
+void function PrivateLobby_UpdateInboxButtons()
+{
+	var menu = GetMenu( "PrivateLobbyMenu" )
+	if ( GetUIPlayer() == null || !IsPersistenceAvailable() )
+		return
+
+	bool hasNewMail = (Inbox_HasUnreadMessages() && Inbox_GetTotalMessageCount() > 0) || PlayerRandomUnlock_GetTotal( GetUIPlayer() ) > 0
+	if ( hasNewMail )
+	{
+		int messageCount = Inbox_GetTotalMessageCount()
+		int lootCount = PlayerRandomUnlock_GetTotal( GetUIPlayer() )
+		int totalCount = messageCount + lootCount
+
+		string countString
+		if ( totalCount >= MAX_MAIL_COUNT )
+			countString = MAX_MAIL_COUNT + "+"
+		else
+			countString = string( totalCount )
+
+		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS_NEW_MSGS", countString )  )
+		ComboButton_SetText( file.inboxButton, Localize( "#MENU_TITLE_INBOX_NEW_MSGS", countString ) )
+	}
+	else
+	{
+		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS" )  )
+		ComboButton_SetText( file.inboxButton, Localize( "#MENU_TITLE_READ" ) )
+	}
+
+	ComboButton_SetNewMail( file.inboxButton, hasNewMail )
+}
+
+void function OnStoreButton_Activate( var button )
+{
+	LaunchGamePurchaseOrDLCStore()
 }

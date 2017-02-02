@@ -24,6 +24,8 @@ void function InitAdvancedHudMenu()
 	SetupButton( Hud_GetChild( menu, "SwitchShowTips" ), 			"#HUD_SHOW_TIPS", 				"#HUD_SHOW_TIPS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwitchShowWeaponFlyouts" ), 	"#HUD_SHOW_WEAPON_FLYOUTS", 	"#HUD_SHOW_WEAPON_FLYOUTS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwitchDofEnable" ), 			"#HUD_SHOW_ADS_DOF",		 	"#HUD_SHOW_ADS_DOF_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwitchPilotDamageIndicators" ), 			"#HUD_PILOT_DAMAGE_INDICATOR_STYLE",		 	"#HUD_PILOT_DAMAGE_INDICATOR_STYLE_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwitchTitanDamageIndicators" ), 			"#HUD_TITAN_DAMAGE_INDICATOR_STYLE",		 	"#HUD_TITAN_DAMAGE_INDICATOR_STYLE_DESC" )
 
 	//
 	//SetupButton( Hud_GetChild( menu, "SwchSpeakerConfig" ), "#SPEAKER_CONFIGURATION", "#OPTIONS_MENU_SPEAKER_CONFIG_DESC" )

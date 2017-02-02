@@ -24,6 +24,10 @@ global function Death_Package_Init
 
 	global function GetNumBrokenLimbs
 	global function TryHeadshotDeathFX
+
+	global function PlayTitanDeathFx
+	global function PlayTitanDeathFxUp
+
 #endif
 
 const NPC_GRUNT_DEATH = "npc_grunt_death"
@@ -516,7 +520,7 @@ void function DelayedBodyGroupBreak( entity titan, int bodyGroupIndex, int state
 	soul.EndSignal( "OnDestroy" )
 
 	wait RandomFloat( 4.0 )
-	
+
 	if ( !soul.HasValidTitan() )
 		return
 
@@ -666,8 +670,18 @@ function PrintDamageFlags( flags )
 
 function PlayTitanDeathFx( entity titan )
 {
+	PlayTitanDeathFx_Internal( titan, FX_PATTACH_POINT_FOLLOW )
+}
+
+function PlayTitanDeathFxUp( entity titan )
+{
+	PlayTitanDeathFx_Internal( titan, FX_PATTACH_POINT_FOLLOW_NOROTATE )
+}
+
+function PlayTitanDeathFx_Internal( entity titan, int attachType )
+{
 	int attachmentIndex = titan.LookupAttachment( "exp_torso_main" )
-	StartParticleEffectOnEntity( titan, TITAN_EXPLOSION_EFFECT, FX_PATTACH_POINT_FOLLOW, attachmentIndex )
+	StartParticleEffectOnEntity( titan, TITAN_EXPLOSION_EFFECT, attachType, attachmentIndex )
 
 	TraceResults results = TraceLine( titan.GetOrigin(), titan.GetOrigin() + Vector( 0, 0, -TITAN_EXPLOSION_GROUNDWASH_HEIGHT ), [ titan ], TRACE_MASK_NPCSOLID_BRUSHONLY | TRACE_MASK_WATER, TRACE_COLLISION_GROUP_NONE )
 

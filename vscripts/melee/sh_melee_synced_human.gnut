@@ -194,6 +194,43 @@ function MeleeSyncedHumanShared_Init()
 			AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
 		#endif
 	}
+
+	if ( IsMultiplayer() )
+	{
+		// Phase Telefrag
+		#if SERVER
+		AnimEventData phase_shift_start
+		phase_shift_start.eventName = "phase_shift_start"
+		phase_shift_start.callback = PhaseEmbarkPhaseStart
+
+		AnimEventData phase_shift_stop
+		phase_shift_stop.eventName = "phase_shift_stop"
+		phase_shift_stop.callback = PhaseEmbarkPhaseStop
+
+		AnimEventData phase_shift_explode
+		phase_shift_explode.eventName = "phase_shift_explode"
+		phase_shift_explode.callback = PhaseShiftExplodeSound
+		#endif
+
+		SyncedMelee syncedMelee
+		syncedMelee.ref = "execution_telefrag"
+		syncedMelee.direction = < -1, 0, 0 >
+		syncedMelee.distance = HUMAN_EXECUTION_RANGE
+		syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_phaseshift"
+		syncedMelee.targetAnimation3p = "pt_mp_execution_victim_phaseshift"
+		#if SERVER
+		syncedMelee.attacker3pAnimEvents = [phase_shift_start,phase_shift_stop]
+		syncedMelee.target3pAnimEvents = [phase_shift_explode]
+		#endif
+		syncedMelee.thirdPersonCameraAttachment = "VDU"
+		syncedMelee.minDot = 0.2
+		syncedMelee.isAttackerRef = false
+		AddSyncedMelee( meleeChooser, syncedMelee )
+		#if SERVER
+			AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
+		#endif
+	}
+
 }
 
 const string KNIFE_TARGETNAME = "AnimEvent_attach_knife"
@@ -251,9 +288,19 @@ void function AnimEvent_attach_pistol( entity ent )
 
 void function StealP2011MuzzleFlash( entity pistol )
 {
-	string attachName = expect string( GetWeaponInfoFileKeyField_Global( "mp_weapon_semipistol", "fx_muzzle_flash_attach" ) )
-	asset effectName = GetWeaponInfoFileKeyFieldAsset_Global( "mp_weapon_semipistol", "fx_muzzle_flash_world" )
-	asset soundName = GetWeaponInfoFileKeyFieldAsset_Global( "mp_weapon_semipistol", "fire_sound_2_player_3p" )
+	string attachName
+	asset effectName
+
+	if ( GetMapName() != "sp_skyway_v1" )
+	{
+		attachName = expect string( GetWeaponInfoFileKeyField_Global( "mp_weapon_semipistol", "fx_muzzle_flash_attach" ) )
+		effectName = GetWeaponInfoFileKeyFieldAsset_Global( "mp_weapon_semipistol", "fx_muzzle_flash_world" )
+	}
+	else // JFS
+	{
+		attachName = "muzzle_flash"
+		effectName = $"wpn_muzzleflash_pistol"
+	}
 
 	int muzzleTagIdx = pistol.LookupAttachment( attachName )
 
@@ -325,4 +372,16 @@ void function AnimEvent_headstab_death( entity ent )
 	else
 		StartParticleEffectOnEntityWithPos( ent, GetParticleSystemIndex( HUMAN_STAB_FX ), FX_PATTACH_POINT_FOLLOW, tagIdx, <0, 0, 0>, < 0, 0, 0 > )
 	#endif
+}
+
+void function PhaseShiftExplodeSound( entity ent )
+{
+	if ( ent.IsMechanical() )
+	{
+		EmitSoundOnEntity( ent, "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_Robo_3P" )
+	}
+	else
+	{
+		EmitSoundOnEntity( ent, "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_3P" )
+	}
 }

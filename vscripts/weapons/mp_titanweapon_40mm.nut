@@ -4,6 +4,7 @@ global function OnWeaponOwnerChanged_titanweapon_40mm
 global function OnWeaponPrimaryAttack_titanweapon_40mm
 global function OnWeaponDeactivate_titanweapon_40mm
 global function OnProjectileCollision_titanweapon_sticky_40mm
+global function OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm
 #if SERVER
 global function ApplyTrackerMark
 global function OnWeaponNpcPrimaryAttack_titanweapon_40mm
@@ -59,7 +60,17 @@ var function OnWeaponNpcPrimaryAttack_titanweapon_40mm( entity weapon, WeaponPri
 
 int function FireWeaponPlayerAndNPC( WeaponPrimaryAttackParams attackParams, bool playerFired, entity weapon )
 {
-	//entity owner = weapon.GetWeaponOwner()
+	entity owner = weapon.GetWeaponOwner()
+	if ( weapon.HasMod( "pas_tone_burst" ) )
+	{
+		if ( attackParams.burstIndex == 0 )
+		{
+			int level = weapon.GetWeaponChargeLevel()
+
+			weapon.SetWeaponBurstFireCount( maxint( 1, level ) )
+		}
+	}
+
 	bool shouldCreateProjectile = false
 	if ( IsServer() || weapon.ShouldPredictProjectiles() )
 		shouldCreateProjectile = true
@@ -95,6 +106,7 @@ int function FireWeaponPlayerAndNPC( WeaponPrimaryAttackParams attackParams, boo
 		}
 	}
 
+	weapon.w.lastFireTime = Time()
 	return 1
 }
 
@@ -231,3 +243,19 @@ void function Tracker40mm_DamagedTarget( entity ent, var damageInfo )
 
 }
 #endif
+
+bool function OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm( entity weapon )
+{
+	#if CLIENT
+		if ( InPrediction() && !IsFirstTimePredicted() )
+			return true
+	#endif
+
+	int level = weapon.GetWeaponChargeLevel()
+	int ammo = weapon.GetWeaponPrimaryClipCount()
+
+	if ( ammo >= level )
+		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
+
+	return true
+}

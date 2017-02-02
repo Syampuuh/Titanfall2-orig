@@ -10,7 +10,7 @@ struct
 
 void function ClGamemodeFFA_Init()
 {
-
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function ClGamemodeFRA_Init()

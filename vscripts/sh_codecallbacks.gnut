@@ -93,6 +93,13 @@ bool function CodeCallback_CanUseEntity( entity player, entity ent )
 		return false
 	}
 
+	if ( ent.IsNPC() )
+	{
+		// handle leeching separately
+		if ( Leech_IsLeechable( ent ) )
+			return false
+	}
+
 	if ( player.IsTitan() )
 	{
 		return !ent.IsTitan()
@@ -115,9 +122,7 @@ bool function CodeCallback_CanUseEntity( entity player, entity ent )
 			if ( !IsAlive( ent ) )
 				return false
 
-			// handle leeching separately
-			if ( IsLeechable( ent ) )
-				return false
+
 		}
 	}
 
@@ -158,6 +163,15 @@ void function CodeCallback_PlayerClassChanged( entity player )
 		{
 			callbackFunc( player )
 		}
+		#if MP
+		if ( IsAlive( player ) && GetCurrentPlaylistVarInt( "pilot_health", 0 ) != 0 )
+		{
+			int pilotHealth = GetCurrentPlaylistVarInt( "pilot_health", 0 )
+
+			player.SetMaxHealth( pilotHealth )
+			player.SetHealth( pilotHealth )
+		}
+		#endif
 	#else
 		foreach ( callbackFunc in clGlobal.onPlayerClassChangedCallbacks )
 		{

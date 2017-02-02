@@ -78,7 +78,7 @@ global enum eCallSignEvents
 const float CALLSIGN_EVENT_DURATION = 3.0
 const float CALLSIGN_OUT_DURATION = 0.25
 
-const asset[ eCallSignEvents.NUM_OF_ELEMENTS ] CALLSIGN_EVENT_ASSETS = [ $"ui/callsign_bottom_center.rpak", $"ui/callsign_left.rpak" ,$"ui/callsign_right.rpak", $"ui/callsign_spectator_left.rpak" ]
+const asset[ eCallSignEvents.NUM_OF_ELEMENTS ] CALLSIGN_EVENT_ASSETS = [ $"ui/callsign_bottom_center.rpak", $"ui/callsign_left.rpak" ,$"ui/callsign_right.rpak", $"ui/callsign_spectator_bottom_right.rpak" ]
 
 struct CallsignEventData
 {

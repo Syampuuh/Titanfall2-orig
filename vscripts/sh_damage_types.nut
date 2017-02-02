@@ -117,6 +117,7 @@ global enum eDamageSourceId
 	mp_weapon_hemlok_smg
 	mp_weapon_dmr
 	mp_weapon_wingman
+	mp_weapon_wingman_n
 	mp_weapon_semipistol
 	mp_weapon_autopistol
 	mp_weapon_mgl

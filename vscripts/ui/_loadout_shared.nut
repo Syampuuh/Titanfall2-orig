@@ -599,7 +599,8 @@ void function OnPassiveSelectMenu_Open()
 	{
 		TitanLoadoutDef editLoadout = GetTitanEditLoadout()
 		parentItemRef = editLoadout.titanClass
-		uiGlobal.editingItemType = GetItemTypeFromTitanLoadoutProperty( uiGlobal.editingLoadoutProperty, editLoadout.setFile )
+		string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( editLoadout.titanClass, false )
+		uiGlobal.editingItemType = GetItemTypeFromTitanLoadoutProperty( uiGlobal.editingLoadoutProperty, nonPrimeSetFile )
 		uiGlobal.editingItemRef = GetTitanLoadoutValue( editLoadout, uiGlobal.editingLoadoutProperty )
 	}
 
@@ -1177,7 +1178,10 @@ void function OnAbilitySelectButton_Focused( var button )
 	string name = GetItemName( itemRef )
 	string description = GetItemLongDescription( itemRef )
 	string unlockReq = GetItemUnlockReqText( itemRef )
-	UpdateItemDetails( menu, name, description, unlockReq )
+	string unlockProgressText = GetUnlockProgressText( itemRef )
+	float unlockProgressFrac = GetUnlockProgressFrac( itemRef )
+
+	UpdateItemDetails( menu, name, description, unlockReq, unlockProgressText, unlockProgressFrac )
 
 	int itemType = file.buttonItemData[ button ].itemType
 	int buttonID = int( Hud_GetScriptID( button ) )
@@ -1484,13 +1488,18 @@ void function SetButtonCategoryData( array<var> buttons, array<CategoryDef> cate
 	}
 }
 
-void function UpdateItemDetails( var menu, string name, string description, string unlockReq = "" )
+void function UpdateItemDetails( var menu, string name, string description, string unlockReq = "", string progressText = "", float progressFrac = 0.0 )
 {
 	var rui = Hud_GetRui( Hud_GetChild( menu, "ItemDetails" ) )
 
 	RuiSetString( rui, "nameText", name )
 	RuiSetString( rui, "descText", description )
 	RuiSetString( rui, "unlockText", unlockReq )
+	RuiSetString( rui, "progressText", progressText )
+	RuiSetFloat( rui, "progressFrac", progressFrac )
+
+	bool progressVisible = (progressText != "")
+	RuiSetBool( rui, "progressVisible", progressVisible )
 
 	bool skipDesc = description == "" ? true : false
 	RuiSetBool( rui, "skipDesc", skipDesc )

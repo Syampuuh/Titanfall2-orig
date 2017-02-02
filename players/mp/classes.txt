@@ -17,6 +17,8 @@
 	import	"pilot_stalker_female.set"
 	import	"pilot_grapple_male.set"
 	import	"pilot_grapple_female.set"
+	import	"pilot_coliseum_male.set"
+	import	"pilot_coliseum_female.set"
 
 	// Pilot SP
 	import	"pilot_solo.set"
@@ -39,6 +41,7 @@
 	// Titan
 	import	"titan_atlas.set"
 	import	"titan_atlas_stickybomb.set"
+	import	"titan_atlas_ion_prime.set"
 	import	"titan_atlas_tracker.set"
 
 	import	"titan_buddy.set"
@@ -58,6 +61,7 @@
 	import	"titan_ogre_berserker.set"
 	import	"titan_ogre_minigun.set"
 	import	"titan_ogre_meteor.set"
+	import	"titan_ogre_scorch_prime.set"
 
 	import	"titan_stryder.set"
 	import	"titan_stryder_arc.set"

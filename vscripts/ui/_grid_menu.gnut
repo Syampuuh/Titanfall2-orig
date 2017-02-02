@@ -125,6 +125,7 @@ global struct GridMenuData
 struct
 {
 	table<string,GridMenuData> menuData
+	bool bumperButtonsRegistered = false
 } file
 
 void function GridMenuInit( var menu, GridMenuData data )
@@ -413,17 +414,18 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 				RuiSetString( labelRui, "buttonText", Localize( pageName )  )
 			}
 
-			if ( data.panel_frame != null )
-			{
-				Hud_SetWidth( data.panel_frame, Hud_GetWidth( panel ) )
-				Hud_SetHeight( data.panel_frame, Hud_GetHeight( panel ) )
+		}
 
-				if ( data.panel_dividerTop != null )
-					Hud_SetWidth( data.panel_dividerTop, Hud_GetWidth( panel ) )
+		if ( data.panel_frame != null )
+		{
+			Hud_SetWidth( data.panel_frame, Hud_GetWidth( panel ) )
+			Hud_SetHeight( data.panel_frame, Hud_GetHeight( panel ) )
 
-				if ( data.panel_dividerBottom != null )
-					Hud_SetWidth( data.panel_dividerBottom, Hud_GetWidth( panel ) )
-			}
+			if ( data.panel_dividerTop != null )
+				Hud_SetWidth( data.panel_dividerTop, Hud_GetWidth( panel ) )
+
+			if ( data.panel_dividerBottom != null )
+				Hud_SetWidth( data.panel_dividerBottom, Hud_GetWidth( panel ) )
 		}
 
 		var elem = Grid_GetButtonAtRowColumn( menu, row, col )
@@ -837,8 +839,10 @@ void function Grid_MenuOpened( var menu )
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data = file.menuData[parentPanelName]
 
-//	if ( data.pagerPanel != null )
+	// JFS: defensive check
+	if ( !file.bumperButtonsRegistered )
 	{
+		file.bumperButtonsRegistered = true
 		RegisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, OnPage_NavLeft )
 		RegisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, OnPage_NavRight )
 	}
@@ -849,8 +853,10 @@ void function Grid_MenuClosed(  var menu )
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data = file.menuData[parentPanelName]
 
-//	if ( data.pagerPanel != null )
+	// JFS: defensive check
+	if ( file.bumperButtonsRegistered )
 	{
+		file.bumperButtonsRegistered = false
 		DeregisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, OnPage_NavLeft )
 		DeregisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, OnPage_NavRight )
 	}

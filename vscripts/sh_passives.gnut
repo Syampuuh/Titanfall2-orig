@@ -60,12 +60,6 @@ global enum ePassives
 	PAS_BERSERKER,
 	PAS_SHIFT_CORE,
 	PAS_SMART_CORE,
-	PAS_OFF_AUTOLOAD,
-	PAS_OFF_HITNRUN,
-	PAS_OFF_REGEN,
-	PAS_DEF_TACLOAD,
-	PAS_DEF_QUICKDASH,
-	PAS_DEF_DOMESHIELD,
 	PAS_FAST_EMBARK,
 	PAS_ENEMY_DEATH_ICONS,
 	PAS_FAST_ADS,
@@ -92,21 +86,28 @@ global enum ePassives
 	PAS_ION_TRIPWIRE,
 	PAS_ION_VORTEX,
 	PAS_ION_LASERCANNON,
+	PAS_ION_WEAPON_ADS,
 	PAS_TONE_ROCKETS,
 	PAS_TONE_SONAR,
 	PAS_TONE_WALL,
+	PAS_TONE_BURST,
 	PAS_RONIN_ARCWAVE,
 	PAS_RONIN_PHASE,
 	PAS_RONIN_SWORDCORE,
+	PAS_RONIN_AUTOSHIFT,
 	PAS_NORTHSTAR_CLUSTER,
 	PAS_NORTHSTAR_TRAP,
 	PAS_NORTHSTAR_FLIGHTCORE,
+	PAS_NORTHSTAR_OPTICS,
 	PAS_SCORCH_FIREWALL,
 	PAS_SCORCH_SHIELD,
 	PAS_SCORCH_SELFDMG,
+	PAS_SCORCH_FLAMECORE,
 	PAS_LEGION_SPINUP,
 	PAS_LEGION_GUNSHIELD,
 	PAS_LEGION_SMARTCORE,
+	PAS_LEGION_SIEGE,
+	PAS_LEGION_CHARGESHOT,
 	PAS_PILOT_HARDCORE_SETTINGS,
 	PAS_TITAN_HARDCORE_SETTINGS,
 	PAS_ANTI_RODEO,
@@ -145,12 +146,6 @@ global const _PassiveFromEnum = {
 	[ "pas_cloaked_wallrun" ]				= ePassives.PAS_CLOAKED_WALLRUN,
 	[ "pas_cloaked_wallhang" ]				= ePassives.PAS_CLOAKED_WALLHANG,
 	[ "pas_smoke_sight" ]					= ePassives.PAS_SMOKE_SIGHT,
-	[ "pas_offensive_autoload" ]			= ePassives.PAS_OFF_AUTOLOAD,
-	[ "pas_offensive_hitnrun" ]				= ePassives.PAS_OFF_HITNRUN,
-	[ "pas_offensive_regen" ]				= ePassives.PAS_OFF_REGEN,
-	[ "pas_defensive_tacload" ]				= ePassives.PAS_DEF_TACLOAD,
-	[ "pas_defensive_quickdash" ]			= ePassives.PAS_DEF_QUICKDASH,
-	[ "pas_defensive_domeshield" ]			= ePassives.PAS_DEF_DOMESHIELD,
 	[ "pas_fast_embark" ]					= ePassives.PAS_FAST_EMBARK,
 	[ "pas_enemy_death_icons" ]				= ePassives.PAS_ENEMY_DEATH_ICONS,
 	[ "pas_cdr_on_kill" ]					= ePassives.PAS_CDR_ON_KILL,
@@ -177,26 +172,33 @@ global const _PassiveFromEnum = {
 	[ "pas_ion_tripwire" ]					= ePassives.PAS_ION_TRIPWIRE,
 	[ "pas_ion_vortex" ]					= ePassives.PAS_ION_VORTEX,
 	[ "pas_ion_lasercannon" ]				= ePassives.PAS_ION_LASERCANNON,
+	[ "pas_ion_weapon_ads" ]				= ePassives.PAS_ION_WEAPON_ADS,
 
 	[ "pas_tone_rockets" ]					= ePassives.PAS_TONE_ROCKETS,
 	[ "pas_tone_sonar" ]					= ePassives.PAS_TONE_SONAR,
 	[ "pas_tone_wall" ]						= ePassives.PAS_TONE_WALL,
+	[ "pas_tone_burst" ]					= ePassives.PAS_TONE_BURST,
 
 	[ "pas_ronin_arcwave" ]					= ePassives.PAS_RONIN_ARCWAVE,
 	[ "pas_ronin_phase" ]					= ePassives.PAS_RONIN_PHASE,
 	[ "pas_ronin_swordcore" ]				= ePassives.PAS_RONIN_SWORDCORE,
+	[ "pas_ronin_autoshift" ]				= ePassives.PAS_RONIN_AUTOSHIFT,
 
 	[ "pas_northstar_cluster" ]				= ePassives.PAS_NORTHSTAR_CLUSTER,
 	[ "pas_northstar_trap" ]				= ePassives.PAS_NORTHSTAR_TRAP,
 	[ "pas_northstar_flightcore" ]			= ePassives.PAS_NORTHSTAR_FLIGHTCORE,
+	[ "pas_northstar_optics" ]				= ePassives.PAS_NORTHSTAR_OPTICS,
 
 	[ "pas_scorch_firewall" ]				= ePassives.PAS_SCORCH_FIREWALL,
 	[ "pas_scorch_shield" ]					= ePassives.PAS_SCORCH_SHIELD,
 	[ "pas_scorch_selfdmg" ]				= ePassives.PAS_SCORCH_SELFDMG,
+	[ "pas_scorch_flamecore" ]				= ePassives.PAS_SCORCH_FLAMECORE,
 
 	[ "pas_legion_spinup" ]					= ePassives.PAS_LEGION_SPINUP,
 	[ "pas_legion_gunshield" ]				= ePassives.PAS_LEGION_GUNSHIELD,
 	[ "pas_legion_smartcore" ]				= ePassives.PAS_LEGION_SMARTCORE,
+	[ "pas_legion_siege" ]					= ePassives.PAS_LEGION_SIEGE,
+	[ "pas_legion_chargeshot" ]				= ePassives.PAS_LEGION_CHARGESHOT,
 
 	[ "pas_pilot_hardcore_settings" ]		= ePassives.PAS_PILOT_HARDCORE_SETTINGS,
 	[ "pas_titan_hardcore_settings" ]		= ePassives.PAS_TITAN_HARDCORE_SETTINGS,
@@ -224,15 +226,6 @@ function PassivesShared_Init()
 	level.titanPassives[ ePassives.PAS_SHIFT_CORE ] <- true
 	level.titanPassives[ ePassives.PAS_SMART_CORE ] <- true
 	level.titanPassives[ ePassives.PAS_SALVO_CORE ] <- true
-
-	level.titanPassives[ ePassives.PAS_OFF_AUTOLOAD ] <- true
-	level.titanPassives[ ePassives.PAS_OFF_HITNRUN ] <- true
-	level.titanPassives[ ePassives.PAS_OFF_REGEN ] <- true
-
-	level.titanPassives[ ePassives.PAS_DEF_TACLOAD ] <- true
-	level.titanPassives[ ePassives.PAS_DEF_QUICKDASH ] <- true
-	level.titanPassives[ ePassives.PAS_DEF_DOMESHIELD ] <- true
-
 	level.titanPassives[ ePassives.PAS_MOBILITY_DASH_CAPACITY ] <- true
 	level.titanPassives[ ePassives.PAS_GUARDIAN_CHIP ] <- true
 	level.titanPassives[ ePassives.PAS_DOOMED_SPEED ] <- true
@@ -249,21 +242,28 @@ function PassivesShared_Init()
 	level.titanPassives[ ePassives.PAS_ION_TRIPWIRE ] <- true
 	level.titanPassives[ ePassives.PAS_ION_VORTEX ] <- true
 	level.titanPassives[ ePassives.PAS_ION_LASERCANNON ] <- true
+	level.titanPassives[ ePassives.PAS_ION_WEAPON_ADS ] <- true
 	level.titanPassives[ ePassives.PAS_TONE_ROCKETS ] <- true
 	level.titanPassives[ ePassives.PAS_TONE_SONAR ] <- true
 	level.titanPassives[ ePassives.PAS_TONE_WALL ] <- true
+	level.titanPassives[ ePassives.PAS_TONE_BURST ] <- true
 	level.titanPassives[ ePassives.PAS_RONIN_ARCWAVE ] <- true
 	level.titanPassives[ ePassives.PAS_RONIN_PHASE ] <- true
 	level.titanPassives[ ePassives.PAS_RONIN_SWORDCORE ] <- true
+	level.titanPassives[ ePassives.PAS_RONIN_AUTOSHIFT ] <- true
 	level.titanPassives[ ePassives.PAS_NORTHSTAR_CLUSTER ] <- true
 	level.titanPassives[ ePassives.PAS_NORTHSTAR_TRAP ] <- true
 	level.titanPassives[ ePassives.PAS_NORTHSTAR_FLIGHTCORE ] <- true
+	level.titanPassives[ ePassives.PAS_NORTHSTAR_OPTICS ] <- true
 	level.titanPassives[ ePassives.PAS_SCORCH_FIREWALL ] <- true
 	level.titanPassives[ ePassives.PAS_SCORCH_SHIELD ] <- true
 	level.titanPassives[ ePassives.PAS_SCORCH_SELFDMG ] <- true
+	level.titanPassives[ ePassives.PAS_SCORCH_FLAMECORE ] <- true
 	level.titanPassives[ ePassives.PAS_LEGION_SPINUP ] <- true
 	level.titanPassives[ ePassives.PAS_LEGION_GUNSHIELD ] <- true
 	level.titanPassives[ ePassives.PAS_LEGION_SMARTCORE ] <- true
+	level.titanPassives[ ePassives.PAS_LEGION_SIEGE ] <- true
+	level.titanPassives[ ePassives.PAS_LEGION_CHARGESHOT ] <- true
 	level.titanPassives[ ePassives.PAS_ANTI_RODEO ] <- true
 	level.playerSettingsPassiveEnums <- {}
 
@@ -328,6 +328,11 @@ void function ClientCodeCallback_OnPassiveChanged( entity player, int passive )
 		)
 	{
 		UpdateCoreFX( player )
+	}
+
+	if ( passive == ePassives.PAS_SHIFT_CORE && player == GetLocalViewPlayer() )
+	{
+		SetUnlimitedDash( PlayerHasPassive( player, passive ) )
 	}
 }
 #endif

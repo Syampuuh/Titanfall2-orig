@@ -436,3 +436,38 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 
 	Plat_UnlockAchievementByID( achievementID )
 }
+
+void function TryUnlockCompletedGameAchievements()
+{
+	if ( Script_IsRunningTrialVersion() )
+		return
+
+	var dataTable = GetDataTable( $"datatable/sp_levels.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	// Check Completed All Levels Achievement
+	int normalCompleted = 0
+	int hardCompleted = 0
+	int masterCompleted = 0
+	for ( int i=0; i<numRows; i++ )
+	{
+		int levelNum = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "levelNum" ) )
+
+		// always count training as master completed
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionMasterCompletion" ) || levelNum == 0 )
+			masterCompleted++
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionHardCompletion" ) || levelNum == 0 )
+			hardCompleted++
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionNormalCompletion" ) || levelNum == 0 )
+			normalCompleted++
+	}
+
+	if ( normalCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_NORMAL )
+
+	if ( hardCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_HARD )
+
+	if ( masterCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_MASTER )
+}

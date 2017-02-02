@@ -21,6 +21,7 @@ global function ServerCallback_AT_ShowRespawnBonusLoss
 global function ServerCallback_AT_BankOpen
 global function ServerCallback_AT_BankClose
 global function ServerCallback_AT_FinishDeposit
+global function ServerCallback_AT_ShowATScorePopup
 global function ServerCallback_AT_BossDamageScorePopup
 global function ServerCallback_AT_ShowStolenBonus
 global function ServerCallback_AT_PlayerKillScorePopup
@@ -73,7 +74,7 @@ void function ClGamemodeAt_Init()
 
 	PrecacheParticleSystem( FX_AT_BANK_PULSE )
 
-	AddLocalPlayerDidDamageCallback( ShowATScorePopup )
+	//AddLocalPlayerDidDamageCallback( ShowATScorePopup )
 
 	AddNeutralTeamConversations()
 	AddCallback_KillReplayStarted( ClearATScoreSplash )
@@ -94,6 +95,35 @@ void function ClGamemodeAt_Init()
 	AddScoreboardHideCallback( OnScoreboardHide )
 
 	AddCreateCallback( "prop_script", OnAtPropScriptCreated )
+
+	SetGameModeScoreBarUpdateRules( GameModeScoreBarRules_AT )
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
+}
+
+void function GameModeScoreBarRules_AT( var rui )
+{
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	float friendlyTeamBonus = 0
+	float enemyTeamBonus = 0
+
+	array<entity> friendlyPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+	foreach ( entity friendlyPlayer in friendlyPlayers )
+	{
+		float bonus = float ( friendlyPlayer.GetPlayerNetInt( "AT_bonusPoints" ) + ( 256 * friendlyPlayer.GetPlayerNetInt( "AT_bonusPoints256" ) ) )
+		friendlyTeamBonus += bonus
+	}
+
+	array<entity> enemyPlayers = GetPlayerArrayOfTeam( GetOtherTeam( player.GetTeam() ) )
+	foreach ( entity enemyPlayer in enemyPlayers )
+	{
+		float bonus = float ( enemyPlayer.GetPlayerNetInt( "AT_bonusPoints" ) + ( 256 * enemyPlayer.GetPlayerNetInt( "AT_bonusPoints256" ) ) )
+		enemyTeamBonus += bonus
+	}
+
+	RuiSetFloat2( rui, "teamBonus", < friendlyTeamBonus, enemyTeamBonus, 0 > )
 }
 
 void function CLAttrition_RegisterNetworkFunctions()
@@ -705,7 +735,7 @@ void function ShowWaveInfo( entity player, int waveNum )
 
 	if ( waveNum == GetWaveDataSize()-1 )
 	{
-		RuiSetString( rui, "titleText", "#FINAL_WAVE" )
+		RuiSetString( rui, "titleText", "#AT_WAVE_FINAL" )
 	}
 
 	int count = 1
@@ -1116,38 +1146,48 @@ void function AddXToPortrait( int bossID, int myTeam )
 	}
 }
 
-
-void function ShowATScorePopup( entity attacker, entity victim, vector damagePos, int damageType )
+void function ServerCallback_AT_ShowATScorePopup( int attackerEHandle, int damageScore, int damageBonus, float damagePosX, float damagePosY, float damagePosZ, int damageType )
 {
-	thread ShowATScorePopup_Internal( attacker, victim, damagePos, damageType )
+	printt ( "ATTEMPTING POPUP" )
+	vector damagePos = < damagePosX, damagePosY, damagePosZ >
+	thread ServerCallback_AT_ShowATScorePopup_Internal( attackerEHandle, damageScore, damageBonus, damagePos, damageType )
 }
 
-void function ShowATScorePopup_Internal( entity attacker, entity victim, vector damagePos, int damageType )
+void function ServerCallback_AT_ShowATScorePopup_Internal( int attackerEHandle, int damageScore, int damageBonus, vector damagePos, int damageType )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
+
+	//entity victim = GetEntityFromEncodedEHandle( victimEHandle )
+	entity attacker = GetEntityFromEncodedEHandle( attackerEHandle )
 
 	attacker.EndSignal( "OnDestroy" )
 	attacker.EndSignal( "OnDeath" )
 
-	bool killShot = (damageType & DF_KILLSHOT) ? true : false
-	if ( killShot )
-	{
+	//if ( !IsValid( victim ) )
+	//	return
 
+	//bool killShot = (damageType & DF_KILLSHOT) ? true : false
+	if ( true )
+	{
+		printt( "SHOT KILLED AI" )
 		if ( !IsValid( attacker ) )
 			return
 
-		if ( !IsValid( victim ) )
-			return
+		//if ( !IsValid( victim ) )
+		//	return
 
-		if ( !IsValidAttritionPointKill( attacker, victim ) )
-			return
-
-		int scoreVal = GetAttritionScore( attacker, victim )
+		//if ( !IsValidAttritionPointKill( attacker, victim ) )
+		//	return
+		printt( "KILL IS VALID" )
+		int scoreVal = damageScore//GetAttritionScore( attacker, victim )
+		int bonusVal = damageBonus
 
 		printt( scoreVal )
 
 		if ( scoreVal <= 0 )
 			return
+
+		printt( "HAS SCORE" )
 
 		int scoreMult = attacker.GetPlayerNetInt( "AT_bonusPointMult" )
 
@@ -1157,7 +1197,7 @@ void function ShowATScorePopup_Internal( entity attacker, entity victim, vector 
 		var rui = CreateCockpitRui( $"ui/at_score_popup.rpak", 100 )
 		RuiSetInt( rui, "scoreVal", int ( ( scoreVal * AT_BONUS_MOD ) * scoreMult ) )
 		RuiSetGameTime( rui, "startTime", Time() )
-		RuiSetFloat3( rui, "pos", damagePos + < 0,0,0 > )
+		RuiSetFloat3( rui, "pos", damagePos )
 		RuiSetFloat2( rui, "driftDir", randDir2D )
 		RuiSetBool( rui, "showNormalPoints", true )
 
@@ -1167,9 +1207,9 @@ void function ShowATScorePopup_Internal( entity attacker, entity victim, vector 
 		wait .25
 
 		var bonusRui = CreateCockpitRui( $"ui/at_score_popup.rpak", 100 )
-		RuiSetInt( bonusRui, "scoreVal", int ( ( scoreVal * AT_BONUS_MOD ) * scoreMult ) )
+		RuiSetInt( bonusRui, "scoreVal", int ( ( bonusVal * AT_BONUS_MOD ) * scoreMult ) )
 		RuiSetGameTime( bonusRui, "startTime", Time() )
-		RuiSetFloat3( bonusRui, "pos", damagePos + < 0,0,0 > )
+		RuiSetFloat3( bonusRui, "pos", damagePos )
 		RuiSetFloat2( bonusRui, "driftDir", randDir2D )
 		RuiSetBool( bonusRui, "showNormalPoints", false )
 
@@ -1185,12 +1225,12 @@ void function ShowATScorePopup_Internal( entity attacker, entity victim, vector 
 	}
 }
 
-void function ServerCallback_AT_BossDamageScorePopup( int damageScore, int bossEHandle, float x, float y, float z )
+void function ServerCallback_AT_BossDamageScorePopup( int damageScore, int damageBonus, int bossEHandle, float x, float y, float z )
 {
-	thread AT_BossDamageScorePopup_Internal( damageScore, bossEHandle, <x,y,z> )
+	thread AT_BossDamageScorePopup_Internal( damageScore, damageBonus, bossEHandle, <x,y,z> )
 }
 
-void function AT_BossDamageScorePopup_Internal( int damageScore, int bossEHandle, vector damagePos )
+void function AT_BossDamageScorePopup_Internal( int damageScore, int damageBonus, int bossEHandle, vector damagePos )
 {
 	entity boss = GetEntityFromEncodedEHandle( bossEHandle )
 	entity player = GetLocalViewPlayer()
@@ -1203,31 +1243,13 @@ void function AT_BossDamageScorePopup_Internal( int damageScore, int bossEHandle
 
 	printt( damageScore )
 
-	if ( damageScore <= 0 )
-		return
-
-	vector bossOrigin = boss.GetOrigin()
-
 	int scoreMult = player.GetPlayerNetInt( "AT_bonusPointMult" )
-
-	if ( damageScore <= 5 )
-	{
-		file.savedBossDamage += damageScore * scoreMult
-		int preWaitDamage = file.savedBossDamage
-		damageScore = 0
-		wait 1.0
-
-		if ( file.savedBossDamage == 0 || file.savedBossDamage < preWaitDamage )
-			return
-	}
-
-	if ( IsValid( boss ) )
-		bossOrigin = boss.GetOrigin()
 
 	vector randDir2D = < RandomFloatRange( -1, 1 ), 1, 0 >
 	randDir2D = Normalize( randDir2D )
 
-	int pointsToShow = ( damageScore * scoreMult ) + file.savedBossDamage
+	int pointsToShow = ( damageScore * scoreMult )// + file.savedBossDamage
+	int bonusToShow = ( damageBonus * scoreMult )
 
 	var rui = CreateCockpitRui( $"ui/at_score_popup.rpak", 100 )
 	RuiSetInt( rui, "scoreVal", pointsToShow )
@@ -1244,9 +1266,9 @@ void function AT_BossDamageScorePopup_Internal( int damageScore, int bossEHandle
 
 
 	var bonusRui = CreateCockpitRui( $"ui/at_score_popup.rpak", 100 )
-	RuiSetInt( bonusRui, "scoreVal", pointsToShow )
+	RuiSetInt( bonusRui, "scoreVal", bonusToShow )
 	RuiSetGameTime( bonusRui, "startTime", Time() )
-	RuiSetFloat3( bonusRui, "pos", bossOrigin + < 0,0,128 > )
+	RuiSetFloat3( bonusRui, "pos", damagePos )
 	RuiSetFloat2( bonusRui, "driftDir", randDir2D )
 	RuiSetBool( bonusRui, "showNormalPoints", false )
 
@@ -1525,7 +1547,7 @@ void function InitScoreboardLegendOverlay( var rui )
 			{
 				string eventName = GetAttritionScoreEventName( "npc_titan" )
 				int scoreVal = ScoreEvent_GetPointValue( GetScoreEvent( eventName ) )
-				npcTable["npc_titan"] <- scoreVal
+				npcTable["npc_titan"] <- scoreVal + ATTRITION_SCORE_BOSS_DAMAGE
 			}
 			else
 			{
@@ -1558,7 +1580,7 @@ void function InitScoreboardLegendOverlay( var rui )
 			{
 				string eventName = GetAttritionScoreEventName( "npc_titan" )
 				int scoreVal = ScoreEvent_GetPointValue( GetScoreEvent( eventName ) )
-				npcTable["npc_titan"] <- scoreVal
+				npcTable["npc_titan"] <- scoreVal + ATTRITION_SCORE_BOSS_DAMAGE
 			}
 			else
 			{

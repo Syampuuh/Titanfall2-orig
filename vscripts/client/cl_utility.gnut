@@ -919,21 +919,27 @@ void function ServerCallback_UpdateHeroStats()
 	printt( "#################################" )
 	printt( "UPDATING HERO STATS" )
 
-	// Collectibles Found
-	int collectiblesFound = GetTotalLionsCollected()
-	printt( "  Collectibles Found:", collectiblesFound )
+	int collectiblesFound = 0
+	float spProgress = 0.0
 
-	#if DURANGO_PROG
-		Durango_SetCollectiblesFound( collectiblesFound )
-	#endif
+	if ( !Script_IsRunningTrialVersion() )
+	{
+		// Collectibles Found
+		collectiblesFound = GetTotalLionsCollected()
+		printt( "  Collectibles Found:", collectiblesFound )
 
-	// Single Player Progress
-	float spProgress = GetLastLevelUnlocked() / 9.0
-	printt( "  SP Progress:", spProgress )
+		#if DURANGO_PROG
+			Durango_SetCollectiblesFound( collectiblesFound )
+		#endif
 
-	#if DURANGO_PROG
-		Durango_SetSpProgress( spProgress )
-	#endif
+		// Single Player Progress
+		spProgress = GetLastLevelUnlocked() / 9.0
+		printt( "  SP Progress:", spProgress )
+
+		#if DURANGO_PROG
+			Durango_SetSpProgress( spProgress )
+		#endif
+	}
 
 	// Game Progress ( campaign progress + collectible progress + MP player level )
 	// Campaign and MP level each count as 40%, the remaining 20% is collectibles

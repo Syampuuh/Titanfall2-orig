@@ -6,6 +6,8 @@
   	pc:				TITANFALL2_PREORDER_CONTENT
   	ps4:			PREORDER01000000
   	xb1:			Titanfall2.PreOrder
+    pc_offer: ""
+    xb1_offer: "b7b57115-08eb-4332-98dc-bca86566cdc8"
 }
 
 {
@@ -13,6 +15,8 @@
     pc:       TITANFALL2_DELUXE_CONTENT
     ps4:      DELUXEED01000000
     xb1:      Titanfall2.Deluxe.Edition
+    pc_offer: ""
+    xb1_offer: "6326a33b-1e5a-42c0-8597-8ede1b2bb2a4"
 }
 
 {
@@ -20,27 +24,132 @@
     pc:       BF1
     ps4:      BF1
     xb1:      BF1
-}
-
-
-// rename appropriately
-{
-	script_const:	ET_DLC1_1
-  	pc:				TITANFALL2_DLC1_1
-  	ps4:			DLC1000000000000
-  	xb1:			Titanfall2.PreOrder.DLC1_1
+    pc_offer: ""
+    xb1_offer: ""
 }
 
 {
-	script_const:	ET_DLC1_2
-  	pc:				TITANFALL2_DLC1_2
-  	ps4:			DLC2000000000000
-  	xb1:			Titanfall2.PreOrder.DLC1_2
+	script_const:	ET_DLC1_CAMO
+  	pc:        TITANFALL2_DLC1_CAMOPACK
+  	ps4:       D1CAMO0000000000
+  	xb1:       Titanfall2.DLC1.CamoPack
+    pc_offer: "Origin.OFR.50.0001882"
+    xb1_offer: "2a03532b-978f-4037-b4bc-e72c84824d73"
 }
 
 {
-	script_const:	ET_DLC1_3
-  	pc:				TITANFALL2_DLC1_3
-  	ps4:			DLC3000000000000
-  	xb1:			Titanfall2.PreOrder.DLC1_3
+  script_const: ET_DLC1_CALLSIGN
+    pc:       TITANFALL2_DLC1_CALLSIGNPACK
+    ps4:      D1CALL0000000000
+    xb1:      Titanfall2.DLC1.Callsign
+    pc_offer: "Origin.OFR.50.0001881"
+    xb1_offer: "bf2807e1-6357-4c99-bc6d-8745e3c49ba8"
+}
+
+{
+	script_const:	ET_DLC1_ION
+  	pc:        TITANFALL2_DLC1_IONARTPACK
+  	ps4:       D1ION00000000000
+  	xb1:       Titanfall2.DLC1.Ion
+    pc_offer: "Origin.OFR.50.0001875"
+    xb1_offer: "aaeda54b-5f95-453a-a584-d9e144141f92"
+}
+
+{
+	script_const:	ET_DLC1_TONE
+  	pc:        TITANFALL2_DLC1_TONEARTPACK
+  	ps4:       D1TONE0000000000
+  	xb1:       Titanfall2.DLC1.Tone
+    pc_offer: "Origin.OFR.50.0001876"
+    xb1_offer: "a9a85a96-b200-4a06-a208-f3fd51c4d627"
+}
+
+{
+  script_const: ET_DLC1_SCORCH
+    pc:       TITANFALL2_DLC1_SCORCHARTPACK
+    ps4:      D1SCOR0000000000
+    xb1:      Titanfall2.DLC1.Scorch
+    pc_offer: "Origin.OFR.50.0001877"
+    xb1_offer: "bf721d6a-86e8-4c66-93e7-0269e60836d0"
+}
+
+{
+  script_const: ET_DLC1_LEGION
+    pc:       TITANFALL2_DLC1_LEGIONARTPACK
+    ps4:      D1LEGI0000000000
+    xb1:      Titanfall2.DLC1.Legion
+    pc_offer: "Origin.OFR.50.0001878"
+    xb1_offer: "c4d85b56-2ddb-4d95-937a-c81adca93441"
+}
+
+{
+  script_const: ET_DLC1_RONIN
+    pc:       TITANFALL2_DLC1_RONINARTPACK
+    ps4:      D1ROAP0000000000
+    xb1:      Titanfall2.DLC1.Ronin
+    pc_offer: "Origin.OFR.50.0001880"
+    xb1_offer: "11da206d-db54-4460-b515-5e9008a64608"
+}
+
+{
+  script_const: ET_DLC1_NORTHSTAR
+    pc:       TITANFALL2_DLC1_NORTHSTARARTPACK
+    ps4:      D1NORT0000000000
+    xb1:      Titanfall2.DLC1.Northstar
+    pc_offer: "Origin.OFR.50.0001879"
+    xb1_offer: "f1bf9ee9-d458-498a-9a99-46c563bf7a7a"
+}
+
+{
+  script_const: ET_DLC1_PRIME_ION
+    pc:       TITANFALL2_DLC1_IONPRIMETITAN
+    ps4:      D1PRIO0000000000
+    xb1:      Titanfall2.DLC1.IonPrime
+    pc_offer: "Origin.OFR.50.0001873"
+    xb1_offer: "53434b39-5008-4cc5-8c94-5c95b9069cfb"
+}
+
+{
+  script_const: ET_DLC1_PRIME_SCORCH
+    pc:       TITANFALL2_DLC1_SCORCHPRIMETITAN
+    ps4:      D1PRSC0000000000
+    xb1:      Titanfall2.DLC1.ScorchPrime
+    pc_offer: "Origin.OFR.50.0001874"
+    xb1_offer: "e98a1e02-3529-4c68-b40e-abf32d57c6fe"
+}
+
+{
+  script_const: ET_DLC3_PRIME_RONIN
+    pc:       TITANFALL2_DLC3_RONINPRIMETITAN
+    ps4:      DLC3RONINPRIMETI
+    xb1:      Titanfall2.DLC3.RoninPrime
+    pc_offer: ""
+    xb1_offer: ""
+}
+
+{
+  script_const: ET_DLC3_LEGION_TONE
+    pc:       TITANFALL2_DLC3_LEGIONPRIMETITAN
+    ps4:      DLC3LEGIONPRIMET
+    xb1:      Titanfall2.DLC3.LegionPrime
+    pc_offer: ""
+    xb1_offer: ""
+}
+
+{
+  script_const: ET_DLC5_PRIME_TONE
+    pc:       TITANFALL2_DLC5_TONEPRIMETITAN
+    ps4:      DLC5TONEPRIMETIT
+    xb1:      Titanfall2.DLC5.TonePrime
+    pc_offer: ""
+    xb1_offer: ""
+}
+
+{
+  script_const: ET_DLC5_PRIME_NORTHSTAR
+    pc:       TITANFALL2_DLC5_NORTHSTARPRIMETITAN
+    ps4:      DLC5NORTHSTARPRI
+    xb1:      Titanfall2.DLC5.NorthstarPrime
+    pc_offer: ""
+    xb1_offer: ""
 }

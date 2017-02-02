@@ -571,6 +571,10 @@ void function DisplayGenericLevelUp( PostGameUnlockData postGameUnlockData, stri
 	RuiSetString( file.genericLevelUp, "titleText", Localize( titleText ) )
 	RuiSetString( file.genericLevelUp, "newRank", postGameUnlockData.nextLevelText )
 
+	ItemDisplayData itemDisplayData = GetItemDisplayData( postGameUnlockData.ref )
+	RuiSetImage( file.genericLevelUp, "rankImage", itemDisplayData.image )
+	RuiSetFloat2( file.genericLevelUp, "rankImageRatio", GetItemImageAspect( postGameUnlockData.ref ) )
+
 	array<UnlockFullRef> unlockRefs = postGameUnlockData.rewardRefs
 
 	for ( int index = 0; index < 3; index++ )
@@ -1139,6 +1143,10 @@ void function PostGame_PopulateUnlockDisplay( array<UnlockFullRef> unlockRefs, b
 
 void function PostGame_InitLevelDisplay( PostGamePlayerLevelData playerLevelData )
 {
+	// JFS: defensive check
+	if ( !IsValid( GetUIPlayer() ) )
+		return
+
 	if ( playerLevelData.rewardRefs.len() )
 	{
 		ItemDisplayData itemDisplayData = GetItemDisplayData( playerLevelData.rewardRefs[0].ref )

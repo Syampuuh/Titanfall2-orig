@@ -18,6 +18,7 @@ global function TitanGetDisplayGenAndLevelForXP
 global function TitanGetDisplayGenAndLevel
 global function TitanGetDisplayGenAndLevelForRawLevel
 global function TitanGetMaxLevel
+global function TitanGetMaxRawLevel
 
 global function GetAllTitanXPItemRefs
 
@@ -237,4 +238,9 @@ string function TitanGetDisplayGenAndLevelForRawLevel( int rawLevel )
 int function TitanGetMaxLevel( string titanRef )
 {
 	return file.maxLevelPerGen
+}
+
+int function TitanGetMaxRawLevel( string titanRef )
+{
+	return TitanGetRawLevelForXP( titanRef, TitanGetMaxXP( titanRef ) )
 }

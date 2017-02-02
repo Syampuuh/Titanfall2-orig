@@ -132,7 +132,7 @@ ImpactTable
 		"D" "Player_Melee_Impact_Dirt_3p_vs_3p"
 		"E" "Player_Melee_Impact_Metal_3p_vs_3p"
 
-		"F" "player_melee_impact_flesh_3P_vs_3P"
+		"F" "player_melee_impact_flesh_3P_vs_1P"
 		"G" "Player_Melee_Impact_Metal_3p_vs_3p"
 		"H" "player_melee_impact_flesh_3P_vs_3P"
 

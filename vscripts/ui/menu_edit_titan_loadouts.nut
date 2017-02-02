@@ -104,10 +104,12 @@ void function UpdateTitanLoadout( int loadoutIndex )
 {
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( loadoutIndex )
 
+	/*
 	if ( IsItemLocked( GetUIPlayer(), loadout.titanClass ) )
 		Hud_Hide( file.loadoutPanel )
 	else
 		Hud_Show( file.loadoutPanel )
+	*/
 
 	SetEditLoadout( "titan", loadoutIndex )
 	UpdateTitanLoadoutPanel( file.loadoutPanel, loadout )
@@ -281,6 +283,6 @@ void function OnLoadoutButton_LostFocus( var button )
 	int loadoutIndex = expect int ( button.s.rowIndex )
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( loadoutIndex )
 
-	if ( !RefHasAnyNewSubitem( player, loadout.titanClass ) )
+	if ( !RefHasAnyNewSubitem( player, loadout.titanClass ) && !IsItemNew( player, loadout.primeTitanRef ) )
 		ClearNewStatus( button, loadout.titanClass )
 }

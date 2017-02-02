@@ -19,6 +19,8 @@ global function UICodeCallback_ErrorDialog
 global function UICodeCallback_AcceptInvite
 global function UICodeCallback_OnDetenteDisplayed
 global function UICodeCallback_OnSpLogDisplayed
+global function UICodeCallback_EntitlementsChanged
+global function UICodeCallback_GamePurchased
 
 global function AdvanceMenu
 global function OpenSubmenu // REMOVE
@@ -65,7 +67,10 @@ global function StopMusic
 global function IsMenuInMenuStack
 global function GetTopNonDialogMenu
 global function IsDialog
+global function IsDialogActive
 global function SetNavUpDown
+global function IsTrialPeriodActive
+global function LaunchGamePurchaseOrDLCStore
 
 global function PCBackButton_Activate
 
@@ -761,7 +766,8 @@ function UpdateMenusOnConnect( string levelname )
 			{
 				AdvanceMenu( GetMenu( "LobbyMenu" ) )
 			}
-			//thread UpdateAnnouncementDialog()
+
+			thread UpdateAnnouncementDialog()
 		}
 		else
 		{
@@ -921,7 +927,7 @@ function InitMenus()
 	AddMenu( "InGameSPMenu", $"resource/ui/menus/ingame_sp.menu", InitInGameSPMenu )
 
 	AddMenu( "Dialog", $"resource/ui/menus/dialog.menu", InitDialogMenu )
-	//AddMenu( "AnnouncementDialog", $"resource/ui/menus/dialog_announcement.menu", InitAnnouncementDialog )
+	AddMenu( "AnnouncementDialog", $"resource/ui/menus/dialog_announcement.menu", InitAnnouncementDialog )
 	AddMenu( "ConnectingDialog", $"resource/ui/menus/dialog_connecting.menu", InitConnectingDialog )
 	AddMenu( "DataCenterDialog", $"resource/ui/menus/dialog_datacenter.menu", InitDataCenterDialogMenu )
 	AddMenu( "EULADialog", $"resource/ui/menus/dialog_eula.menu", InitEULADialog )
@@ -930,6 +936,7 @@ function InitMenus()
 	AddMenu( "AdvocateGiftDialog", $"resource/ui/menus/dialog_advocate_gift.menu", InitAdvocateGiftDialog )
 
 	AddMenu( "ControlsMenu", $"resource/ui/menus/controls.menu", InitControlsMenu, "#CONTROLS" )
+	AddMenu( "ControlsAdvancedLookMenu", $"resource/ui/menus/controls_advanced_look.menu", InitControlsAdvancedLookMenu, "#CONTROLS_ADVANCED_LOOK" )
 	AddMenu( "GamepadLayoutMenu", $"resource/ui/menus/gamepadlayout.menu", InitGamepadLayoutMenu )
 #if PC_PROG
 	AddMenu_WithCreateFunc( "MouseKeyboardBindingsMenu", $"resource/ui/menus/mousekeyboardbindings.menu", InitMouseKeyboardMenu, CreateKeyBindingMenu )
@@ -973,10 +980,11 @@ function InitMenus()
 
 	AddMenu( "ViewStatsMenu", $"resource/ui/menus/viewstats.menu", InitViewStatsMenu, "#PERSONAL_STATS" )
 	AddMenu( "ViewStats_Overview_Menu", $"resource/ui/menus/viewstats_overview.menu", InitViewStatsOverviewMenu )
-	AddMenu( "ViewStats_Kills_Menu", $"resource/ui/menus/viewstats_kills.menu", InitViewStatsKillsMenu )
+	//AddMenu( "ViewStats_Kills_Menu", $"resource/ui/menus/viewstats_kills.menu", InitViewStatsKillsMenu )
 	AddMenu( "ViewStats_Time_Menu", $"resource/ui/menus/viewstats_time.menu", InitViewStatsTimeMenu )
-	AddMenu( "ViewStats_Distance_Menu", $"resource/ui/menus/viewstats_distance.menu", InitViewStatsDistanceMenu )
-	AddMenu( "ViewStats_Weapons_Menu", $"resource/ui/menus/viewstats_weapons.menu" )
+	//AddMenu( "ViewStats_Distance_Menu", $"resource/ui/menus/viewstats_distance.menu", InitViewStatsDistanceMenu )
+	AddMenu( "ViewStats_Weapons_Menu", $"resource/ui/menus/viewstats_weapons.menu", InitViewStatsWeaponsMenu )
+	AddMenu( "ViewStats_Titans_Menu", $"resource/ui/menus/viewstats_titans.menu", InitViewStatsTitansMenu )
 	AddMenu( "ViewStats_Misc_Menu", $"resource/ui/menus/viewstats_misc.menu", InitViewStatsMiscMenu )
 
 	AddMenu( "PostGameMenu", $"resource/ui/menus/postgame.menu", InitPostGameMenu )
@@ -991,6 +999,16 @@ function InitMenus()
 	AddMenu( "BurnCardMenu", $"resource/ui/menus/burn_cards.menu", InitBurnCardMenu, "#MENU_BURNCARD_MENU" )
 	AddMenu( "FactionChoiceMenu", $"resource/ui/menus/faction_choice.menu", InitFactionChoiceMenu, "#FACTION_CHOICE_MENU" )
 	AddMenu( "ArmoryMenu", $"resource/ui/menus/armory.menu", InitArmoryMenu, "#ARMORY_MENU" )
+
+	AddMenu( "StoreMenu", $"resource/ui/menus/store.menu", InitStoreMenu, "#STORE_MENU" )
+	AddMenu( "StoreMenu_PrimeTitans", $"resource/ui/menus/store_prime_titans.menu", InitStoreMenuPrimeTitans, "#STORE_PRIME_TITANS" )
+	AddMenu( "StoreMenu_Customization", $"resource/ui/menus/store_customization.menu", InitStoreMenuCustomization, "#STORE_CUSTOMIZATION_PACKS" )
+	AddMenu( "StoreMenu_CustomizationPreview", $"resource/ui/menus/store_customization_preview.menu", InitStoreMenuCustomizationPreview, "#STORE_CUSTOMIZATION_PACKS" )
+	AddMenu( "StoreMenu_Camo", $"resource/ui/menus/store_camo.menu", InitStoreMenuCamo, "#STORE_CAMO_PACKS" )
+	AddMenu( "StoreMenu_Callsign", $"resource/ui/menus/store_callsign.menu", InitStoreMenuCallsign, "#STORE_CALLSIGN_PACKS" )
+
+	AddMenu( "KnowledgeBaseMenu", $"resource/ui/menus/knowledgebase.menu", InitKnowledgeBaseMenu )
+	AddMenu( "KnowledgeBaseMenuSubMenu", $"resource/ui/menus/knowledgebase_submenu.menu", InitKnowledgeBaseMenuSubMenu )
 
 	AddMenu( "DevMenu", $"resource/ui/menus/dev.menu", InitDevMenu, "Dev" )
 	InitSharedStartPoints()
@@ -1781,6 +1799,14 @@ bool function IsDialog( var menu )
 	return uiGlobal.menuData[ menu ].isDialog
 }
 
+bool function IsDialogActive( DialogData dialogData )
+{
+	if ( !IsDialog( uiGlobal.activeMenu ) )
+		return false
+
+	return uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData == dialogData
+}
+
 void function SetNavUpDown( array<var> buttons, var wrap = true )
 {
 	Assert( buttons.len() > 0 )
@@ -1810,5 +1836,84 @@ void function SetNavUpDown( array<var> buttons, var wrap = true )
 
 		//printt( "SetNavUP for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( prev ) )
 		//printt( "SetNavDown for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( next ) )
+	}
+}
+
+void function UICodeCallback_EntitlementsChanged()
+{
+	switch ( uiGlobal.activeMenu )
+	{
+		case GetMenu( "StoreMenu_PrimeTitans" ):
+			EntitlementsChanged_PrimeTitans()
+			EmitUISound( "UI_Menu_Store_Purchase_Success" )
+			break
+
+		case GetMenu( "StoreMenu_CustomizationPreview" ):
+			EntitlementsChanged_Customization()
+			EmitUISound( "UI_Menu_Store_Purchase_Success" )
+			break
+
+		case GetMenu( "StoreMenu_Camo" ):
+			EntitlementsChanged_Camo()
+			EmitUISound( "UI_Menu_Store_Purchase_Success" )
+			break
+
+		case GetMenu( "StoreMenu_Callsign" ):
+			EntitlementsChanged_Callsign()
+			EmitUISound( "UI_Menu_Store_Purchase_Success" )
+			break
+
+		case GetMenu( "EditTitanLoadoutMenu" ):
+			RefreshPrimeTitanToggleDisplay()
+			EmitUISound( "UI_Menu_Store_Purchase_Success" )
+			break
+	}
+}
+
+
+#if PC_PROG
+void function QuitGame()
+{
+	ClientCommand( "quit" )
+}
+#endif
+
+void function UICodeCallback_GamePurchased()
+{
+#if PC_PROG
+	DialogData dialogData
+	dialogData.header = "#PURCHASE_GAME_COMPLETE"
+	dialogData.message = "#PURCHASE_GAME_RESTART"
+	AddDialogButton( dialogData, "#QUIT", QuitGame )
+
+	OpenDialog( dialogData )
+#endif
+}
+
+bool function IsTrialPeriodActive()
+{
+	return GetConVarBool( "trialPeriodIsActive" )
+}
+
+void function LaunchGamePurchaseOrDLCStore()
+{
+	if ( Script_IsRunningTrialVersion() )
+	{
+		LaunchGamePurchase()
+	}
+	else
+	{
+#if PC_PROG
+		if ( !Origin_IsOverlayAvailable() )
+		{
+			DialogData dialogData
+			dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+			AddDialogButton( dialogData, "#OK" )
+
+			OpenDialog( dialogData )
+			return
+		}
+#endif
+		OpenStoreMenu( "StoreMenu" )
 	}
 }

@@ -92,6 +92,7 @@ global struct ScoreEvent
 	bool 	eventOverridden = false
 	float 	earnMeterOwnValue = 0.00
 	float 	earnMeterEarnValue = 0.00
+	float 	coreMeterScalar = 1.00 //Decouples the core meter earn rate from titan build rate.
 }
 
 struct

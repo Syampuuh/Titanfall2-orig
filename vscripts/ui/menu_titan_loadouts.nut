@@ -93,10 +93,12 @@ void function UpdateTitanLoadout( int loadoutIndex )
 {
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( loadoutIndex )
 
+	/*
 	if ( IsItemLocked( GetUIPlayer(), loadout.titanClass ) )
 		Hud_Hide( file.loadoutPanel )
 	else
 		Hud_Show( file.loadoutPanel )
+	*/
 
 	UpdateTitanLoadoutPanel( file.loadoutPanel, loadout )
 	RunMenuClientFunction( "UpdateTitanModel", loadoutIndex )

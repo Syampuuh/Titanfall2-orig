@@ -39,8 +39,7 @@ global function GetItemTypeName
 global function GetItemRefTypeName
 
 global function IsItemInEntitlementUnlock
-
-global function GetItemTypeCategoryName
+global function GetEntitlementIds
 
 global function GetItemImageAspect
 
@@ -135,10 +134,13 @@ global function SetItemOwned
 global function ClearItemOwned
 global function CodeCallback_GivePersistentItem
 global function Player_AddRecentUnlock
+global function PersistenceCleanup
 #endif
 global function GetUnlockItemsForPlayerLevels
 global function GetUnlockItemsForTitanLevels
+global function GetNextUnlockForTitanLevel
 global function GetUnlockItemsForWeaponLevels
+global function GetNextUnlockForWeaponLevel
 global function GetUnlockItemsForFactionLevels
 global function GetUnlockItemsForPlayerLevel
 global function GetUnlockItemsForTitanLevel
@@ -152,9 +154,6 @@ global function GetTitanCoreIcon
 global function DidPlayerBuyItemFromBlackMarket
 
 global function GetDisplayNameFromItemType
-
-global function UpdatePlayerDecalUnlocks
-
 global function PrintItemData
 global function PrintItems
 
@@ -168,6 +167,7 @@ global function GetSuitBasedTactical
 global function GetWeaponBasedDefaultMod
 
 global function GetTitanLoadoutPropertyPassiveType
+global function GetPrimeTitanSetFileFromNonPrimeSetFile
 
 global function CheckEverythingUnlockedAchievement
 
@@ -185,6 +185,7 @@ global function Player_SetColiseumTicketCount
 global function Player_GiveColiseumTickets
 global function Player_GiveDoubleXP
 global function Player_GiveCredits
+global function Player_ActivateDoubleXP
 
 global function AwardCredits
 #endif
@@ -199,6 +200,12 @@ global function StringHash
 
 global function RefreshSortedElems
 global function GetSortedIndex
+
+global function SortItemsAlphabetically
+
+#if DEV
+global function GenerateDataTableCRC
+#endif
 
 global const MOD_ICON_NONE = $"ui/menu/items/mod_icons/none"
 
@@ -385,6 +392,32 @@ void function InitItems()
 		InitTitanWeaponDataSP()
 		return
 	}
+
+	#if DEV
+	ValidateDataTableCRC( $"datatable/burn_meter_rewards.rpak", 12, 965785631 )
+	ValidateDataTableCRC( $"datatable/calling_cards.rpak", 264, 841130784 )
+	ValidateDataTableCRC( $"datatable/callsign_icons.rpak", 114, 275257147 )
+	ValidateDataTableCRC( $"datatable/camo_skins.rpak", 100, -293390605 )
+	ValidateDataTableCRC( $"datatable/faction_leaders.rpak", 6, -1616900606 )
+	ValidateDataTableCRC( $"datatable/features_mp.rpak", 17, -10180849 )
+	ValidateDataTableCRC( $"datatable/pilot_abilities.rpak", 14, 1221190881 )
+	ValidateDataTableCRC( $"datatable/pilot_executions.rpak", 5, -267475204 )
+	ValidateDataTableCRC( $"datatable/pilot_passives.rpak", 8, 981112716 )
+	ValidateDataTableCRC( $"datatable/pilot_properties.rpak", 7, -1114320894 )
+	ValidateDataTableCRC( $"datatable/pilot_weapon_features.rpak", 4, 439636371 )
+	//ValidateDataTableCRC( $"datatable/pilot_weapon_mods.rpak", 232, 873404256 )
+	ValidateDataTableCRC( $"datatable/pilot_weapon_mods_common.rpak", 25, -761470088 )
+	ValidateDataTableCRC( $"datatable/pilot_weapons.rpak", 30, 898244819 )
+	ValidateDataTableCRC( $"datatable/playlist_items.rpak", 14, 372847624 )
+	ValidateDataTableCRC( $"datatable/titan_nose_art.rpak", 90, 600579411 )
+	ValidateDataTableCRC( $"datatable/titan_passives.rpak", 32, -1974259711 )
+	ValidateDataTableCRC( $"datatable/titan_primary_mods.rpak", 0, 0 )
+	ValidateDataTableCRC( $"datatable/titan_primary_mods_common.rpak", 0, 0 )
+	ValidateDataTableCRC( $"datatable/titan_properties.rpak", 8, -1270130815 )
+	ValidateDataTableCRC( $"datatable/titan_skins.rpak", 25, -585552901 )
+	ValidateDataTableCRC( $"datatable/titan_voices.rpak", 7, 2136398406 )
+	ValidateDataTableCRC( $"datatable/titans_mp.rpak", 6, -899769064 )
+	#endif
 
 	var dataTable
 	int numRows
@@ -856,6 +889,12 @@ void function InitItems()
 		string setFile = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "setFile" ) )
 		PrecacheModel( GetPlayerSettingsAssetForClassName( setFile, "bodymodel" ) )
 		PrecacheModel( GetPlayerSettingsAssetForClassName( setFile, "armsmodel" ) )
+		string primeSetFile = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "primeSetFile" ) )
+		if ( primeSetFile != "" )
+		{
+			PrecacheModel( GetPlayerSettingsAssetForClassName( primeSetFile, "bodymodel" ) )
+			PrecacheModel( GetPlayerSettingsAssetForClassName( primeSetFile, "armsmodel" ) )
+		}
 		#endif
 
 		//string primary = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "primary" ) )
@@ -865,6 +904,18 @@ void function InitItems()
 		//string antirodeo = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "antirodeo" ) )
 		//string coreAbility = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "coreAbility" ) )
 	}
+
+	//////////////////////////
+	// DLC1
+	//////////////////////////
+	//Need to be moved up here for prime_titan_nose_art to work
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "ion_prime", "ion", true )
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "tone_prime", "tone", true )
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "scorch_prime", "scorch", true )
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "legion_prime", "legion", true )
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "ronin_prime", "ronin", true )
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "northstar_prime", "northstar", true )
+
 
 	dataTable = GetDataTable( $"datatable/titan_nose_art.rpak" )
 	table<string, int> decalIndexTable
@@ -876,8 +927,6 @@ void function InitItems()
 		string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "name" ) )
 		int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
 
-		int datatableIndex = row
-
 		if ( !( titanRef in decalIndexTable ) )
 			decalIndexTable[titanRef] <- 0
 		else
@@ -887,6 +936,26 @@ void function InitItems()
 		//CreateBaseItemData( eItemTypes.TITAN_NOSE_ART, ref, false )
 		CreateNoseArtData( decalIndexTable[titanRef], eItemTypes.TITAN_NOSE_ART, false, ref, name, image, decalIndexTable[titanRef] )
 		CreateGenericSubItemData( eItemTypes.TITAN_NOSE_ART, titanRef, ref, cost )
+	}
+
+	dataTable = GetDataTable( $"datatable/prime_titan_nose_art.rpak" )
+	table<string, int> primeDecalIndexTable
+	for ( int row = 0; row < GetDatatableRowCount( dataTable ); row++ )
+	{
+		string titanRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "titanRef" ) )
+		string ref = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ref" ) )
+		asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, "image" ) )
+		string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "name" ) )
+
+		int datatableIndex = row
+
+		if ( !( titanRef in primeDecalIndexTable ) )
+			primeDecalIndexTable[titanRef] <- 0
+		else
+			primeDecalIndexTable[titanRef]++
+
+		CreateNoseArtData( primeDecalIndexTable[titanRef], eItemTypes.PRIME_TITAN_NOSE_ART, false, ref, name, image, primeDecalIndexTable[titanRef] )
+		CreateGenericSubItemData( eItemTypes.PRIME_TITAN_NOSE_ART, titanRef, ref )
 	}
 
 	dataTable = GetDataTable( $"datatable/titan_skins.rpak" )
@@ -1169,6 +1238,13 @@ void function InitUnlocks()
 
 		string coreAbility = GetDataTableString( titanPropertiesDataTable, propertyRow, GetDataTableColumnByName( titanPropertiesDataTable, "coreAbility" ) )
 		InitUnlock( coreAbility, titanRef, eUnlockType.TITAN_LEVEL, 1 )
+
+		InitUnlock( "mp_titanweapon_vortex_shield", titanRef, eUnlockType.TITAN_LEVEL, 1 )
+		InitUnlock( "mp_titanweapon_rocketeer_rocketstream", titanRef, eUnlockType.TITAN_LEVEL, 1 )
+		InitUnlock( "mp_titanweapon_shoulder_rockets", titanRef, eUnlockType.TITAN_LEVEL, 1 )
+		InitUnlock( "mp_titanweapon_salvo_rockets", titanRef, eUnlockType.TITAN_LEVEL, 1 )
+		InitUnlock( "mp_titanweapon_homing_rockets", titanRef, eUnlockType.TITAN_LEVEL, 1 )
+		InitUnlock( "mp_titanweapon_xo16_shorty", titanRef, eUnlockType.TITAN_LEVEL, 1 )
 		//
 		//{
 		//	int passive1Type = GetTitanProperty_Passive1Type( titanRef )
@@ -1430,6 +1506,7 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "pilot_camo_skin61", "", 5, "kills_stats", "pilotExecutePilot" )
 	InitUnlockForStatInt( "pilot_camo_skin62", "", 10, "kills_stats", "pilotExecutePilot" )
 	InitUnlockForStatInt( "pilot_camo_skin59", "", 25, "kills_stats", "pilotExecutePilot" )
+	InitUnlockForStatInt( "execution_telefrag", "", 50, "kills_stats", "pilotExecutePilot" )
 	//Distance
 	InitUnlockForStatFloat( "pilot_camo_skin56", "", 100.0, "distance_stats", "asPilot" )
 	InitUnlockForStatFloat( "pilot_camo_skin58", "", 250.0, "distance_stats", "asPilot" )
@@ -1596,6 +1673,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin66", "mp_weapon_wingman", 500, "weapon_kill_stats", "pilots", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin64", "mp_weapon_wingman", 1000, "weapon_kill_stats", "pilots", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin63", "mp_weapon_wingman", 2500, "weapon_kill_stats", "pilots", "mp_weapon_wingman" )
+
+	InitUnlockForStatInt( "camo_skin67", "mp_weapon_wingman_n", 100, "weapon_kill_stats", "pilots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin65", "mp_weapon_wingman_n", 250,  "weapon_kill_stats", "pilots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin66", "mp_weapon_wingman_n", 500, "weapon_kill_stats", "pilots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin64", "mp_weapon_wingman_n", 1000, "weapon_kill_stats", "pilots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin63", "mp_weapon_wingman_n", 2500, "weapon_kill_stats", "pilots", "mp_weapon_wingman_n" )
 
 	InitUnlockForStatInt( "camo_skin67", "mp_weapon_defender", 2, "weapon_kill_stats", "titansTotal", "mp_weapon_defender" )
 	InitUnlockForStatInt( "camo_skin65", "mp_weapon_defender", 20, "weapon_kill_stats", "titansTotal", "mp_weapon_defender" )
@@ -1765,6 +1848,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin57", "mp_weapon_wingman", 1000, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin91", "mp_weapon_wingman", 2500, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman" )
 
+	InitUnlockForStatInt( "camo_skin56", "mp_weapon_wingman_n", 10, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin58", "mp_weapon_wingman_n", 100, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin55", "mp_weapon_wingman_n", 500, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin57", "mp_weapon_wingman_n", 1000, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin91", "mp_weapon_wingman_n", 2500, "weapon_kill_stats", "assistsTotal", "mp_weapon_wingman_n" )
+
 	InitUnlockForStatInt( "camo_skin56", "mp_weapon_defender", 10, "weapon_kill_stats", "assistsTotal", "mp_weapon_defender" )
 	InitUnlockForStatInt( "camo_skin58", "mp_weapon_defender", 100, "weapon_kill_stats", "assistsTotal", "mp_weapon_defender" )
 	InitUnlockForStatInt( "camo_skin55", "mp_weapon_defender", 500, "weapon_kill_stats", "assistsTotal", "mp_weapon_defender" )
@@ -1933,6 +2022,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin07", "mp_weapon_wingman", 25, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin85", "mp_weapon_wingman", 50, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman" )
 
+	InitUnlockForStatInt( "camo_skin93", "mp_weapon_wingman_n", 2, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin94", "mp_weapon_wingman_n", 5, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin13", "mp_weapon_wingman_n", 10, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin07", "mp_weapon_wingman_n", 25, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin85", "mp_weapon_wingman_n", 50, "weapon_kill_stats", "killingSprees", "mp_weapon_wingman_n" )
+
 	InitUnlockForStatInt( "camo_skin93", "mp_weapon_defender", 2, "weapon_kill_stats", "killingSprees", "mp_weapon_defender" )
 	InitUnlockForStatInt( "camo_skin94", "mp_weapon_defender", 5, "weapon_kill_stats", "killingSprees", "mp_weapon_defender" )
 	InitUnlockForStatInt( "camo_skin13", "mp_weapon_defender", 10, "weapon_kill_stats", "killingSprees", "mp_weapon_defender" )
@@ -2076,6 +2171,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin62", "mp_weapon_wingman", 25, "weapon_stats", "headshots", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin59", "mp_weapon_wingman", 50, "weapon_stats", "headshots", "mp_weapon_wingman" )
 	InitUnlockForStatInt( "camo_skin87", "mp_weapon_wingman", 100, "weapon_stats", "headshots", "mp_weapon_wingman" )
+
+	InitUnlockForStatInt( "camo_skin60", "mp_weapon_wingman_n", 5, "weapon_stats", "headshots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin61", "mp_weapon_wingman_n", 10, "weapon_stats", "headshots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin62", "mp_weapon_wingman_n", 25, "weapon_stats", "headshots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin59", "mp_weapon_wingman_n", 50, "weapon_stats", "headshots", "mp_weapon_wingman_n" )
+	InitUnlockForStatInt( "camo_skin87", "mp_weapon_wingman_n", 100, "weapon_stats", "headshots", "mp_weapon_wingman_n" )
 
 	//Shots hit for Grenadier and AT rather than headshots
 	InitUnlockForStatInt( "camo_skin60", "mp_weapon_epg", 25, "weapon_stats", "shotsHit", "mp_weapon_epg" )
@@ -2463,6 +2564,9 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "ronin_skin_04", "ronin", ET_DELUXE_EDITION )
 	InitUnlockAsEntitlement( "legion_skin_04", "legion", ET_DELUXE_EDITION )
 
+	InitUnlockAsEntitlement( "ion_prime", "", ET_DELUXE_EDITION )
+	InitUnlockAsEntitlement( "scorch_prime", "", ET_DELUXE_EDITION )
+
 	InitUnlockAsEntitlement( "ion_nose_art_07", "ion", ET_DELUXE_EDITION )
 	InitUnlockAsEntitlement( "scorch_nose_art_07", "scorch", ET_DELUXE_EDITION )
 	InitUnlockAsEntitlement( "northstar_nose_art_07", "northstar", ET_DELUXE_EDITION )
@@ -2496,6 +2600,8 @@ void function InitUnlocks()
 	//////////////////////////
 	// PREORDER ENTITLEMENTS
 	//////////////////////////
+	InitUnlockAsEntitlement( "mp_angel_city", "", ET_PREORDER )
+	InitUnlockAsEntitlement( "angel_city_247", "", ET_PREORDER )
 	InitUnlockAsEntitlement( "scorch_skin_03", "scorch", ET_PREORDER )
 	InitUnlockAsEntitlement( "scorch_nose_art_06", "scorch", ET_PREORDER )
 	InitUnlockAsEntitlement( "callsign_71_col_gold", "", ET_PREORDER )
@@ -2536,6 +2642,134 @@ void function InitUnlocks()
 	InitUnlock( "execution_face_stab", "", eUnlockType.PERSISTENT_ITEM, 0 )
 	InitUnlock( "ion_skin_03", "ion", eUnlockType.PERSISTENT_ITEM, 0 )
 
+	//////////////////////////
+	// DLC1
+	//////////////////////////
+	InitUnlockAsEntitlement( "ion_prime", "", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "tone_prime", "", ET_DLC5_PRIME_TONE )
+	InitUnlockAsEntitlement( "scorch_prime", "", ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "legion_prime", "", ET_DLC3_LEGION_TONE )
+	InitUnlockAsEntitlement( "ronin_prime", "", ET_DLC3_PRIME_RONIN )
+	InitUnlockAsEntitlement( "northstar_prime", "", ET_DLC5_PRIME_NORTHSTAR )
+
+	InitUnlockAsEntitlement( "ion_nose_art_17", "ion", ET_DLC1_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_18", "ion", ET_DLC1_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_19", "ion", ET_DLC1_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_20", "ion", ET_DLC1_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_21", "ion", ET_DLC1_ION )
+	InitUnlockAsEntitlement( "ion_skin_10", "ion", ET_DLC1_ION )
+
+	InitUnlockAsEntitlement( "scorch_nose_art_15", "scorch", ET_DLC1_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_16", "scorch", ET_DLC1_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_17", "scorch", ET_DLC1_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_18", "scorch", ET_DLC1_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_19", "scorch", ET_DLC1_SCORCH )
+	InitUnlockAsEntitlement( "scorch_skin_07", "scorch", ET_DLC1_SCORCH )
+
+	InitUnlockAsEntitlement( "ronin_nose_art_16", "ronin", ET_DLC1_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_17", "ronin", ET_DLC1_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_18", "ronin", ET_DLC1_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_19", "ronin", ET_DLC1_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_20", "ronin", ET_DLC1_RONIN )
+	InitUnlockAsEntitlement( "ronin_skin_10", "ronin", ET_DLC1_RONIN )
+
+	InitUnlockAsEntitlement( "tone_nose_art_17", "tone", ET_DLC1_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_18", "tone", ET_DLC1_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_19", "tone", ET_DLC1_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_20", "tone", ET_DLC1_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_21", "tone", ET_DLC1_TONE )
+	InitUnlockAsEntitlement( "tone_skin_06", "tone", ET_DLC1_TONE )
+
+	InitUnlockAsEntitlement( "northstar_nose_art_18", "northstar", ET_DLC1_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_19", "northstar", ET_DLC1_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_20", "northstar", ET_DLC1_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_21", "northstar", ET_DLC1_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_22", "northstar", ET_DLC1_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_skin_10", "northstar", ET_DLC1_NORTHSTAR )
+
+	InitUnlockAsEntitlement( "legion_nose_art_17", "legion", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_18", "legion", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_19", "legion", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_20", "legion", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_21", "legion", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "legion_skin_07", "legion", ET_DLC1_LEGION )
+
+	InitUnlockAsEntitlement( "callsign_106_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_107_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_108_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_109_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_110_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_111_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_112_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_113_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_114_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_115_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_116_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_117_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_118_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_119_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_120_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_121_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_122_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_123_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_124_col", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_125_col", "", ET_DLC1_CALLSIGN )
+
+	InitUnlockAsEntitlement( "gc_icon_64", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_aces", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_alien", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_apex", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_ares", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_controller", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_drone", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_heartbreaker", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_hexes", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_kodai", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_lastimosa", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_lawai", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_mcor", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_phoenix", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_pilot", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_robot", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_sentry", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_super_spectre", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_vinson", "", ET_DLC1_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_wonyeon", "", ET_DLC1_CALLSIGN )
+
+	for ( int i = 101; i <= 120; i++ )
+	{
+		for ( int j = 0; j < titanClassEnumCount; j++ )
+		{
+			string titanClass = PersistenceGetEnumItemNameForIndex( "titanClasses", j )
+			if ( titanClass != "" )
+			{
+				InitUnlockAsEntitlement( "titan_camo_skin" + i, titanClass, ET_DLC1_CAMO )
+				InitUnlockAsEntitlement( "camo_skin" + i, titanClass, ET_DLC1_CAMO )
+			}
+		}
+
+		InitUnlockAsEntitlement( "pilot_camo_skin" + i, "", ET_DLC1_CAMO )
+
+		foreach ( weaponClassName in pilotWeaponRefs )
+		{
+			InitUnlockAsEntitlement( "camo_skin" + i, weaponClassName, ET_DLC1_CAMO )
+		}
+	}
+
+	//////////////////////////
+	// PrimeTitan Nose Art
+	//////////////////////////
+	InitUnlockAsEntitlement( "ion_prime_nose_art_none", "ion_prime", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "ion_prime_nose_art_01", 	"ion_prime", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "ion_prime_nose_art_02", 	"ion_prime", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "ion_prime_nose_art_03", 	"ion_prime", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "ion_prime_nose_art_04", 	"ion_prime", ET_DLC1_PRIME_ION )
+
+	InitUnlockAsEntitlement( "scorch_prime_nose_art_none", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "scorch_prime_nose_art_01", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "scorch_prime_nose_art_02", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "scorch_prime_nose_art_03", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "scorch_prime_nose_art_04", 	"scorch_prime",	ET_DLC1_PRIME_SCORCH )
 
 	#if DEV
 	#if SERVER
@@ -2622,6 +2856,62 @@ void function UnlockTarget( entity player )
 	foreach ( weaponClassName in pilotWeaponRefs )
 	{
 		SetItemOwned( player, "camo_skin08", weaponClassName, true )
+	}
+}
+
+void function ClearTargetNew( entity player )
+{
+	// early out if we don't own target skins
+	if ( !IsItemOwned( player, "pilot_camo_skin08" ) )
+		return
+
+	int titanClassEnumCount = PersistenceGetEnumCount( "titanClasses" )
+	array<string> pilotWeaponRefs = GetAllItemRefsOfType( eItemTypes.PILOT_PRIMARY )
+	pilotWeaponRefs.extend( GetAllItemRefsOfType( eItemTypes.PILOT_SECONDARY ) )
+
+	for ( int i = 0; i < titanClassEnumCount; i++ )
+	{
+		string titanClass = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
+		if ( titanClass != "" )
+		{
+			if ( IsItemLocked( player, titanClass ) )
+			{
+				SetItemNewStatus( player, "titan_camo_skin08", titanClass, false  )
+				SetItemNewStatus( player, "camo_skin08", titanClass, false  )
+			}
+		}
+	}
+
+	foreach ( weaponClassName in pilotWeaponRefs )
+	{
+		if ( IsItemLocked( player, weaponClassName ) )
+			SetItemNewStatus( player, "camo_skin08", weaponClassName, false )
+	}
+}
+
+void function FixupLevelCamosForRegen( entity player )
+{
+	if ( player.GetGen() <= 1 )
+		return
+
+	int maxPlayerLevel = GetMaxPlayerLevel()
+
+	array<ItemData> camoSkins = GetAllItemsOfType( eItemTypes.CAMO_SKIN_PILOT )
+	foreach ( ItemData camoData in camoSkins )
+	{
+		if ( IsItemInEntitlementUnlock( camoData.ref ) )
+			continue
+
+		if ( IsItemInRandomUnlocks( camoData.ref ) )
+			continue
+
+		if ( GetItemUnlockType( camoData.ref ) != eUnlockType.PLAYER_LEVEL )
+			continue
+
+		if ( GetUnlockLevelReq( camoData.ref ) > maxPlayerLevel )
+			continue
+
+		SetItemOwned( player, camoData.ref, "", false )
 	}
 }
 
@@ -2997,6 +3287,13 @@ ItemData function CreateBaseItemData( int itemType, string ref, bool hidden )
 	return item
 }
 
+void function CreatePrimeTitanData( int itemType, string ref, string nonPrimeRef, bool hidden )
+{
+	ItemData item = CreateBaseItemData( itemType, ref, hidden )
+	item.persistenceStruct		= GetItemPersistenceStruct( nonPrimeRef )
+	item.persistenceId          = GetItemPersistenceId( nonPrimeRef )
+}
+
 void function CreateWeaponData( int dataTableIndex, int itemType, bool hidden, string ref, bool isDamageSource, int cost = 0 )
 {
 	#if !UI
@@ -3208,6 +3505,7 @@ string function GetItemUnlockReqText( string ref, string parentRef = "", bool al
 
 		if ( IsItemInEntitlementUnlock( ref, parentRef ) )
 		{
+			if ( !isUnlocked && !DevEverythingUnlocked() )
 			CodeWarning( ref + " needs to be hidden since it's an entitlement unlock" )
 			return ""
 		}
@@ -3223,6 +3521,7 @@ string function GetItemUnlockReqText( string ref, string parentRef = "", bool al
 
 		if ( IsItemInEntitlementUnlock( ref ) )
 		{
+			if ( !isUnlocked && !DevEverythingUnlocked() )
 			CodeWarning( ref + " needs to be hidden since it's an entitlement unlock" )
 			return ""
 		}
@@ -4433,6 +4732,9 @@ bool function IsSubItemLocked( entity player, string ref, string parentRef )
 
 			return !IsSubItemOwned( player, ref, parentRef )
 
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
+			unreachable //Show have been caught IsItemInEntitlementUnlock() check earlier
+
 		default:
 			CodeWarning( "Unhandled unlock type (subitem): " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref + " " + parentRef )
 	}
@@ -4510,7 +4812,7 @@ bool function IsItemLockedForEntitlement( entity player, string ref, string pare
 
 	foreach ( int entitlementId in file.entitlementUnlocks[fullRef].entitlementIds )
 	{
-		printt( "entitlement check", fullRef, entitlementId )
+		//printt( "entitlement check", fullRef, entitlementId )
 		#if SERVER
 			if ( player.HasEntitlement( entitlementId ) )
 				return false
@@ -4582,8 +4884,12 @@ bool function IsSubItemOwned( entity player, string ref, string parentRef )
 			return IsPersistenceBitSet( player, parentStruct + ".unlockedWeaponSkins", bitIndex )
 
 		case eItemTypes.TITAN_NOSE_ART:
-			string parentStruct = GetItemPersistenceStruct( parentRef )
-			return IsPersistenceBitSet( player, parentStruct + ".unlockedTitanDecals", bitIndex )
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				return IsPersistenceBitSet( player, parentStruct + ".unlockedTitanDecals", bitIndex )
+
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				return IsPersistenceBitSet( player, parentStruct + ".unlockedPrimeTitanDecals", bitIndex )
 
 		default:
 			CodeWarning( "Unhandled owned type (subitem): " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref + " " + parentRef )
@@ -4642,6 +4948,9 @@ bool function IsItemOwned( entity player, string ref )
 		case eItemTypes.TITAN:
 			return IsPersistenceBitSet( player, "unlockedTitanChassis", bitIndex )
 
+		case eItemTypes.PRIME_TITAN:
+			return IsPersistenceBitSet( player, "unlockedPrimeTitans", bitIndex )
+
 		case eItemTypes.FEATURE:
 			return IsPersistenceBitSet( player, "unlockedFeatures", bitIndex )
 
@@ -4666,42 +4975,6 @@ bool function IsItemOwned( entity player, string ref )
 
 	return false
 }
-
-/*
-global enum eItemTypes
-{
-	PILOT_PRIMARY,
-	PILOT_SECONDARY,
-	PILOT_SPECIAL,
-	PILOT_ORDNANCE,
-	PILOT_PRIMARY_ATTACHMENT,
-	PILOT_PRIMARY_MOD,
-	PILOT_SECONDARY_MOD,
-	PILOT_PASSIVE1,
-	PILOT_PASSIVE2,
-	TITAN_PRIMARY,
-	TITAN_SPECIAL,
-	TITAN_ANTIRODEO,
-	TITAN_ORDNANCE,
-	TITAN_PRIMARY_MOD,
-	TITAN_OS,
-	RACE,
-	NOT_LOADOUT,
-	TITAN_NOSE_ART,
-	PILOT_SUIT,
-	TITAN_CORE_ABILITY,
-	BURN_METER_REWARD,
-	PILOT_MELEE,
-	TITAN,
-	FEATURE,
-	CALLING_CARD,
-	CALLSIGN_ICON,
-	CAMO_SKIN,
-	SUB_PILOT_WEAPON_MOD,
-	SUB_PILOT_WEAPON_ATTACHMENT,
-	COUNT
-}
-*/
 
 int function GetItemUnlockType( string ref )
 {
@@ -4831,7 +5104,8 @@ bool function IsItemLockedForFaction( entity player, string ref, string parentRe
 bool function IsItemLockedForPlayer( entity player, string ref )
 {
 	int rawLevel = GetUnlockLevelReq( ref )
-	if ( rawLevel > GetMaxPlayerLevel() )
+
+	if ( rawLevel > GetMaxPlayerLevel() || ItemLockedShouldUseRawLevel( ref ) )
 	{
 		int playerGen = player.GetGen()
 		int rawPlayerLevel = (playerGen - 1) * GetMaxPlayerLevel() + player.GetLevel()
@@ -4843,6 +5117,49 @@ bool function IsItemLockedForPlayer( entity player, string ref )
 	}
 
 	unreachable
+}
+
+bool function ItemLockedShouldUseRawLevel( string ref )
+{
+	int refType = GetItemType( ref )
+
+	bool shouldUseRawLevel = true
+
+	switch ( refType )
+	{
+		case eItemTypes.PILOT_PRIMARY:
+		case eItemTypes.PILOT_SECONDARY:
+		case eItemTypes.PILOT_SPECIAL:
+		case eItemTypes.PILOT_ORDNANCE:
+		case eItemTypes.PILOT_PRIMARY_ATTACHMENT:
+		case eItemTypes.PILOT_PRIMARY_MOD:
+		case eItemTypes.PILOT_SECONDARY_MOD:
+		case eItemTypes.PILOT_WEAPON_MOD3:
+		case eItemTypes.PILOT_PASSIVE1:
+		case eItemTypes.PILOT_PASSIVE2:
+		case eItemTypes.TITAN_PRIMARY:
+		case eItemTypes.TITAN_SPECIAL:
+		case eItemTypes.TITAN_ANTIRODEO:
+		case eItemTypes.TITAN_ORDNANCE:
+		case eItemTypes.TITAN_PRIMARY_MOD:
+		case eItemTypes.TITAN_OS:
+		case eItemTypes.RACE:
+		case eItemTypes.NOT_LOADOUT:
+		case eItemTypes.PILOT_SUIT:
+		case eItemTypes.TITAN_CORE_ABILITY:
+		case eItemTypes.BURN_METER_REWARD:
+		case eItemTypes.PILOT_MELEE:
+		case eItemTypes.TITAN:
+		case eItemTypes.FEATURE:
+		case eItemTypes.WEAPON_FEATURE:
+		case eItemTypes.SUB_PILOT_WEAPON_MOD:
+		case eItemTypes.SUB_PILOT_WEAPON_ATTACHMENT:
+		case eItemTypes.FACTION:
+		case eItemTypes.PILOT_EXECUTION:
+			shouldUseRawLevel = false
+	}
+
+	return shouldUseRawLevel
 }
 
 bool function IsItemLockedForStat( entity player, string ref )
@@ -4955,6 +5272,10 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 				persistenceVar = "newTitanChassis"
 				break
 
+			case eItemTypes.PRIME_TITAN:
+				persistenceVar = "newPrimeTitans"
+				break
+
 			case eItemTypes.FEATURE:
 				persistenceVar = "newFeatures"
 				break
@@ -5030,7 +5351,7 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 				break
 
 			case eItemTypes.TITAN_WARPAINT:
-				persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newPrimeSkins"
+				persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newPrimeSkins" //TODO: This is actually warpaints. Rename next game
 				break
 
 			case eItemTypes.CAMO_SKIN:
@@ -5038,7 +5359,11 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 				break
 
 			case eItemTypes.TITAN_NOSE_ART:
-				persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newTitanDecals"
+					persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newTitanDecals"
+				break
+
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+					persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newPrimeTitanDecals"
 				break
 
 			default:
@@ -5057,6 +5382,12 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 #if UI
 void function UpdateCachedNewItems()
 {
+	if ( !uiGlobal.updateCachedNewItems )
+	{
+		uiGlobal.updateCachedNewItems = true
+		return
+	}
+
 	file.cachedNewItems.clear()
 
 	UpdateCachedNewItemsStruct( "pilotWeapons", "newMods" )
@@ -5064,9 +5395,10 @@ void function UpdateCachedNewItems()
 	UpdateCachedNewItemsStruct( "pilotWeapons", "newFeatures" )
 	UpdateCachedNewItemsStruct( "titanChassis", "newPassives" )
 	UpdateCachedNewItemsStruct( "titanChassis", "newSkins" )
-	UpdateCachedNewItemsStruct( "titanChassis", "newPrimeSkins" )
+	UpdateCachedNewItemsStruct( "titanChassis", "newPrimeSkins" ) //TODO: This is actually WarPaint, rename next game.
 	UpdateCachedNewItemsStruct( "titanChassis", "newWeaponSkins" )
 	UpdateCachedNewItemsStruct( "titanChassis", "newTitanDecals" )
+	UpdateCachedNewItemsStruct( "titanChassis", "newPrimeTitanDecals" )
 	UpdateCachedNewItemsArray( "newPilotSkins" )
 	UpdateCachedNewItemsArray( "newPilotWeapons" )
 	UpdateCachedNewItemsArray( "newPilotOffhands" )
@@ -5074,6 +5406,7 @@ void function UpdateCachedNewItems()
 	UpdateCachedNewItemsArray( "newTitanOffhands" )
 	UpdateCachedNewItemsArray( "newTitanPassives" )
 	UpdateCachedNewItemsArray( "newTitanChassis" )
+	UpdateCachedNewItemsArray( "newPrimeTitans" )
 	UpdateCachedNewItemsArray( "newPilotSuits" )
 	UpdateCachedNewItemsArray( "newPilotExecutions" )
 	UpdateCachedNewItemsArray( "newFeatures" )
@@ -5118,6 +5451,8 @@ bool function IsCachedPersistenceBitSet( string persistenceVar, int bitIndex )
 	persistenceVar = persistenceVar + "[" + arrayIndex + "]"
 
 	//printt( "IsCachedPersistenceBitSet( " + persistenceVar + ", " + bitIndex + " ) " + ( ( file.cachedNewItems[ persistenceVar ] & decimalValue ) != 0 ) )
+
+	Assert( arrayIndex < PersistenceGetArrayCount( persistenceVar ), "Need to increase the array size of the persistenceVar " + persistenceVar )
 
 	return ( ( file.cachedNewItems[ persistenceVar ] & decimalValue ) != 0 )
 }
@@ -5199,6 +5534,10 @@ void function ClearNewStatus( var button, string ref, string parentRef = "" )
 				SetCachedPersistenceBitfield( "newTitanChassis", bitIndex, 0 )
 				break
 
+			case eItemTypes.PRIME_TITAN:
+				SetCachedPersistenceBitfield( "newPrimeTitans", bitIndex, 0 )
+				break
+
 			case eItemTypes.FEATURE:
 				SetCachedPersistenceBitfield( "newFeatures", bitIndex, 0 )
 				break
@@ -5266,7 +5605,7 @@ void function ClearNewStatus( var button, string ref, string parentRef = "" )
 
 			case eItemTypes.TITAN_WARPAINT:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
-				SetCachedPersistenceBitfield( parentStruct + ".newPrimeSkins", bitIndex, 0 )
+				SetCachedPersistenceBitfield( parentStruct + ".newPrimeSkins", bitIndex, 0 ) //TODO: This is actually WarPaint, rename next game.
 				break
 
 			case eItemTypes.CAMO_SKIN:
@@ -5277,6 +5616,11 @@ void function ClearNewStatus( var button, string ref, string parentRef = "" )
 			case eItemTypes.TITAN_NOSE_ART:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetCachedPersistenceBitfield( parentStruct + ".newTitanDecals", bitIndex, 0 )
+				break
+
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				SetCachedPersistenceBitfield( parentStruct + ".newPrimeTitanDecals", bitIndex, 0 )
 				break
 
 			default:
@@ -5323,7 +5667,8 @@ bool function HasAnyNewPilotItems( entity player )
 
 bool function HasAnyNewTitanItems( entity player )
 {
-	if ( HasAnyNewItemOfType( player, eItemTypes.TITAN ) )
+	if ( HasAnyNewItemOfType( player, eItemTypes.TITAN ) ||
+		 HasAnyNewItemOfType( player, eItemTypes.PRIME_TITAN ) )
 		return true
 
 	return false
@@ -5407,6 +5752,7 @@ bool function ButtonShouldShowNew( int itemType, string ref = "", string parentR
 			return IsItemNew( player, ref )
 
 		case eItemTypes.TITAN:
+		case eItemTypes.PRIME_TITAN:
 			return IsItemNew( player, ref ) || RefHasAnyNewSubitem( player, ref )
 
 		case eItemTypes.CAMO_SKIN:
@@ -5427,6 +5773,7 @@ bool function ButtonShouldShowNew( int itemType, string ref = "", string parentR
 		case eItemTypes.CAMO_SKIN_TITAN:
 		case eItemTypes.TITAN_WARPAINT:
 		case eItemTypes.TITAN_NOSE_ART:
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
 			Assert( parentRef != "" )
 			if ( menu == "EditPilotLoadoutsMenu" || menu == "EditPilotLoadoutMenu" ||
 				 menu == "EditTitanLoadoutsMenu" || menu == "EditTitanLoadoutMenu" ||
@@ -5451,10 +5798,16 @@ bool function RefHasAnyNewSubitem( entity player, string ref, int subitemType = 
 	if ( IsItemLocked( player, ref ) )
 		return false
 
+	int refType = GetItemType( ref )
+	bool isPrimeTitanRef = ( refType == eItemTypes.TITAN && IsTitanClassPrime( player, ref ) )
+
 	ItemData itemData = GetItemData( ref )
 	foreach ( subitem in itemData.subitems )
 	{
 		if ( subitemType != -1 && GetSubitemType( ref, subitem.ref ) != subitemType )
+			continue
+
+		if ( isPrimeTitanRef && ( subitem.itemType == eItemTypes.TITAN_WARPAINT || subitem.itemType == eItemTypes.TITAN_NOSE_ART ) )
 			continue
 
 		if ( IsItemNew( player, subitem.ref, ref ) )
@@ -5516,7 +5869,7 @@ bool function HasAnyNewSubItemOfType( entity player, string parentRef, int refTy
 
 		case eItemTypes.TITAN_WARPAINT:
 			string parentStruct = GetItemPersistenceStruct( parentRef )
-			return IsAnyPersistenceBitSet( player, parentStruct + ".newPrimeSkins" )
+			return IsAnyPersistenceBitSet( player, parentStruct + ".newPrimeSkins" ) //TODO: This is actually WarPaint, rename next game.
 
 		case eItemTypes.CAMO_SKIN:
 			string parentStruct = GetItemPersistenceStruct( parentRef )
@@ -5525,6 +5878,10 @@ bool function HasAnyNewSubItemOfType( entity player, string parentRef, int refTy
 		case eItemTypes.TITAN_NOSE_ART:
 			string parentStruct = GetItemPersistenceStruct( parentRef )
 			return IsAnyPersistenceBitSet( player, parentStruct + ".newTitanDecals" )
+
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
+			string parentStruct = GetItemPersistenceStruct( parentRef )
+			return IsAnyPersistenceBitSet( player, parentStruct + ".newPrimeTitanDecals" )
 
 		default:
 			CodeWarning( "Unhandled HasAnyNewSubItemOfType type (subitem): " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + parentRef )
@@ -5554,8 +5911,13 @@ bool function HasAnyNewItemOfType( entity player, int refType, int parentRefType
 			if ( refType == eItemTypes.PILOT_PRIMARY || refType == eItemTypes.PILOT_SECONDARY )
 				continue
 
+			bool isPrimeTitanRef = ( refType == eItemTypes.TITAN && IsTitanClassPrime( player, item.ref ) )
+
 			foreach ( subItem in item.subitems )
 			{
+				if ( isPrimeTitanRef && ( subItem.itemType == eItemTypes.TITAN_WARPAINT || subItem.itemType == eItemTypes.TITAN_NOSE_ART ) )
+					continue
+
 				if ( subItem.itemType in checkedSubItemTypes )
 					continue
 
@@ -5607,7 +5969,7 @@ bool function HasAnyNewItemOfType( entity player, int refType, int parentRefType
 
 			case eItemTypes.TITAN_WARPAINT:
 				persistenceArray = "titanChassis"
-				persistenceVar = "newPrimeSkins"
+				persistenceVar = "newPrimeSkins" //TODO: This is actually WarPaint, rename next game.
 				break
 
 			case eItemTypes.CAMO_SKIN:
@@ -5622,6 +5984,11 @@ bool function HasAnyNewItemOfType( entity player, int refType, int parentRefType
 			case eItemTypes.TITAN_NOSE_ART:
 				persistenceArray = "titanChassis"
 				persistenceVar = "newTitanDecals"
+				break
+
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+				persistenceArray = "titanChassis"
+				persistenceVar = "newPrimeTitanDecals"
 				break
 
 			default:
@@ -5698,6 +6065,10 @@ void function SetItemOwnedStatus( entity player, string ref, string parentRef, b
 
 			case eItemTypes.TITAN:
 				SetPersistenceBitfield( player, "unlockedTitanChassis", bitIndex, unlockBitVal )
+				return
+
+			case eItemTypes.PRIME_TITAN:
+				SetPersistenceBitfield( player, "unlockedPrimeTitans", bitIndex, unlockBitVal )
 				return
 
 			case eItemTypes.FEATURE:
@@ -5779,6 +6150,11 @@ void function SetItemOwnedStatus( entity player, string ref, string parentRef, b
 				SetPersistenceBitfield( player, parentStruct + ".unlockedTitanDecals", bitIndex, unlockBitVal )
 				return
 
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				SetPersistenceBitfield( player, parentStruct + ".unlockedPrimeTitanDecals", bitIndex, unlockBitVal )
+				return
+
 			default:
 				CodeWarning( "Unhandled unlock type (subitem): " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref + " " + parentRef )
 		}
@@ -5828,6 +6204,10 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 
 			case eItemTypes.TITAN:
 				SetPersistenceBitfield( player, "newTitanChassis", bitIndex, newBitVal )
+				return
+
+			case eItemTypes.PRIME_TITAN:
+				SetPersistenceBitfield( player, "newPrimeTitans", bitIndex, newBitVal )
 				return
 
 			case eItemTypes.FEATURE:
@@ -5897,7 +6277,7 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 
 			case eItemTypes.TITAN_WARPAINT:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
-				SetPersistenceBitfield( player, parentStruct + ".newPrimeSkins", bitIndex, newBitVal )
+				SetPersistenceBitfield( player, parentStruct + ".newPrimeSkins", bitIndex, newBitVal ) //TODO: This is actually WarPaint, rename next game.
 				return
 
 			case eItemTypes.CAMO_SKIN:
@@ -5908,6 +6288,11 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 			case eItemTypes.TITAN_NOSE_ART:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetPersistenceBitfield( player, parentStruct + ".newTitanDecals", bitIndex, newBitVal )
+				return
+
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				SetPersistenceBitfield( player, parentStruct + ".newPrimeTitanDecals", bitIndex, newBitVal )
 				return
 
 			default:
@@ -5959,6 +6344,10 @@ bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 
 			case eItemTypes.TITAN:
 				SetPersistenceBitfield( player, "newTitanChassis", bitIndex, 0 )
+				return true
+
+			case eItemTypes.PRIME_TITAN:
+				SetPersistenceBitfield( player, "newPrimeTitans", bitIndex, 0 )
 				return true
 
 			case eItemTypes.FEATURE:
@@ -6030,7 +6419,7 @@ bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 
 			case eItemTypes.TITAN_WARPAINT:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
-				SetPersistenceBitfield( player, parentStruct + ".newPrimeSkins", bitIndex, 0 )
+				SetPersistenceBitfield( player, parentStruct + ".newPrimeSkins", bitIndex, 0 ) //TODO: This is actually WarPaint, rename next game.
 				return true
 
 			case eItemTypes.CAMO_SKIN:
@@ -6041,6 +6430,11 @@ bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 			case eItemTypes.TITAN_NOSE_ART:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetPersistenceBitfield( player, parentStruct + ".newTitanDecals", bitIndex, 0 )
+				return true
+
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
+				string parentStruct = GetItemPersistenceStruct( parentRef )
+				SetPersistenceBitfield( player, parentStruct + ".newPrimeTitanDecals", bitIndex, 0 )
 				return true
 
 			default:
@@ -6075,12 +6469,12 @@ bool function ClientCommand_BuyItem( entity player, array<string> args )
 	int cost
 
 	string fullItemName = ref
-	
+
 	if ( args.len() > 1 )
 	{
 		parentRef = args[ 1 ]
 		cost = GetSubitemCost( parentRef, ref )
-		
+
 		for ( int i = 1; i < args.len(); i++ )
 			fullItemName += " " + args[i]
 	}
@@ -6099,7 +6493,7 @@ bool function ClientCommand_BuyItem( entity player, array<string> args )
 
 	SetItemOwned( player, ref, parentRef, false )
 	SetAvailableCredits( player, creditsAvailable - cost )
-	
+
 	PIN_BuyItem( player, false, fullItemName, cost )
 
 	return true
@@ -6122,7 +6516,7 @@ bool function ClientCommand_BuyTicket( entity player, array<string> args )
 
 	Player_GiveColiseumTickets( player, 1 )
 	SetAvailableCredits( player, creditsAvailable - cost )
-	
+
 	PIN_BuyItem( player, true, ref, cost )
 
 	return true
@@ -6421,15 +6815,20 @@ bool function ClientCommand_UseDoubleXP( entity player, array<string> args )
 
 	int currentDoubleXP = Player_GetDoubleXPCount( player )
 	Player_SetDoubleXPCount( player, currentDoubleXP - 1 )
-	player.SetPlayerNetInt( "xpMultiplier", 2 )
+	Player_ActivateDoubleXP( player )
 
-	Remote_CallFunction_UI( player, "SCB_SetDoubleXPStatus", 2 )
-	
 	PIN_ConsumeItem( player, "double_xp" )
-	
+
 	// ?
 
 	return true
+}
+
+void function Player_ActivateDoubleXP( entity player )
+{
+	player.SetPlayerNetInt( "xpMultiplier", 2 )
+
+	Remote_CallFunction_UI( player, "SCB_SetDoubleXPStatus", 2 )
 }
 #endif
 
@@ -6516,6 +6915,7 @@ int function UnlockItemSort( string itemRefA, string itemRefB )
 	itemPriority[eItemTypes.TITAN_PRIMARY_MOD] <- priority++
 	itemPriority[eItemTypes.TITAN_OS] <- priority++
 	itemPriority[eItemTypes.TITAN_NOSE_ART] <- priority++
+	itemPriority[eItemTypes.PRIME_TITAN_NOSE_ART] <- priority++
 	itemPriority[eItemTypes.TITAN_CORE_ABILITY] <- priority++
 	itemPriority[eItemTypes.BURN_METER_REWARD] <- priority++
 	itemPriority[eItemTypes.PILOT_MELEE] <- priority++
@@ -6567,6 +6967,43 @@ array<string> function GetUnlockItemsForTitanLevels( string titanRef, int startL
 	return unlockedItems
 }
 
+string function GetNextUnlockForTitanLevel( entity player, string titanRef, int startLevel )
+{
+	array<string> unlockedItems
+
+	int endLevel = TitanGetMaxRawLevel( titanRef )
+
+	for ( int currentLevel = startLevel; currentLevel <= endLevel; currentLevel++ )
+	{
+		unlockedItems.extend( GetUnlockItemsForTitanLevel( titanRef, currentLevel ) )
+
+		if ( unlockedItems.len() == 0 )
+		{
+			if ( TitanLevelHasRandomUnlock( currentLevel, titanRef ) )
+				return "random"
+		}
+
+		if ( unlockedItems.len() > 0 )
+		{
+			for ( int i = 0; i < unlockedItems.len(); i++ )
+			{
+				if ( IsSubItemType( GetItemType( unlockedItems[ i ] ) ) )
+				{
+					if ( IsSubItemLocked( player, unlockedItems[ i ], titanRef ) )
+						return unlockedItems[ i ]
+				}
+				else
+				{
+					if ( !IsItemLocked( player, unlockedItems[ i ] ) )
+						return unlockedItems[ i ]
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
 array<string> function GetUnlockItemsForTitanLevel( string titanRef, int newLevel )
 {
 	array<string> unlockedItems
@@ -6601,6 +7038,43 @@ array<string> function GetUnlockItemsForWeaponLevels( string weaponRef, int star
 	}
 
 	return unlockedItems
+}
+
+string function GetNextUnlockForWeaponLevel( entity player, string weaponRef, int startLevel )
+{
+	array<string> unlockedItems
+
+	int endLevel = WeaponGetMaxRawLevel( weaponRef )
+
+	for ( int currentLevel = startLevel; currentLevel <= endLevel; currentLevel++ )
+	{
+		unlockedItems.extend( GetUnlockItemsForWeaponLevel( weaponRef, currentLevel ) )
+
+		if ( unlockedItems.len() == 0 )
+		{
+			if ( WeaponLevelHasRandomUnlock( currentLevel, weaponRef ) )
+				return "random"
+		}
+
+		if ( unlockedItems.len() > 0 )
+		{
+			for ( int i = 0; i < unlockedItems.len(); i++ )
+			{
+				if ( IsSubItemType( GetItemType( unlockedItems[ i ] ) ) )
+				{
+					if ( IsSubItemLocked( player, unlockedItems[ i ], weaponRef ) )
+						return unlockedItems[ i ]
+				}
+				else
+				{
+					if ( !IsItemLocked( player, unlockedItems[ i ] ) )
+						return unlockedItems[ i ]
+				}
+			}
+		}
+	}
+
+	return ""
 }
 
 array<string> function GetUnlockItemsForWeaponLevel( string weaponRef, int newLevel )
@@ -6794,6 +7268,7 @@ string function GetDisplayNameFromItemType( int itemType )
 			break
 
 		case eItemTypes.TITAN_NOSE_ART:
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
 			displayName = "#NOSE_ART"
 			break
 
@@ -6870,6 +7345,17 @@ int function GetStatUnlockSort( ItemDisplayData a, ItemDisplayData b )
 	if ( aUnlockValue > bUnlockValue )
 		return 1
 	else if ( aUnlockValue < bUnlockValue )
+		return -1
+
+	return 0
+}
+
+int function SortItemsAlphabetically( ItemDisplayData a, ItemDisplayData b )
+{
+	if ( a.name > b.name )
+		return 1
+
+	if ( a.name < b.name )
 		return -1
 
 	return 0
@@ -6971,33 +7457,6 @@ function GetPlayerDecalUnlockData( player, ref )
 	return data
 }
 
-function UpdatePlayerDecalUnlocks( entity player, updatePersistence = true )
-{
-	Assert( IsServer() )
-	Assert( IsValid( player ) )
-	Assert( player.IsPlayer() )
-
-	if ( player.IsBot() )
-		return
-
-	//###########################################################
-	// Store what decals were unlocked at the start of the match
-	//###########################################################
-
-	array<ItemDisplayData> decalItems = GetVisibleItemsOfType( eItemTypes.TITAN_NOSE_ART )
-	foreach( item in decalItems )
-	{
-		if ( player.GetPersistentVar( "decalsUnlocked[" + item.ref + "]" ) )
-			continue
-
-		if ( IsDecalUnlocked( item.ref, player ) )
-		{
-			if ( updatePersistence )
-				player.SetPersistentVar( "decalsUnlocked[" + item.ref + "]", true )
-		}
-	}
-}
-
 // TODO: Default "pretend" attachments shouldn't be baked into weapons.
 // Because of this, we don't have real items for everything in order to make this work the right way.
 // Should be a real attachment as all others and we can flag it as default in some way.
@@ -7086,6 +7545,14 @@ int function GetTitanLoadoutPropertyPassiveType( string setFile, string loadoutP
 	int itemType = eItemTypes[ GetDataTableString( dataTable, row, column ) ]
 
 	return itemType
+}
+
+string function GetPrimeTitanSetFileFromNonPrimeSetFile( string nonPrimeSetFile ) //TODO: should just load titan_properties into memory instead of run-time lookup
+{
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), nonPrimeSetFile )
+	int column = GetDataTableColumnByName( dataTable, "primeSetFile" )
+	return GetDataTableString( dataTable, row, column )
 }
 
 string function GetTitanProperty_SetFile( string titanRef )
@@ -7450,6 +7917,7 @@ string function GetItemTypeName( int itemType, int parentItemType = -1 )
 			return "#GENDER"
 
 		case eItemTypes.TITAN_NOSE_ART:
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
 			return "#ITEM_TYPE_TITAN_NOSE_ART"
 
 		case eItemTypes.PILOT_EXECUTION:
@@ -7480,56 +7948,6 @@ string function GetItemTypeName( int itemType, int parentItemType = -1 )
 	return "UNDEFINED"
 }
 
-
-
-function GetItemTypeCategoryName( itemType )
-{
-	local propertyName
-
-	switch ( itemType )
-	{
-		case eItemTypes.PILOT_PRIMARY:
-		case eItemTypes.TITAN_PRIMARY:
-		case eItemTypes.PILOT_SECONDARY:
-			return "#ITEM_TYPE_CATEGORY_WEAPON"
-
-		case eItemTypes.PILOT_SUIT:
-		case eItemTypes.PILOT_SPECIAL:
-		case eItemTypes.TITAN_SPECIAL:
-			return "#ITEM_TYPE_CATEGORY_TACTICAL"
-
-		case eItemTypes.PILOT_ORDNANCE:
-		case eItemTypes.TITAN_ORDNANCE:
-		return "#ITEM_TYPE_CATEGORY_ORDNANCE"
-
-		case eItemTypes.TITAN_NOSE_ART:
-			return "#ITEM_TYPE_CATEGORY_NOSE_ART"
-
-		case eItemTypes.CAMO_SKIN:
-		case eItemTypes.TITAN_WARPAINT:
-		case eItemTypes.CAMO_SKIN_PILOT:
-		case eItemTypes.CAMO_SKIN_TITAN:
-			return "#ITEM_TYPE_CATEGORY_CAMO"
-
-		case eItemTypes.FEATURE:
-			return "#ITEM_TYPE_CATEGORY_FEATURE"
-
-		case eItemTypes.PILOT_PASSIVE1:
-		case eItemTypes.TITAN_GENERAL_PASSIVE:
-		case eItemTypes.TITAN_TITANFALL_PASSIVE:
-		case eItemTypes.PILOT_PASSIVE1:
-		case eItemTypes.PILOT_PASSIVE1:
-			return "#ITEM_TYPE_CATEGORY_FEATURE"
-
-		case eItemTypes.PILOT_MELEE:
-			return "#ITEM_TYPE_CATEGORY_MELEE"
-
-		default:
-			Assert( false, "Invalid item type!" )
-	}
-
-	return propertyName
-}
 /*
 	PILOT_PRIMARY,
 	PILOT_SECONDARY,
@@ -7817,6 +8235,7 @@ bool function IsSubItemType( int itemType )
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
 		case eItemTypes.TITAN_NOSE_ART:
+		case eItemTypes.PRIME_TITAN_NOSE_ART:
 		case eItemTypes.SUB_PILOT_WEAPON_ATTACHMENT:
 		case eItemTypes.SUB_PILOT_WEAPON_MOD:
 		case eItemTypes.CAMO_SKIN:
@@ -7946,17 +8365,22 @@ void function InitUnlockAsEntitlement( string itemRef, string parentRef, int ent
 #if DEV
 	if ( parentRef == "" )
 	{
+		Assert( ItemDefined( itemRef ), itemRef + " does not exist but is being initialized as an entitlement" )
+
 		if ( itemRef in file.unlocks )
 			CodeWarning( parentRef + "." + itemRef + " already exists in Unlocks but is being initialized as an entitlement" )
 	}
 	else
 	{
+		Assert( SubitemDefined( parentRef, itemRef ), parentRef + "." + itemRef + " does not exist but is being initialized as an entitlement" )
+
 		if ( parentRef in file.unlocks && itemRef in file.unlocks[ parentRef ].child )
 			CodeWarning( parentRef + "." + itemRef + " already exists in Unlocks but is being initialized as an entitlement" )
 	}
 
 	if ( IsItemInRandomUnlocks( itemRef, parentRef ) )
 		CodeWarning( parentRef + "." + itemRef + " already exists in Random Unlocks but is being initialized as an entitlement" )
+
 #endif
 	string fullRef = GetFullRef( itemRef, parentRef )
 	Unlock unlock
@@ -7972,6 +8396,15 @@ void function InitUnlockAsEntitlement( string itemRef, string parentRef, int ent
 	}
 
 	unlock.entitlementIds.append( entitlementId )
+}
+
+array<int> function GetEntitlementIds( string itemRef, string parentRef = "" )
+{
+	string fullRef = GetFullRef( itemRef, parentRef )
+
+	Assert( fullRef in file.entitlementUnlocks )
+
+	return clone file.entitlementUnlocks[fullRef].entitlementIds
 }
 
 int function GetSortedIndex( string menuName, int elemNum )
@@ -8168,3 +8601,52 @@ int function CheckItemUnlockType( string ref, string parentRef = "" )
 
 	unreachable
 }
+#if SERVER
+void function PersistenceCleanup( entity player )
+{
+	ClearTargetNew( player )
+	FixupLevelCamosForRegen( player )
+}
+#endif
+
+#if DEV
+void function GenerateDataTableCRC( asset dataTableAsset )
+{
+	var dataTable = GetDataTable( dataTableAsset )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	int dataTableCRC = 0
+
+	for( int index = 0; index < numRows; index++ )
+	{
+		string ref = GetDataTableString( dataTable, index, 0 )
+
+		dataTableCRC = dataTableCRC ^ StringHash( ref )
+		dataTableCRC = (dataTableCRC << 13) ^ (dataTableCRC >> 17)
+	}
+
+	printt( dataTableAsset, numRows, dataTableCRC )
+}
+
+
+void function ValidateDataTableCRC( asset dataTableAsset, int numRows, int generatedCRC )
+{
+	var dataTable = GetDataTable( dataTableAsset )
+
+	int dataTableCRC = 0
+
+	for( int index = 0; index < numRows; index++ )
+	{
+		string ref = GetDataTableString( dataTable, index, 0 )
+
+		dataTableCRC = dataTableCRC ^ StringHash( ref )
+		dataTableCRC = (dataTableCRC << 13) ^ (dataTableCRC >> 17)
+	}
+
+	if( dataTableCRC != generatedCRC )
+	{
+		printt( "DataTableCRC mismatch:", dataTableAsset )
+		Assert( dataTableCRC == generatedCRC )
+	}
+}
+#endif

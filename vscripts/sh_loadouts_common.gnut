@@ -71,14 +71,15 @@ bool function LegalWeaponString( string name )
 TitanLoadoutDef function GetTitanLoadoutForRow( var dataTable, int row )
 {
 	TitanLoadoutDef loadout
-	loadout.setFile		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "setFile" ) )
-	loadout.primary		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primary" ) )
-	loadout.special		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "special" ) )
-	loadout.antirodeo	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "antirodeo" ) )
-	loadout.melee		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "melee" ) )
-	loadout.ordnance	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ordnance" ) )
-	loadout.coreAbility	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "coreAbility" ) )
-	loadout.setFileMods = GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3 ] )
+	loadout.setFile			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "setFile" ) )
+	loadout.primeTitanRef	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primeTitanRef" ) )
+	loadout.primary			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primary" ) )
+	loadout.special			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "special" ) )
+	loadout.antirodeo		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "antirodeo" ) )
+	loadout.melee			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "melee" ) )
+	loadout.ordnance		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ordnance" ) )
+	loadout.coreAbility		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "coreAbility" ) )
+	loadout.setFileMods 	= GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3 ] )
 
 	return loadout
 }
@@ -127,7 +128,18 @@ void function OverwriteLoadoutWithDefaultsForSetFile( TitanLoadoutDef loadout )
 	OverwriteLoadoutWithDefaultsForSetFile_ExceptSpecialAndAntiRodeo( loadout )
 
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
-	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), loadout.setFile )
+	string nonPrimeSetFile
+	#if SP //JFS SP NPC titans don't set loadout.titanClass
+		nonPrimeSetFile = loadout.setFile //SP NPC titans don't set loadout.titanClass
+	#else
+		string titanClass = loadout.titanClass
+		if ( titanClass == "" )
+			nonPrimeSetFile = loadout.setFile //JFS: Bounty Hunt/Dev AI command spawning also doesn't set loadout.titanClass
+		else
+			nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
+	#endif
+
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), nonPrimeSetFile )
 
 	loadout.special		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "special" ) )
 	loadout.antirodeo	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "antirodeo" ) )
@@ -150,7 +162,18 @@ void function OverwriteLoadoutWithDefaultsForSetFile_ExceptSpecialAndAntiRodeo( 
 	loadout.primaryMods	= [ loadout.primaryMod ]
 
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
-	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), loadout.setFile )
+
+	string nonPrimeSetFile
+	#if SP //JFS
+		nonPrimeSetFile = loadout.setFile //SP NPC titans don't set loadout.titanClass
+	#else
+		string titanClass = loadout.titanClass
+		if ( titanClass == "" )
+			nonPrimeSetFile = loadout.setFile //JFS: Bounty Hunt/Dev AI command spawning also doesn't set loadout.titanClass
+		else
+			nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
+	#endif
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), nonPrimeSetFile )
 
 	loadout.primary		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primary" ) )
 	loadout.melee		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "melee" ) )
@@ -248,6 +271,47 @@ TitanLoadoutDef function GetTitanLoadoutFromPlayerSetFile( string playerSetfile 
 	return loadout
 }
 
+int function GetTitanCamoIndexFromLoadoutAndPrimeStatus( TitanLoadoutDef titanLoadout )
+{
+	#if SP
+		return titanLoadout.camoIndex
+	#else
+		if ( IsTitanLoadoutPrime( titanLoadout ) )
+			return titanLoadout.primeCamoIndex
+		else
+			return titanLoadout.camoIndex
+
+		unreachable //Compiler really should be able to determine this is unnecessary from returns on both branches of an if statement
+	#endif
+}
+
+int function GetTitanSkinIndexFromLoadoutAndPrimeStatus( TitanLoadoutDef titanLoadout )
+{
+	#if SP
+		return titanLoadout.skinIndex
+	#else
+		if ( IsTitanLoadoutPrime( titanLoadout ) )
+			return titanLoadout.primeSkinIndex
+		else
+			return titanLoadout.skinIndex
+
+		unreachable //Compiler really should be able to determine this is unnecessary from returns on both branches of an if statement
+	#endif
+}
+
+int function GetTitanDecalIndexFromLoadoutAndPrimeStatus( TitanLoadoutDef titanLoadout )
+{
+	#if SP
+		return titanLoadout.decalIndex
+	#else
+		if ( IsTitanLoadoutPrime( titanLoadout ) )
+			return titanLoadout.primeDecalIndex
+		else
+			return titanLoadout.decalIndex
+
+		unreachable //Compiler really should be able to determine this is unnecessary from returns on both branches of an if statement
+	#endif
+}
 
 
 #if SERVER
@@ -314,7 +378,10 @@ void function GiveTitanLoadout( entity titan, TitanLoadoutDef loadout )
 			{
 				SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
 				if ( SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ) )
-					SoulTitanCore_SetNextAvailableTime( soul, 0.2 )
+				{
+					SoulTitanCore_SetNextAvailableTime( soul, 0.3 )
+					GiveOffhandElectricSmoke( titan )
+				}
 			}
 			else
 			{
@@ -429,7 +496,10 @@ void function ReplaceTitanLoadoutWhereDifferent( entity titan, TitanLoadoutDef l
 			{
 				SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
 				if ( SoulHasPassive( soul, ePassives.PAS_HYPER_CORE ) )
-					SoulTitanCore_SetNextAvailableTime( soul, 0.2 )
+				{
+					SoulTitanCore_SetNextAvailableTime( soul, 0.3 )
+					GiveOffhandElectricSmoke( titan )
+				}
 			}
 			else
 			{

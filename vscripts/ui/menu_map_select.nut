@@ -54,8 +54,19 @@ void function OnOpenMapsMenu()
 
 		if ( buttonID >= 0 && buttonID < mapsArray.len() )
 		{
-			SetButtonRuiText( button, GetMapDisplayName( mapsArray[buttonID] ) )
+			string name = mapsArray[buttonID]
+			SetButtonRuiText( button, GetMapDisplayName( name ) )
 			Hud_SetEnabled( button, true )
+
+			if ( IsItemInEntitlementUnlock( name ) && IsValid( GetUIPlayer() ) )
+	 		{
+	 			if ( IsItemLocked( GetUIPlayer(), name ) && GetCurrentPlaylistVarInt( name + "_available" , 0 ) == 0 )
+	 			{
+	 				SetButtonRuiText( button, Localize( "#MAP_LOCKED", Localize( GetMapDisplayName( name ) ) ) )
+	 				Hud_SetEnabled( button, false )
+	 			}
+	 		}
+
 		}
 		else
 		{

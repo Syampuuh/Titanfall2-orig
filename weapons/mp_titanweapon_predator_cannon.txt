@@ -42,8 +42,8 @@ WeaponData
 	{
 		"damage_near_value"   							"35"
 		"damage_far_value"								"25"
-		"damage_near_value_titanarmor"					"110"
-		"damage_far_value_titanarmor" 					"80"
+		"damage_near_value_titanarmor"					"100"
+		"damage_far_value_titanarmor" 					"72"
 		"explosion_damage"								"0"
 		"explosion_damage_heavy_armor"					"0"
 		"explosion_inner_radius"  						"0"
@@ -632,6 +632,11 @@ WeaponData
 
 			"npc_accuracy_multiplier_heavy_armor"			"2"
 			"npc_accuracy_multiplier_npc"					"2"
+		}
+
+		SiegeMode
+		{
+			"zoom_time_in"									"*0.9"
 		}
 
 		pas_legion_weapon

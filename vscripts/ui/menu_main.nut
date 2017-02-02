@@ -1,6 +1,7 @@
 global function InitMainMenu
 global function EULA_Dialog
 global function UpdateDataCenterFooter
+global function LaunchGamePurchase
 global function LaunchSPNew
 global function LaunchSPContinue
 global function LaunchSPMissionSelect
@@ -9,8 +10,10 @@ global function LaunchGame
 
 global function GetUserSignInState
 
-struct {
+struct
+{
 	var menu
+	var trialLabel
 } file
 
 void function InitMainMenu()
@@ -22,6 +25,8 @@ void function InitMainMenu()
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnMainMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnMainMenu_NavigateBack )
+
+	file.trialLabel = Hud_GetChild( menu, "TrialLabel" )
 
 	#if CONSOLE_PROG
 		AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT", "", null, IsConsoleSignedIn )
@@ -50,6 +55,10 @@ void function OnMainMenu_Open()
 {
 	Signal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
 	EndSignal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
+
+	TryUnlockCompletedGameAchievements()
+
+	thread UpdateTrialLabel()
 
 #if PC_PROG
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )
@@ -167,6 +176,11 @@ bool function IsDataCenterFooterValid()
 	#else
 		return ( uiGlobal.activeMenu == file.menu ) && Console_IsOnline() && Console_IsSignedIn()
 	#endif
+}
+
+void function LaunchGamePurchase()
+{
+	ShowGamePurchaseStore()
 }
 
 void function LaunchSPNew()
@@ -449,7 +463,7 @@ void function StartMatchmakingIntoEmptyServer( string playlist )
 			while( Ps4_CheckPlus_Running() )
 				WaitFrame()
 			if( !Ps4_CheckPlus_Allowed() )
-			{			    
+			{
 				if( Ps4_CheckPlus_GetLastRequestResults() != 0 )
 				{
   					Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( Ps4_CheckPlus_GetLastRequestResults()) )
@@ -529,7 +543,7 @@ void function DoGameNeedsToInstallDialog()
 
 	int installProgress = int( GetGameFullyInstalledProgress()*100 )
 
-	if ( uiGlobal.launching == eLaunching.MULTIPLAYER && IsGamePartiallyInstalled() )
+	if ( uiGlobal.launching == eLaunching.MULTIPLAYER && IsGamePartiallyInstalled() && !Script_IsRunningTrialVersion() )
 	{
 		dialogData.message = Localize("#MENU_WAIT_FOR_INTALL_HINT", installProgress )
 		AddDialogButton( dialogData, "#YES", LaunchSPNew )
@@ -545,4 +559,24 @@ void function DoGameNeedsToInstallDialog()
 	AddDialogFooter( dialogData, "#B_BUTTON_CANCEL" )
 
 	OpenDialog( dialogData )
+}
+
+void function UpdateTrialLabel()
+{
+	bool isTrialVersion
+	bool lastIsTrialVersion = Script_IsRunningTrialVersion()
+
+	Hud_SetVisible( file.trialLabel, lastIsTrialVersion )
+
+	while ( GetTopNonDialogMenu() == file.menu )
+	{
+		isTrialVersion = Script_IsRunningTrialVersion()
+
+		if ( isTrialVersion != lastIsTrialVersion )
+			Hud_SetVisible( file.trialLabel, isTrialVersion )
+
+		lastIsTrialVersion = isTrialVersion
+
+		WaitFrame()
+	}
 }

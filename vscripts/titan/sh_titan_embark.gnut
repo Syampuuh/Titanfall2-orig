@@ -662,9 +662,17 @@ function PlayerEmbarksTitan( entity player, entity titan, table embark )
 
 				if ( IsAlive( player ) )
 				{
-					TitanEmbarkFailsafe( player, null, groundEntity, startOrigin )
-					Remote_CallFunction_Replay( player, "ServerCallback_TitanEmbark" )
-					LetTitanPlayerShootThroughBubbleShield( player )
+					if ( player.IsTitan() ) //Defensive fix, sometimes in SP (when game is shutting down etc ) this can run without the player being alive
+					{
+						TitanEmbarkFailsafe( player, null, groundEntity, startOrigin )
+						Remote_CallFunction_Replay( player, "ServerCallback_TitanEmbark" )
+						LetTitanPlayerShootThroughBubbleShield( player )
+					}
+					else
+					{
+						player.Die() //Defensive fix, sometimes in SP (when game is shutting down etc ) this can run without the player being alive
+					}
+
 				}
 			}
 		}

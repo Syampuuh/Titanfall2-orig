@@ -76,15 +76,19 @@ void function Tone_HudThink( entity player )
 			if ( count == 0 )
 			{
 				RuiDestroyIfAlive( trackerInfoArray[i].rui )
+				allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
 				trackerInfoArray.remove( i )
 				continue
 			}
 
 			allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
-			if ( player.ContextAction_IsMeleeExecution() || ( StatusEffect_Get( trackerInfoArray[ i ].trackedEnt , eStatusEffect.sonar_detected ) == 0 && !trackerRockets.SmartAmmo_IsVisibleTarget( trackerInfoArray[ i ].trackedEnt  ) ) )//&& !PlayerCanSee( player, trackerInfoArray[ i ].trackedEnt, true, 89 ) ) )
+			if ( player.ContextAction_IsMeleeExecution() ||
+						( StatusEffect_Get( trackerInfoArray[ i ].trackedEnt , eStatusEffect.sonar_detected ) == 0
+						&& !trackerRockets.SmartAmmo_IsVisibleTarget( trackerInfoArray[ i ].trackedEnt  ) )
+				)
 			{
 				allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
-				RuiSetInt( trackerInfoArray[ i ].rui, "count", 0 )
+				RuiSetBool( trackerInfoArray[ i ].rui, "isVisible", false )
 			}
 			else
 			{
@@ -98,11 +102,13 @@ void function Tone_HudThink( entity player )
 					offset = <0,0,42>
 				RuiSetFloat3( trackerInfoArray[ i ].rui, "offset", trackerInfoArray[ i ].trackedEnt.GetWorldSpaceCenter() - trackerInfoArray[ i ].trackedEnt.GetOrigin() + offset )
 				RuiSetInt( trackerInfoArray[ i ].rui, "count", count )
+				RuiSetBool( trackerInfoArray[ i ].rui, "isVisible", true )
 			}
 		}
 
 		foreach ( target in allTargets )
 		{
+			printt( target )
 			TrackerInfo info
 			info.trackedEnt = target
 			info.rui = CreateFullscreenRui( $"ui/tone_tracker_hud.rpak" )

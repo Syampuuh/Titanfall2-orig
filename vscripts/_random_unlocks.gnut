@@ -41,6 +41,7 @@ struct
 {
 	table<int, array<RandomUnlock> > randomUnlocks
 	table<int, array<RandomUnlockItem> > randomUnlockItems
+	table<string, bool> randomUnlockItemCache
 
 	int unlocksPlayerLevelRowCount = 0
 	int unlocksTitanLevelRowCount = 0
@@ -176,6 +177,8 @@ void function InitRandomUnlockItem( string ref, string parentRef, float weight )
 
 	ruItem.itemType = itemType
 
+	file.randomUnlockItemCache[ ref + parentRef ] <- true
+
 	file.randomUnlockItems[ itemType ].append( ruItem )
 }
 
@@ -201,11 +204,15 @@ bool function IsItemInRandomUnlocks( string ref, string parentRef = "" )
 	if ( !( itemType in file.randomUnlockItems ) )
 		return false
 
-	foreach ( ruItem in file.randomUnlockItems[ itemType ] )
-	{
-		if ( ref == ruItem.ref && parentRef == ruItem.parentRef )
-			return true
-	}
+	string fullRef = ref + parentRef
+	if ( fullRef in file.randomUnlockItemCache )
+		return true
+
+	//foreach ( ruItem in file.randomUnlockItems[ itemType ] )
+	//{
+	//	if ( ref == ruItem.ref && parentRef == ruItem.parentRef )
+	//		return true
+	//}
 
 	return false
 }

@@ -327,6 +327,7 @@ function ShowUnlockOnPanel( panel, string ref, string childRef, float delay )
 			case eItemTypes.PILOT_SECONDARY_MOD:
 			case eItemTypes.TITAN_PRIMARY_MOD:
 			case eItemTypes.TITAN_NOSE_ART:
+			case eItemTypes.PRIME_TITAN_NOSE_ART:
 				imageLabel = panel.s.itemImageSquare
 				break
 			default:

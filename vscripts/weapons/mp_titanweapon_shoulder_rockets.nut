@@ -78,8 +78,6 @@ var function OnWeaponPrimaryAttack_titanweapon_shoulder_rockets( entity weapon, 
 #endif
 		SmartAmmo_SetShouldTrackPosition( weapon, false )
 
-	array<entity> storedTargets = SmartAmmo_GetWeaponTargets( weapon )
-
 	int smartAmmoFired = SmartAmmo_FireWeapon( weapon, attackParams, damageTypes.projectileImpact, damageTypes.explosive )
 	int maxTargetedBurst = weapon.GetWeaponSettingInt( eWeaponVar.smart_ammo_max_targeted_burst )
 	float shotFrac = 1.0 / maxTargetedBurst.tofloat()
@@ -101,6 +99,7 @@ var function OnWeaponPrimaryAttack_titanweapon_shoulder_rockets( entity weapon, 
 			{
 				#if CLIENT && HAS_TITAN_TELEMETRY
 				int validTargets = 0
+				array<entity> storedTargets = SmartAmmo_GetWeaponTargets( weapon )
 				foreach ( target in storedTargets )
 				{
 					if ( IsHumanSized( target ) )

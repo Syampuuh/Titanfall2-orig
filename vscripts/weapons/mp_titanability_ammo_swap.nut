@@ -18,14 +18,24 @@ struct
 } file
 #endif
 
+const string SIEGE_MODE_SFX_START =  "crane_startup"
+const string SIEGE_MODE_SFX_STOP = "crane_shutdown"
+
 const asset POWER_SHOT_ICON_CLOSE = $"rui/titan_loadout/ordnance/concussive_shot_short"
 const asset POWER_SHOT_ICON_FAR = $"rui/titan_loadout/ordnance/concussive_shot_long"
+const asset SIEGE_MODE_RING = $"droppod_target"
 
 void function MpTitanAbilityAmmoSwap_Init()
 {
+	PrecacheParticleSystem( SIEGE_MODE_RING )
 	#if CLIENT
 		PrecacheHUDMaterial( POWER_SHOT_ICON_CLOSE )
 		PrecacheHUDMaterial( POWER_SHOT_ICON_FAR )
+	#endif
+
+	#if SERVER
+	AddCallback_OnTitanBecomesPilot( RemoveSiegeModeMod )
+	AddCallback_OnPilotBecomesTitan( RemoveSiegeModeModP2T )
 	#endif
 }
 
@@ -33,13 +43,42 @@ void function OnWeaponOwnerChanged_titanability_ammo_swap( entity weapon, Weapon
 {
 	#if SERVER
 	if ( IsValid( changeParams.newOwner ) && changeParams.newOwner.IsPlayer() )
+	{
 		AddAmmoStatusEffect( changeParams.newOwner )
+		if ( weapon.HasMod( "SiegeMode" ) )
+		{
+			array<entity> weapons = GetPrimaryWeapons( changeParams.newOwner )
+			if ( weapons.len() > 0 )
+			{
+				entity primaryWeapon = weapons[0]
+				if ( IsValid( primaryWeapon ) )
+					thread HACK_Delayed_PushForceADS( primaryWeapon )
+			}
+
+		}
+	}
 	if ( IsValid( changeParams.oldOwner ) && changeParams.oldOwner.IsPlayer() )
 		RemoveAmmoStatusEffect( changeParams.oldOwner )
+
+	if ( IsValid( changeParams.oldOwner ) && !IsValid( changeParams.newOwner ) )
+	{
+		foreach ( effect in weapon.w.fxHandles )
+		{
+			EffectStop( effect )
+		}
+		weapon.w.fxHandles = []
+	}
 	#endif
 }
 
 #if SERVER
+void function HACK_Delayed_PushForceADS( entity primaryWeapon )
+{
+	EndSignal( primaryWeapon, "OnDestroy" )
+	wait 0.1 // doesn't work until you wait a frame... WHY
+	primaryWeapon.SetForcedADS()
+}
+
 void function RemoveAmmoStatusEffect( entity player )
 {
 	for ( int i = file.ammoSwapStatusEffects.len() - 1; i >= 0; i-- )
@@ -73,6 +112,10 @@ void function AddAmmoStatusEffect( entity player )
 	if ( primaryWeapon.HasMod( "Smart_Core" ) )
 	{
 		cockpitColor = COCKPIT_COLOR_HIDDEN
+	}
+	else if ( primaryWeapon.HasMod( "SiegeMode" ) )
+	{
+		cockpitColor = COCKPIT_COLOR_SIEGE
 	}
 	else if ( primaryWeapon.HasMod( "LongRangeAmmo" ) )
 	{
@@ -166,24 +209,7 @@ void function ToggleAmmoMods( entity weapon, entity primaryWeapon, entity weapon
 			weaponOwner.e.ammoSwapPlaying = false
 
 			#if SERVER
-			if ( IsValid( primaryWeapon ) )
-				ToggleMod( primaryWeapon, "LongRangeAmmo" )
-
-			if ( IsValid( weapon ) )
-				ToggleMod( weapon, "ammo_swap_ranged_mode" )
-
-			if ( IsValid( weaponOwner ) )
-			{
-				entity powerShotWeapon = weaponOwner.GetOffhandWeapon( OFFHAND_RIGHT )
-				if ( IsValid( powerShotWeapon ) )
-					ToggleMod( powerShotWeapon, "power_shot_ranged_mode" )
-			}
-
-			if ( weaponOwner.IsPlayer() )
-			{
-				AddAmmoStatusEffect( weaponOwner )
-				weaponOwner.ClearMeleeDisabled()
-			}
+			ToggleWeaponMods( weaponOwner, primaryWeapon, weapon )
 			#endif
 		}
 	)
@@ -201,14 +227,150 @@ void function ToggleMod( entity weapon, string modName )
 {
 	if ( weapon.HasMod( modName ) )
 	{
-		array<string> mods = weapon.GetMods()
-		mods.fastremovebyvalue( modName )
-		weapon.SetMods( mods )
+		RemoveMod( weapon, modName )
 	}
 	else
 	{
 		array<string> mods = weapon.GetMods()
-		mods.append( modName )
+
+		if ( modName != "" )
+			mods.append( modName )
+
 		weapon.SetMods( mods )
 	}
 }
+
+void function RemoveMod( entity weapon, string modName )
+{
+	array<string> mods = weapon.GetMods()
+	mods.fastremovebyvalue( modName )
+	weapon.SetMods( mods )
+}
+
+#if SERVER
+bool function WeaponOwnerHasSiegePassive( entity weaponOwner )
+{
+	if ( IsValid( weaponOwner ) )
+	{
+		entity soul = weaponOwner.GetTitanSoul()
+		if ( IsValid( soul ) )
+		{
+			if ( SoulHasPassive( soul, ePassives.PAS_LEGION_SIEGE ) )
+			{
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+void function RemoveSiegeModeModP2T( entity player, entity titan )
+{
+	RemoveSiegeModeMod( player, player )
+}
+
+void function RemoveSiegeModeMod( entity player, entity titan )
+{
+	array<entity> weapons = GetPrimaryWeapons( titan )
+	entity primaryWeapon = weapons[0]
+	entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+	bool hasSiegeMode = WeaponOwnerHasSiegePassive( titan )
+
+	if ( hasSiegeMode && IsValid( weapon ) && weapon.HasMod( "SiegeMode" ) )
+	{
+		ToggleWeaponMods( titan, primaryWeapon, weapon )
+	}
+}
+
+void function ToggleWeaponMods( entity weaponOwner, entity primaryWeapon, entity weapon )
+{
+	bool hasSiegeMode = WeaponOwnerHasSiegePassive( weaponOwner )
+	if ( IsValid( primaryWeapon ) )
+	{
+		// JFS: defensive fix since sometimes this can trigger while the power shot is active
+		if ( primaryWeapon.HasMod( "LongRangePowerShot" ) || primaryWeapon.HasMod( "CloseRangePowerShot" ) )
+			return
+
+		ToggleMod( primaryWeapon, "LongRangeAmmo" )
+		if ( hasSiegeMode )
+		{
+			ToggleMod( primaryWeapon, "SiegeMode" )
+		}
+	}
+
+	if ( IsValid( weapon ) )
+	{
+		ToggleMod( weapon, "ammo_swap_ranged_mode" )
+		if ( hasSiegeMode )
+		{
+			ToggleMod( weapon, "SiegeMode" )
+			entity soul = weaponOwner.GetTitanSoul()
+			if ( IsValid( soul ) )
+			{
+				if ( weapon.HasMod( "SiegeMode" ) )
+				{
+					EmitSoundOnEntity( weaponOwner, SIEGE_MODE_SFX_START )
+
+					if ( weaponOwner.IsPlayer() )
+					{
+						weapon.w.statusEffects.append( StatusEffect_AddEndless( soul, eStatusEffect.move_slow, 1.00 ) )
+
+						entity fx = StartParticleEffectOnEntity_ReturnEntity( weaponOwner, GetParticleSystemIndex( SIEGE_MODE_RING ), FX_PATTACH_POINT_FOLLOW, weaponOwner.LookupAttachment( "ORIGIN" ) )
+						EffectSetControlPointVector( fx, 1, ENEMY_COLOR_FX )
+						weapon.w.fxHandles.append( fx )
+					}
+
+					if ( IsValid( primaryWeapon ) )
+						primaryWeapon.SetForcedADS()
+				}
+				else
+				{
+					EmitSoundOnEntity( weaponOwner, SIEGE_MODE_SFX_STOP )
+
+					foreach ( effect in weapon.w.statusEffects )
+					{
+						StatusEffect_Stop( soul, effect )
+					}
+					weapon.w.statusEffects = []
+					foreach ( effect in weapon.w.fxHandles )
+					{
+						EffectStop( effect )
+					}
+					weapon.w.fxHandles = []
+					if ( IsValid( primaryWeapon ) )
+					{
+						if ( !primaryWeapon.HasMod( "LongRangePowerShot" ) && !primaryWeapon.HasMod( "CloseRangePowerShot" ) && !primaryWeapon.e.gunShieldActive )
+							while( primaryWeapon.GetForcedADS() )
+								primaryWeapon.ClearForcedADS()
+					}
+				}
+			}
+		}
+	}
+
+	if ( IsValid( weaponOwner ) )
+	{
+		entity powerShotWeapon = weaponOwner.GetOffhandWeapon( OFFHAND_RIGHT )
+		if ( IsValid( powerShotWeapon ) )
+		{
+			ToggleMod( powerShotWeapon, "power_shot_ranged_mode" )
+			if ( hasSiegeMode )
+				ToggleMod( powerShotWeapon, "SiegeMode" )
+		}
+
+		if ( hasSiegeMode )
+		{
+			entity gunShieldWeapon = weaponOwner.GetOffhandWeapon( OFFHAND_LEFT )
+			if ( IsValid( gunShieldWeapon ) )
+				ToggleMod( gunShieldWeapon, "SiegeMode" )
+		}
+	}
+
+	if ( weaponOwner.IsPlayer() )
+	{
+		AddAmmoStatusEffect( weaponOwner )
+		weaponOwner.ClearMeleeDisabled()
+	}
+}
+#endif

@@ -89,7 +89,7 @@ void function Cl_ADSDoF_Update( entity player )
 	bool shouldRun = file.adsDoFThreadShouldBeRunning
 	player.Signal( "CycleDofThread" )
 	if ( shouldRun )
-		thread PlayerADSDof_Thread( player )
+		thread PlayerADSDof( player, 0, 0 )
 }
 
 void function PlayerADSDof_Thread( entity player )

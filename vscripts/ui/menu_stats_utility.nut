@@ -6,31 +6,35 @@ global function SetStatsBarValues
 global function SetStatsValueInfo
 global function SetStatsLabelValue
 global function GetPercent
-global function GetChallengeCompleteData
+//global function GetChallengeCompleteData
 global function GetItemUnlockCountData
 global function GetOverviewWeaponData
 global function StatToTimeString
 global function HoursToTimeString
 global function StatToDistanceString
+global function ComparePieChartEntryValues
+global function SetStatBoxDisplay
+global function SetMedalStatBoxDisplay
 
-function SetPieChartData( menu, panelName, titleString, data )
+void function SetPieChartData( var menu, string panelName, string titleString, PieChartData data )
 {
-	local maxSlices = 6
+	int maxSlices = 8
 
-	Assert( data.names.len() == data.values.len() )
-	Assert( data.names.len() <= maxSlices )
+	Assert( data.entries.len() <= maxSlices )
 
-	local backgroundColor = [ 190, 190, 190, 255 ]
+	array backgroundColor = [ 190, 190, 190, 255 ]
 
 	local colors = []
 	colors.append( [ 192, 94, 75, 255 ] )
 	colors.append( [ 194, 173, 76, 255 ] )
 	colors.append( [ 88, 172, 67, 255 ] )
+	colors.append( [ 46, 188, 180, 255 ] )
 	colors.append( [ 77, 127, 196, 255 ] )
 	colors.append( [ 166, 91, 191, 255 ] )
-	colors.append( [ 46, 188, 180, 255 ] )
+	colors.append( [ 200, 40, 40, 255 ] )
+	colors.append( [ 128, 90, 55, 255 ] )
 
-	if ( "colorShift" in data )
+	if ( data.colorShift > 0 )
 	{
 		for ( int i = 0; i < data.colorShift; i++ )
 		{
@@ -50,56 +54,71 @@ function SetPieChartData( menu, panelName, titleString, data )
 	background.SetColor( backgroundColor )
 
 	// Calculate total of all values combined
-	if ( !( "sum" in data ) )
-	{
-		data.sum <- 0
-		foreach( value in data.values )
-			data.sum += value
-	}
+	foreach ( entry in data.entries )
+		data.sum += entry.numValue
 
 	// Calculate bar fraction for each value
-	local valueFractions = []
-	foreach( value in data.values )
+	array<float> valueFractions
+	foreach ( entry in data.entries )
 	{
 		if ( data.sum > 0 )
-			valueFractions.append( value.tofloat() / data.sum.tofloat() )
+			valueFractions.append( entry.numValue / data.sum )
 		else
-			valueFractions.append( 0 )
+			valueFractions.append( 0.0 )
 	}
 
 	// Set slice sizes and text data
 	var titleLabel = Hud_GetChild( piePanel, "Title" )
 	Hud_SetText( titleLabel, titleString )
-	if ( "labelColor" in data )
-		titleLabel.SetColor( data.labelColor )
+	titleLabel.SetColor( data.labelColor )
 
-	local combinedFrac = 0.0
-	foreach( index, frac in valueFractions )
+	var noDataLabel = Hud_GetChild( piePanel, "NoData" )
+
+	if ( valueFractions.len() > 0 )
 	{
-		var barColorGuide = Hud_GetChild( piePanel, "BarColorGuide" + index )
-		barColorGuide.SetColor( colors[ index ] )
-		Hud_Show( barColorGuide )
+		Hud_Hide( noDataLabel )
 
-		var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
-		Hud_Show( barColorGuideFrame )
+		float combinedFrac = 0.0
+		int largestTextWidth = 0
 
-		local percent = GetPercent( frac, 1.0, 0, true )
-		var barName = Hud_GetChild( piePanel, "BarName" + index )
-		if ( "labelColor" in data )
+		foreach ( index, frac in valueFractions )
+		{
+			var barColorGuide = Hud_GetChild( piePanel, "BarColorGuide" + index )
+			barColorGuide.SetColor( colors[ index ] )
+			Hud_Show( barColorGuide )
+
+			var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
+			Hud_Show( barColorGuideFrame )
+
+			local percent = GetPercent( frac, 1.0, 0, true )
+			var barName = Hud_GetChild( piePanel, "BarName" + index )
 			barName.SetColor( data.labelColor )
 
-		if ( "timeBased" in data )
-			SetStatsLabelValueOnLabel( barName, HoursToTimeString( data.values[ index ], data.names[ index ], percent ) )
-		else
-			Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", data.names[ index ], string( percent ) )
+			if ( data.timeBased )
+				Hud_SetText( barName, PieChartHoursToTimeString( data.entries[ index ].numValue, data.entries[ index ].displayName, string( percent ) ) )
+			else
+				Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", data.entries[ index ].displayName, string( percent ) )
 
-		Hud_Show( barName )
+			int currentTextWidth = Hud_GetTextWidth( barName )
+			if ( currentTextWidth > largestTextWidth )
+				largestTextWidth = currentTextWidth
 
-		combinedFrac += frac
-		var bar = Hud_GetChild( piePanel, "Bar" + index )
-		bar.SetBarProgress( combinedFrac )
-		bar.SetColor( colors[ index ] )
-		Hud_Show( bar )
+			Hud_Show( barName )
+
+			combinedFrac += frac
+			var bar = Hud_GetChild( piePanel, "Bar" + index )
+			Hud_SetBarProgress( bar, combinedFrac )
+			bar.SetColor( colors[ index ] )
+			Hud_Show( bar )
+		}
+
+		// Position the list
+		int xOffset = int( ( ContentScaledX( largestTextWidth ) / -2 ) + ContentScaledX( 18 ) )
+		Hud_SetX( Hud_GetChild( piePanel, "BarName0" ), xOffset )
+	}
+	else
+	{
+		Hud_Show( noDataLabel )
 	}
 }
 
@@ -129,7 +148,7 @@ function SetStatsBarValues( menu, panelName, titleString, startValue, endValue, 
 	barFillShadow.SetScaleX( frac )
 }
 
-function SetStatsValueInfo( menu, valueID, labelText, textString )
+void function SetStatsValueInfo( var menu, valueID, labelText, textString )
 {
 	var elem = GetElem( menu, "Column0Label" + valueID )
 	Assert( elem != null )
@@ -140,14 +159,14 @@ function SetStatsValueInfo( menu, valueID, labelText, textString )
 	SetStatsLabelValueOnLabel( elem, textString )
 }
 
-function SetStatsLabelValue( menu, labelName, textString )
+void function SetStatsLabelValue( var menu, labelName, textString )
 {
 	var elem = GetElem( menu, labelName )
 	Assert( elem != null)
 	SetStatsLabelValueOnLabel( elem, textString )
 }
 
-function SetStatsLabelValueOnLabel( elem, textString )
+void function SetStatsLabelValueOnLabel( elem, textString )
 {
 	if ( type( textString ) == "array" )
 	{
@@ -192,30 +211,30 @@ function GetPercent( numerator, denominator, defaultVal, clamp = true )
 	return percent
 }
 
-function GetChallengeCompleteData()
-{
-	/*local Table = {}
-	Table.total <- 0
-	Table.complete <- 0
-
-	UI_GetAllChallengesProgress()
-	var allChallenges = GetLocalChallengeTable()
-
-	foreach( challengeRef, val in allChallenges )
-	{
-		if ( IsDailyChallenge( challengeRef ) )
-			continue
-		local tierCount = GetChallengeTierCount( challengeRef )
-		Table.total += tierCount
-		for ( int i = 0; i < tierCount; i++ )
-		{
-			if ( IsChallengeTierComplete( challengeRef, i ) )
-				Table.complete++
-		}
-	}
-
-	return Table*/
-}
+//function GetChallengeCompleteData()
+//{
+//	local Table = {}
+//	Table.total <- 0
+//	Table.complete <- 0
+//
+//	UI_GetAllChallengesProgress()
+//	var allChallenges = GetLocalChallengeTable()
+//
+//	foreach( challengeRef, val in allChallenges )
+//	{
+//		if ( IsDailyChallenge( challengeRef ) )
+//			continue
+//		local tierCount = GetChallengeTierCount( challengeRef )
+//		Table.total += tierCount
+//		for ( int i = 0; i < tierCount; i++ )
+//		{
+//			if ( IsChallengeTierComplete( challengeRef, i ) )
+//				Table.complete++
+//		}
+//	}
+//
+//	return Table
+//}
 
 function GetItemUnlockCountData()
 {
@@ -270,32 +289,36 @@ function GetItemUnlockCountData()
 	return Table
 }
 
-function GetOverviewWeaponData()
+table<string, table> function GetOverviewWeaponData()
 {
-	entity player = GetUIPlayer()
-	if ( player == null )
-		return
-
-	local Table = {}
+	table<string, table> Table = {}
 	Table[ "most_kills" ] <- {}
-	Table[ "most_kills" ].ref <- null
-	Table[ "most_kills" ].printName <- null
+	Table[ "most_kills" ].ref <- ""
+	Table[ "most_kills" ].printName <- ""
 	Table[ "most_kills" ].val <- 0
 	Table[ "most_used" ] <- {}
-	Table[ "most_used" ].ref <- null
-	Table[ "most_used" ].printName <- null
+	Table[ "most_used" ].ref <- ""
+	Table[ "most_used" ].printName <- ""
 	Table[ "most_used" ].val <- 0
 	Table[ "highest_kpm" ] <- {}
-	Table[ "highest_kpm" ].ref <- null
-	Table[ "highest_kpm" ].printName <- null
+	Table[ "highest_kpm" ].ref <- ""
+	Table[ "highest_kpm" ].printName <- ""
 	Table[ "highest_kpm" ].val <- 0
+
+	entity player = GetUIPlayer()
+	if ( player == null )
+		return Table
 
 	array<ItemDisplayData> allWeapons = []
 
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_PRIMARY ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_SECONDARY ) )
+	//allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_ORDNANCE ) ) // art looks bad
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_PRIMARY ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_ORDNANCE ) )
+	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_ANTIRODEO ) )
+	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_SPECIAL ) )
+	//allWeapons.extend( GetVisibleItemsOfType( eItemTypes.BURN_METER_REWARD ) ) // script errors
 
 	foreach ( weapon in allWeapons )
 	{
@@ -337,115 +360,182 @@ function GetOverviewWeaponData()
 	return Table
 }
 
-function StatToTimeString( string category, string alias, string weapon = "" )
+string function StatToTimeString( string category, string alias, string weapon = "" )
 {
 	entity player = GetUIPlayer()
 	if ( player == null )
-		return 0
-
-	//Converts hours float to a formatted time string
+		return "0"
 
 	string statString = GetStatVar( category, alias, weapon )
-	local savedHours = player.GetPersistentVar( statString )
+	float savedHours = expect float( player.GetPersistentVar( statString ) )
 
 	return HoursToTimeString( savedHours )
 }
 
-function HoursToTimeString( savedHours, pieChartHeader = null, pieChartPercent = null )
+string function HoursToTimeString( float savedHours )
 {
-	local timeString = []
+	string timeString
 	local minutes = floor( savedHours * 60.0 )
 
 	if ( minutes < 0 )
 		minutes = 0
 
-	local days = 0
-	local hours = 0
+	int days = 0
+	int hours = 0
 
-	while( minutes >= 1440 )
+	while ( minutes >= 1440 )
 	{
 		minutes -= 1440
 		days++
 	}
 
-	while( minutes >= 60 )
+	while ( minutes >= 60 )
 	{
 		minutes -= 60
 		hours++
 	}
 
-
 	if ( days > 0 && hours > 0 && minutes > 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_D_H_M" )
-		timeString.append( days )
-		timeString.append( hours )
-		timeString.append( minutes )
+		timeString = Localize( "#STATS_TIME_STRING_D_H_M", days, hours, minutes )
 	}
 	else if ( days > 0 && hours == 0 && minutes == 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_D" )
-		timeString.append( days )
+		timeString = Localize( "#STATS_TIME_STRING_D", days )
 	}
 	else if ( days == 0 && hours > 0 && minutes == 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_H" )
-		timeString.append( hours )
+		timeString = Localize( "#STATS_TIME_STRING_H", hours )
 	}
 	else if ( days == 0 && hours == 0 && minutes >= 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_M" )
-		timeString.append( minutes )
+		timeString = Localize( "#STATS_TIME_STRING_M", minutes )
 	}
 	else if ( days > 0 && hours > 0 && minutes == 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_D_H" )
-		timeString.append( days )
-		timeString.append( hours )
+		timeString = Localize( "#STATS_TIME_STRING_D_H", days, hours )
 	}
 	else if ( days == 0 && hours > 0 && minutes > 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_H_M" )
-		timeString.append( hours )
-		timeString.append( minutes )
+		timeString = Localize( "#STATS_TIME_STRING_H_M", hours, minutes )
 	}
 	else if ( days > 0 && hours == 0 && minutes > 0 )
 	{
-		timeString.append( "#STATS_TIME_STRING_D_M" )
-		timeString.append( days )
-		timeString.append( minutes )
+		timeString = Localize( "#STATS_TIME_STRING_D_M", days, minutes )
 	}
 	else
-		Assert( 0, "Unhandled time string creation case" )
-
-	if ( pieChartHeader != null )
 	{
-		Assert( pieChartPercent != null )
-		timeString[0] = timeString[0] + "_PIECHART"
-		timeString.append( pieChartHeader )
-		timeString.append( pieChartPercent )
+		Assert( 0, "Unhandled time string creation case" )
 	}
 
 	return timeString
 }
 
-function StatToDistanceString( string category, string alias, string weapon = "" )
+string function PieChartHoursToTimeString( float savedHours, string pieChartHeader, string pieChartPercent )
+{
+	string timeString
+	local minutes = floor( savedHours * 60.0 )
+
+	if ( minutes < 0 )
+		minutes = 0
+
+	int days = 0
+	int hours = 0
+
+	while ( minutes >= 1440 )
+	{
+		minutes -= 1440
+		days++
+	}
+
+	while ( minutes >= 60 )
+	{
+		minutes -= 60
+		hours++
+	}
+
+	if ( days > 0 && hours > 0 && minutes > 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_D_H_M_PIECHART", days, hours, minutes, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days > 0 && hours == 0 && minutes == 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_D_PIECHART", days, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days == 0 && hours > 0 && minutes == 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_H_PIECHART", hours, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days == 0 && hours == 0 && minutes >= 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_M_PIECHART", minutes, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days > 0 && hours > 0 && minutes == 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_D_H_PIECHART", days, hours, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days == 0 && hours > 0 && minutes > 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_H_M_PIECHART", hours, minutes, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else if ( days > 0 && hours == 0 && minutes > 0 )
+	{
+		timeString = Localize( "#STATS_TIME_STRING_D_M_PIECHART", days, minutes, Localize( pieChartHeader ), pieChartPercent )
+	}
+	else
+	{
+		Assert( 0, "Unhandled time string creation case" )
+	}
+
+	return timeString
+}
+
+string function StatToDistanceString( string category, string alias, string weapon = "" )
 {
 	entity player = GetUIPlayer()
 	if ( player == null )
-		return []
+		return ""
 
-	local statString = GetStatVar( category, alias, weapon )
-	local kilometers = player.GetPersistentVar( statString )
+	string statString = GetStatVar( category, alias, weapon )
+	float kilometers = expect float( player.GetPersistentVar( statString ) )
 
-	local distString = []
-
-	distString.append( "#STATS_KILOMETERS_ABBREVIATION" )
-
+	string formattedNum
 	if ( kilometers % 1 == 0 )
-		distString.append( format( "%.0f", kilometers ) )
+		formattedNum = format( "%.0f", kilometers )
 	else
-		distString.append( format( "%.2f", kilometers ) )
+		formattedNum = format( "%.2f", kilometers )
+
+	string distString = Localize( "#STATS_KILOMETERS_ABBREVIATION", formattedNum )
 
 	return distString
+}
+
+int function ComparePieChartEntryValues( PieChartEntry a, PieChartEntry b )
+{
+	float aVal = a.numValue
+	float bVal = b.numValue
+
+	if ( aVal < bVal )
+		return 1
+	else if ( aVal > bVal )
+		return -1
+
+	return 0
+}
+
+void function SetStatBoxDisplay( var vguiElem, string text, string value )
+{
+	var rui = Hud_GetRui( vguiElem )
+
+	RuiSetString( rui, "statText", text )
+	RuiSetString( rui, "statValue", value )
+}
+
+void function SetMedalStatBoxDisplay( var vguiElem, string text, asset image, int value )
+{
+	var rui = Hud_GetRui( vguiElem )
+
+	RuiSetString( rui, "statText", text )
+	RuiSetString( rui, "statValue", string( value ) )
+	RuiSetImage( rui, "statImage", image )
 }

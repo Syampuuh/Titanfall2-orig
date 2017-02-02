@@ -50,7 +50,9 @@ struct
 	var editButton
 	var sendMessageButton
 	var sendButton
-	var chatroomToggleVoiceModeButton
+	var chatroomToggleVoiceModeHeader
+	var chatroomToggleVoiceModeButton0
+	var chatroomToggleVoiceModeButton1
 
 	var chatroomMenu
 	var chatroomMenu_chatroomWidget
@@ -139,7 +141,7 @@ struct
 	CommunityPanel myCommunityInfoPanelWidgets
 
 	var selectNetWorkbutton
-	var browseNetworkButton
+//	var browseNetworkButton
 	bool inCommunityPanel
 	array<var> temporaryPanels
 	var lastButtonFocused
@@ -887,14 +889,18 @@ void function OnHappyHourPrev( var button )
 {
 	file.settings.happyHourStart = (file.settings.happyHourStart-1+24)%24
 	SetHappyHour( file.settings.happyHourStart )
-	Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
+
+	if ( Hud_GetHudName( button ) == "HappyHourLeftHidden" || Hud_GetHudName( button ) == "HappyHourRightHidden" )
+		Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
 }
 
 void function OnHappyHourNext( var button )
 {
 	file.settings.happyHourStart = (file.settings.happyHourStart+1)%24
 	SetHappyHour( file.settings.happyHourStart )
-	Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
+
+	if ( Hud_GetHudName( button ) == "HappyHourLeftHidden" || Hud_GetHudName( button ) == "HappyHourRightHidden" )
+		Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
 }
 
 void function SetHappyHour( int startTime )
@@ -905,7 +911,7 @@ void function SetHappyHour( int startTime )
 	file.settings.happyHourStart = startTime
 
 	HideAllPanels()
-	Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
+	// Hud_SetFocused( file.editCommunityPanel_HappyHourStartButton )
 
 	FillInCommunitySettingsPanel( file.settings )
 }
@@ -1141,15 +1147,50 @@ void function Community_CommunityUpdated()
 		Hud_Hide( file.sendButton )
 	}
 
-	Hud_SetEnabled( file.chatroomToggleVoiceModeButton, admin )
-	if ( GetConVarInt( "chatroom_voiceMode" ) == 0 )
-		ComboButton_SetText( file.chatroomToggleVoiceModeButton, Localize( "#MENU_TITLE_CHATROOM_ADMINSONLY" ) )
-	else
-		ComboButton_SetText( file.chatroomToggleVoiceModeButton, Localize( "#MENU_TITLE_CHATROOM_FREETALK" ) )
+	Hud_SetEnabled( file.chatroomToggleVoiceModeButton0, admin )
+	Hud_SetEnabled( file.chatroomToggleVoiceModeButton1, admin )
+	if ( !file.inCommunityPanel )
+	{
+		UpdateChatroomToggleVis( admin )
+	}
+
+	UpdateChatroomToggleText()
 
 	ComboButtons_ResetColumnFocus( file.networksComboStruct )
 	UpdateChatroomUI()
 	//UpdateArmoryMenu( admin, owner )
+}
+
+void function UpdateChatroomToggleVis( bool admin )
+{
+	if ( admin )
+	{
+		Hud_Show( file.chatroomToggleVoiceModeButton0 )
+		Hud_Show( file.chatroomToggleVoiceModeButton1 )
+		Hud_Show( file.chatroomToggleVoiceModeHeader )
+	}
+	else
+	{
+		Hud_Hide( file.chatroomToggleVoiceModeButton0 )
+		Hud_Hide( file.chatroomToggleVoiceModeButton1 )
+		Hud_Hide( file.chatroomToggleVoiceModeHeader )
+	}
+}
+
+void function UpdateChatroomToggleText( int currentVoiceMode = -1 )
+{
+	if ( currentVoiceMode == -1 )
+		currentVoiceMode = GetConVarInt( "chatroom_voiceMode" )
+	if ( currentVoiceMode == 0 )
+	{
+		ComboButton_SetText( file.chatroomToggleVoiceModeButton0, Localize( "#MENU_TITLE_CHATROOM_SELECTED", Localize( "#MENU_TITLE_CHATROOM_FREETALK" ) ) )
+		ComboButton_SetText( file.chatroomToggleVoiceModeButton1, Localize( "#MENU_TITLE_CHATROOM_ADMINSONLY" ) )
+	}
+	else
+	{
+		ComboButton_SetText( file.chatroomToggleVoiceModeButton0, Localize( "#MENU_TITLE_CHATROOM_FREETALK" ) )
+		ComboButton_SetText( file.chatroomToggleVoiceModeButton1, Localize( "#MENU_TITLE_CHATROOM_SELECTED", Localize( "#MENU_TITLE_CHATROOM_ADMINSONLY" ) ) )
+	}
 }
 
 void function GetCommunityInfoThread( int communityId )
@@ -2089,6 +2130,8 @@ void function InitCommunitiesMenu()
 
 	Hud_AddEventHandler( Hud_GetChild( editCommunityPanel, "HappyHourLeftHidden" ), UIE_GET_FOCUS, OnHappyHourPrev )
 	Hud_AddEventHandler( Hud_GetChild( editCommunityPanel, "HappyHourRightHidden" ), UIE_GET_FOCUS, OnHappyHourNext )
+	Hud_AddEventHandler( Hud_GetChild( editCommunityPanel, "HappyHourLeft" ), UIE_CLICK, OnHappyHourPrev )
+	Hud_AddEventHandler( Hud_GetChild( editCommunityPanel, "HappyHourRight" ), UIE_CLICK, OnHappyHourNext )
 
 	file.editCommunityPanel_PopupBackground = Hud_GetChild( file.editCommunityMenu, "PanelBackground" )
 	Hud_AddEventHandler( file.editCommunityPanel_PopupBackground, UIE_CLICK, PopupBackground_Activate )
@@ -2463,13 +2506,24 @@ void function FooterOptionsUpdate( var menu )
 	}
 }
 
-void function ToggleChatroomVoiceMode( var button )
+void function ToggleChatroomVoiceMode0( var button )
 {
-	if ( GetConVarInt( "chatroom_voiceMode" ) == 0 )
-		ClientCommand( "chatroom_adminsonly" )
-	else
+	ToggleChatroomVoiceMode( 0 )
+}
+
+void function ToggleChatroomVoiceMode1( var button )
+{
+	ToggleChatroomVoiceMode( 1 )
+}
+
+void function ToggleChatroomVoiceMode( int voiceMode )
+{
+	if ( voiceMode == 0 )
 		ClientCommand( "chatroom_freetalk" )
-	CloseActiveMenu()
+	else
+		ClientCommand( "chatroom_adminsonly" )
+
+	UpdateChatroomToggleText( voiceMode )
 }
 
 void function SetupComboButtons( var menu )
@@ -2486,24 +2540,19 @@ void function SetupComboButtons( var menu )
 	file.selectNetWorkbutton = selectButton
 	Hud_AddEventHandler( selectButton, UIE_CLICK, SelectNetworkButton_Activate )
 
-	var browseButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_BROWSE_NETWORKS" )
-	file.switchCommunityPanelButtons.append( browseButton )
-	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
-	file.browseNetworkButton = browseButton
+	var createButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CREATE_NETWORK" )
+	file.switchCommunityPanelButtons.append( createButton )
+	AddButtonEventHandler( createButton, UIE_CLICK, OnCreateCommunityButton_Activate )
 
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_LEAVE_NETWORK" )
 	file.switchCommunityPanelButtons.append( leaveButton )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, LeaveCurrentCommunityButton_Activate )
+
 	headerIndex++
 	buttonIndex = 0
 
 	var adminHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_TITLE_ADMIN" )
 	file.switchCommunityPanelButtons.append( adminHeader )
-
-	var createButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CREATE_NETWORK" )
-	file.switchCommunityPanelButtons.append( createButton )
-	AddButtonEventHandler( createButton, UIE_CLICK, OnCreateCommunityButton_Activate )
-
 	var editButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_EDIT_NETWORK" )
 	file.switchCommunityPanelButtons.append( editButton )
 	AddButtonEventHandler( editButton, UIE_CLICK, OnEditCommunityButton_Activate )
@@ -2521,12 +2570,16 @@ void function SetupComboButtons( var menu )
 	headerIndex++
 	buttonIndex = 0
 
-	var adminChatHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_TITLE_ADMIN_CHATROOM" )
-	file.switchCommunityPanelButtons.append( adminChatHeader )
+	file.chatroomToggleVoiceModeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_TITLE_ADMIN_CHATROOM" )
+	file.switchCommunityPanelButtons.append( file.chatroomToggleVoiceModeHeader )
 
-	file.chatroomToggleVoiceModeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CHATROOM_ADMINSONLY" )
-	file.switchCommunityPanelButtons.append( file.chatroomToggleVoiceModeButton )
-	Hud_AddEventHandler( file.chatroomToggleVoiceModeButton, UIE_CLICK, ToggleChatroomVoiceMode )
+	file.chatroomToggleVoiceModeButton0 = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CHATROOM_FREETALK" )
+	file.switchCommunityPanelButtons.append( file.chatroomToggleVoiceModeButton0 )
+	Hud_AddEventHandler( file.chatroomToggleVoiceModeButton0, UIE_CLICK, ToggleChatroomVoiceMode0 )
+
+	file.chatroomToggleVoiceModeButton1 = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CHATROOM_ADMINSONLY" )
+	file.switchCommunityPanelButtons.append( file.chatroomToggleVoiceModeButton1 )
+	Hud_AddEventHandler( file.chatroomToggleVoiceModeButton1, UIE_CLICK, ToggleChatroomVoiceMode1 )
 
 	// comboStruct.navDownButton = file.chatroomMenu_chatroomWidget
 	ComboButtons_Finalize( comboStruct )

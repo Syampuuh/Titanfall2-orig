@@ -195,18 +195,49 @@ void function PopulateTitanLoadoutFromPersistentData( entity player, TitanLoadou
 	loadout.primarySkinIndex	= GetPersistentLoadoutValueInt( player, "titan", loadoutIndex, "primarySkinIndex" )
 	loadout.primaryCamoIndex	= GetPersistentLoadoutValueInt( player, "titan", loadoutIndex, "primaryCamoIndex" )
 
+	//Prime Titan related vars
+	loadout.isPrime			= GetPersistentLoadoutValue( player, "titan", loadoutIndex, "isPrime" )
+	loadout.primeSkinIndex	= GetPersistentLoadoutValueInt( player, "titan", loadoutIndex, "primeSkinIndex" )
+	loadout.primeCamoIndex	= GetPersistentLoadoutValueInt( player, "titan", loadoutIndex, "primeCamoIndex" )
+	loadout.primeDecalIndex	= GetPersistentLoadoutValueInt( player, "titan", loadoutIndex, "primeDecalIndex" )
+
+
 	UpdateDerivedTitanLoadoutData( loadout )
 	OverwriteLoadoutWithDefaultsForSetFile( loadout )
 }
 
-string function GetSetFileForTitanClass( string titanClass )
+string function GetSetFileForTitanClassAndPrimeStatus( string titanClass, bool isPrimeTitan = false )
+{
+	string nonPrimeSetFile
+
+	array<TitanLoadoutDef> legalLoadouts = GetAllowedTitanLoadouts()
+
+	foreach ( loadout in legalLoadouts )
+	{
+		if ( GetTitanCharacterNameFromSetFile( loadout.setFile ) == titanClass )
+		{
+			nonPrimeSetFile = loadout.setFile
+			break
+		}
+	}
+
+	if ( !isPrimeTitan )
+		return nonPrimeSetFile
+
+	string primeSetFile = GetPrimeTitanSetFileFromNonPrimeSetFile( nonPrimeSetFile )
+	Assert( primeSetFile != "" )
+	return primeSetFile
+}
+
+
+string function GetPrimeTitanRefForTitanClass( string titanClass )
 {
 	array<TitanLoadoutDef> legalLoadouts = GetAllowedTitanLoadouts()
 
 	foreach ( loadout in legalLoadouts )
 	{
 		if ( GetTitanCharacterNameFromSetFile( loadout.setFile ) == titanClass )
-			return loadout.setFile
+			return loadout.primeTitanRef
 	}
 
 	unreachable
@@ -282,6 +313,9 @@ string function GetPersistentLoadoutPropertyType( string loadoutProperty )
 		case "skinIndex":
 		case "camoIndex":
 		case "decalIndex":
+		case "primeSkinIndex":
+		case "primeCamoIndex":
+		case "primeDecalIndex":
 		case "primarySkinIndex":
 		case "primaryCamoIndex":
 		case "secondarySkinIndex":
@@ -289,7 +323,7 @@ string function GetPersistentLoadoutPropertyType( string loadoutProperty )
 			return "int"
 	}
 
-	return "string"
+			return "string"
 }
 
 
@@ -299,10 +333,10 @@ string function GetPersistentLoadoutPropertyType( string loadoutProperty )
 // 		If a child change is invalid for the parent, it should be changed to a valid default based on the parent
 function SetPersistentLoadoutValue( entity player, string loadoutType, int loadoutIndex, string loadoutProperty, string value )
 {
-	// printt( "=======================================================================================" )
-	// printt( "SetPersistentLoadoutValue called with loadoutType:", loadoutType, "loadoutIndex:", loadoutIndex, "loadoutProperty:" , loadoutProperty, "value:", value )
-	// printl( "script GetPlayerArray()[0].SetPersistentVar( \"" + loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty + "\", \"" + value + "\" )" )
-	// printt( "=======================================================================================" )
+	 //printt( "=======================================================================================" )
+	 //printt( "SetPersistentLoadoutValue called with loadoutType:", loadoutType, "loadoutIndex:", loadoutIndex, "loadoutProperty:" , loadoutProperty, "value:", value )
+	 //printl( "script GetPlayerArray()[0].SetPersistentVar( \"" + loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty + "\", \"" + value + "\" )" )
+	 //printt( "=======================================================================================" )
 
 	Assert( loadoutType == "pilot" || loadoutType == "titan" )
 	Assert( loadoutIndex < PersistenceGetArrayCount( loadoutType + "Loadouts" ), "SetPersistentLoadoutValue() called with invalid loadoutIndex: " + loadoutIndex )
@@ -343,9 +377,9 @@ function SetPersistentLoadoutValue( entity player, string loadoutType, int loado
 	}
 
 	if ( GetPersistentLoadoutPropertyType( loadoutProperty ) == "int" )
-		player.SetPersistentVar( loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty, int( value ) )
+			player.SetPersistentVar( loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty, int( value ) )
 	else
-		player.SetPersistentVar( loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty, value )
+			player.SetPersistentVar( loadoutType + "Loadouts[" + loadoutIndex + "]." + loadoutProperty, value )
 
 	// Reset child properties when parent changes
 	array<string> childProperties = GetChildLoadoutProperties( loadoutType, loadoutProperty )
@@ -371,7 +405,7 @@ function SetPersistentLoadoutValue( entity player, string loadoutType, int loado
 	#endif
 
 	// TEMP client model update method
-	bool updateModel = ( loadoutProperty == "suit" || loadoutProperty == "race" || loadoutProperty == "setFile" || loadoutProperty == "primary" || loadoutProperty == "decal" )
+	bool updateModel = ( loadoutProperty == "suit" || loadoutProperty == "race" || loadoutProperty == "setFile" || loadoutProperty == "primary" || loadoutProperty == "decal" || loadoutProperty == "isPrime" )
 
 	if ( loadoutType == "pilot" )
 	{
@@ -1003,6 +1037,22 @@ void function SetTitanLoadoutValue( TitanLoadoutDef loadout, string property, st
 		case "primaryCamoIndex":
 			loadout.primaryCamoIndex = int( value )
 			break
+
+		case "isPrime":
+			loadout.isPrime =  value
+			break
+
+		case "primeSkinIndex":
+			loadout.primeSkinIndex = int( value )
+			break
+
+		case "primeCamoIndex":
+			loadout.primeCamoIndex = int( value )
+			break
+
+		case "primeDecalIndex":
+			loadout.primeDecalIndex = int( value )
+			break
 	}
 }
 
@@ -1059,6 +1109,10 @@ bool function IsValidTitanLoadoutProperty( string propertyName )
 		case "decalIndex":
 		case "primarySkinIndex":
 		case "primaryCamoIndex":
+		case "isPrime":
+		case "primeSkinIndex":
+		case "primeCamoIndex":
+		case "primeDecalIndex":
 			return true
 	}
 
@@ -1238,10 +1292,6 @@ int function GetItemTypeFromTitanLoadoutProperty( string loadoutProperty, string
 			itemType = eItemTypes.TITAN_PRIMARY_MOD
 			break
 
-		case "decal":
-			itemType = eItemTypes.TITAN_NOSE_ART
-			break
-
 		default:
 			Assert( false, "Invalid titan loadout property!" )
 	}
@@ -1262,6 +1312,10 @@ bool function LoadoutPropertyRequiresItemValidation( string loadoutProperty )
 		case "primaryCamoIndex":
 		case "secondarySkinIndex":
 		case "secondaryCamoIndex":
+		case "isPrime":
+		case "primeSkinIndex":
+		case "primeCamoIndex":
+		case "primeDecalIndex":
 			return false
 	}
 
@@ -1298,6 +1352,9 @@ bool function IsLoadoutSubitemValid( entity player, string loadoutType, int load
 		case "primaryCamoIndex":
 		case "secondarySkinIndex":
 		case "secondaryCamoIndex":
+		case "primeSkinIndex":
+		case "primeCamoIndex":
+		case "primeDecalIndex":
 			return true
 			break
 	}
@@ -1348,6 +1405,9 @@ string function GetLoadoutPropertyDefault( string loadoutType, string propertyNa
 		case "primaryCamoIndex":
 		case "secondarySkinIndex":
 		case "secondaryCamoIndex":
+		case "primeSkinIndex":
+		case "primeCamoIndex":
+		case "primeDecalIndex":
 			return "0"
 	}
 
@@ -1779,6 +1839,25 @@ void function SetPersistentSpawnLoadoutIndex( entity player, string loadoutType,
 	{
 		return shGlobal.cachedTitanLoadouts
 	}
+
+	int function GetCachedTitanLoadoutCamoIndex( int loadoutIndex )
+	{
+		TitanLoadoutDef cachedTitanLoadout = GetCachedTitanLoadout( loadoutIndex )
+		return GetTitanCamoIndexFromLoadoutAndPrimeStatus( cachedTitanLoadout )
+	}
+
+	int function GetCachedTitanLoadoutSkinIndex( int loadoutIndex )
+	{
+		TitanLoadoutDef cachedTitanLoadout = GetCachedTitanLoadout( loadoutIndex )
+		return GetTitanSkinIndexFromLoadoutAndPrimeStatus( cachedTitanLoadout  )
+	}
+
+	int function GetCachedTitanLoadoutDecalIndex( int loadoutIndex )
+	{
+		TitanLoadoutDef cachedTitanLoadout = GetCachedTitanLoadout( loadoutIndex )
+		return GetTitanDecalIndexFromLoadoutAndPrimeStatus( cachedTitanLoadout )
+	}
+
 #endif // UI || CLIENT
 
 #if UI
@@ -2291,9 +2370,41 @@ void function UpdateDerivedPilotLoadoutData( PilotLoadoutDef loadout )
 	#endif
 }
 
+bool function TitanClassHasPrimeTitan( string titanClass )
+{
+	string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass, false )
+	string primeSetFile = GetPrimeTitanSetFileFromNonPrimeSetFile( nonPrimeSetFile )
+
+	return primeSetFile != ""
+}
+
+bool function IsTitanLoadoutPrime( TitanLoadoutDef loadout )
+{
+	return loadout.isPrime == "titan_is_prime"
+}
+
+bool function IsTitanClassPrime( entity player, string titanClass )
+{
+	for ( int i = 0; i < NUM_PERSISTENT_TITAN_LOADOUTS; i++ )
+	{
+		TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, i )
+		if ( loadout.titanClass == titanClass )
+		{
+			if ( loadout.isPrime == "titan_is_prime" )
+				return true
+			else
+				return false
+		}
+	}
+
+	unreachable
+}
+
 void function UpdateDerivedTitanLoadoutData( TitanLoadoutDef loadout )
 {
-	loadout.setFile 			= GetSetFileForTitanClass( loadout.titanClass )
+	bool isTitanLoadoutPrime = IsTitanLoadoutPrime( loadout )
+	loadout.setFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, IsTitanLoadoutPrime( loadout ) )
+	loadout.primeTitanRef	= GetPrimeTitanRefForTitanClass( loadout.titanClass )
 }
 
 void function PrintPilotLoadouts( entity player )
@@ -2361,6 +2472,7 @@ void function PrintTitanLoadout( TitanLoadoutDef loadout )
 	printt( "        name                 \"" + loadout.name + "\"" )
 	printt( "        titanClass           \"" + loadout.titanClass + "\"" )
 	printt( "        setFile              \"" + loadout.setFile + "\"" )
+	printt( "        primeTitanRef        \"" + loadout.primeTitanRef + "\"" )
 	printt( "        primaryMod           \"" + loadout.primaryMod + "\"" )
 	printt( "        special              \"" + loadout.special + "\"" )
 	printt( "        antirodeo            \"" + loadout.antirodeo + "\"" )
@@ -2373,6 +2485,10 @@ void function PrintTitanLoadout( TitanLoadoutDef loadout )
 	printt( "        decalIndex           \"" + loadout.decalIndex + "\"" )
 	printt( "        primarySkinIndex     \"" + loadout.primarySkinIndex + "\"" )
 	printt( "        primaryCamoIndex     \"" + loadout.primaryCamoIndex + "\"" )
+	printt( "        isPrime     		  \"" + loadout.isPrime + "\"" )
+	printt( "        primeSkinIndex       \"" + loadout.primeSkinIndex + "\"" )
+	printt( "        primeCamoIndex       \"" + loadout.primeCamoIndex + "\"" )
+	printt( "        primeDecalIndex      \"" + loadout.primeDecalIndex + "\"" )
 	printt( "    DERIVED DATA:" )
 	print(  "        setFileMods          " )
 	PrintStringArray( loadout.setFileMods )
@@ -2416,30 +2532,6 @@ void function PrintStringArray( array<string> stringArray )
 	print( "\n" )
 }
 
-#if SERVER
-
-TitanLoadoutDef function GetBurnCardTitanLoadout()
-{
-	TitanLoadoutDef titanLoadout
-
-	titanLoadout.setFile					= "titan_atlas_burncard"
-	titanLoadout.setFileMods				= []
-	titanLoadout.primary					= "mp_titanweapon_xo16"
-	titanLoadout.primaryMods				= []
-	titanLoadout.special					= "mp_titanability_smoke"
-	//titanLoadout.special					= "mp_titanweapon_vortex_shield"
-	titanLoadout.specialMods				= []
-	titanLoadout.ordnance					= "mp_titanweapon_salvo_rockets"
-	titanLoadout.ordnanceMods				= []
-	//titanLoadout.antirodeo					= "mp_titanability_smoke"
-	titanLoadout.voice						= "titanos_maleintimidator"
-	titanLoadout.melee 						= "melee_titan_punch"
-	//titanLoadout.coreAbility 				= "mp_titancore_laser_cannon"
-
-	return titanLoadout
-}
-#endif // SERVER
-
 string function GetSkinPropertyName( string camoPropertyName )
 {
 	string skinPropertyName
@@ -2448,6 +2540,10 @@ string function GetSkinPropertyName( string camoPropertyName )
 	{
 		case "camoIndex":
 			skinPropertyName = "skinIndex"
+			break
+
+		case "primeCamoIndex":
+			skinPropertyName = "primeSkinIndex"
 			break
 
 		case "primaryCamoIndex":
@@ -2469,7 +2565,7 @@ string function GetSkinPropertyName( string camoPropertyName )
 int function GetSkinIndexForCamo( string modelType, string camoPropertyName, int camoIndex )
 {
 	Assert( modelType == "pilot" || modelType == "titan" )
-	Assert( camoPropertyName == "camoIndex" || camoPropertyName == "primaryCamoIndex" || camoPropertyName == "secondaryCamoIndex" )
+	Assert( camoPropertyName == "camoIndex" || camoPropertyName == "primeCamoIndex" || camoPropertyName == "primaryCamoIndex" || camoPropertyName == "secondaryCamoIndex" )
 
 	int skinIndex = SKIN_INDEX_BASE
 

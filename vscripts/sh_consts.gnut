@@ -42,7 +42,7 @@ global const FORT_WAR = "fw"
 
 global const VERBOSE_DAMAGE_PRINTOUTS = false
 
-global const SAVEGAME_VERSION = 6 // increment when saves need to be tossed
+global const SAVEGAME_VERSION = 8 // increment when saves need to be tossed
 global const PERSISTENCE_INIT_VERSION = 218
 
 global const TEMP_NETWORTH_VAR = "activeBCID"
@@ -145,6 +145,7 @@ global struct TitanLoadoutDef
 {
 	string 			name
 	string 			titanClass
+	string			primeTitanRef
 	string			setFile
 	string 			primaryMod
 	string			special
@@ -159,6 +160,11 @@ global struct TitanLoadoutDef
 	int 			primarySkinIndex
 	int 			primaryCamoIndex
 	int 			difficulty
+	string 			isPrime //Really should be bool, but it is a massive pain to restructure existing script to work with bool loadout value type.
+	int 			primeSkinIndex		//Prime Titans don't have the same warpaints/nose arts than non Prime Titans have, so we need to store them separately
+	int 			primeCamoIndex		//Prime Titans don't have the same warpaints/nose arts than non Prime Titans have, so we need to store them separately
+	int 			primeDecalIndex		//Prime Titans don't have the same warpaints/nose arts than non Prime Titans have, so we need to store them separately
+
 
 	// Everything above should be player choices that exist in persistent data
 	// Everything below should be derived properties from the above or otherwise set by script
@@ -1009,6 +1015,10 @@ global const OFFHAND_INVENTORY		= 4
 global const OFFHAND_MELEE			= 5
 global const OFFHAND_TITAN_CENTER	= 2
 
+global const TITANMENU_NO_CUSTOMIZATION = 0x00001
+global const TITANMENU_FORCE_NON_PRIME = 0x00002
+global const TITANMENU_FORCE_PRIME = 0x00004
+
 global const OFFHAND_COUNT			= 6
 
 global const OFFHAND_ORDNANCE		= OFFHAND_RIGHT
@@ -1074,6 +1084,7 @@ global enum eItemTypes
 	BURN_METER_REWARD,
 	PILOT_MELEE,
 	TITAN,
+	PRIME_TITAN,
 	FEATURE,
 	WEAPON_FEATURE,
 	CALLING_CARD,
@@ -1094,6 +1105,7 @@ global enum eItemTypes
 	TITAN_SCORCH_PASSIVE,
 	TITAN_LEGION_PASSIVE,
 	TITAN_WARPAINT,
+	PRIME_TITAN_NOSE_ART,
 	COUNT
 }
 
@@ -1386,6 +1398,7 @@ global enum eMaps
 	mp_crashsite3
 	mp_complex3
 	mp_coliseum
+	mp_angel_city
 }
 
 global enum ePrivateMatchMaps
@@ -1399,6 +1412,7 @@ global enum ePrivateMatchMaps
 	mp_drydock
 	mp_crashsite3
 	mp_complex3
+	mp_angel_city
 }
 
 global enum ePrivateMatchModes
@@ -2035,17 +2049,17 @@ global const TDAY_SCORE_POD			= 1
 
 global const ATTRITION_SCORE_BOUNTY_SURVIVAL= 400
 global const ATTRITION_SCORE_BOSS   		= 100
-global const ATTRITION_SCORE_BOSS_DAMAGE	= 500
+global const ATTRITION_SCORE_BOSS_DAMAGE	= 400
 global const ATTRITION_SCORE_TITAN   		= 0//40//100
-global const ATTRITION_SCORE_SUPER_SPECTRE 	= 50
+global const ATTRITION_SCORE_SUPER_SPECTRE 	= 50//100//50
 global const ATTRITION_SCORE_MEGATURRET		= 50
 global const ATTRITION_SCORE_SENTRYTURRET	= 10
 global const ATTRITION_SCORE_PILOT   		= 0//20
 global const ATTRITION_SCORE_AIR_DRONE 		= 10//20
 global const ATTRITION_SCORE_PROWLER  		= 10//5
 global const ATTRITION_SCORE_GRUNT   		= 10//5
-global const ATTRITION_SCORE_SPECTRE 		= 20//10
-global const ATTRITION_SCORE_STALKER 		= 25//10
+global const ATTRITION_SCORE_SPECTRE 		= 15//20//10
+global const ATTRITION_SCORE_STALKER 		= 20//30//25//10
 global const ATTRITION_SCORE_MARVIN  		= 00
 global const ATTRITION_SCORE_BONUS			= 00
 global const ATTRITION_SCORE_BONUS_STOLEN	= 00
@@ -2147,6 +2161,7 @@ global enum ePresentationType
 {
 	INACTIVE,
 	DEFAULT,
+	STORE_CAMO_PACKS,
 	PILOT,
 	PILOT_LOADOUT_EDIT,
 	PILOT_CHARACTER,
@@ -2160,6 +2175,8 @@ global enum ePresentationType
 	BOOSTS,
 	SEARCH,
 	CALLSIGN,
+	KNOWLEDGEBASE_MAIN,
+	KNOWLEDGEBASE_SUB,
 	COUNT
 }
 
@@ -2527,7 +2544,9 @@ global const float EARN_METER_CORE_MULTIPLIER = 1.25
 global const float COCKPIT_COLOR_BLUE = 0.0
 global const float COCKPIT_COLOR_YELLOW = 0.05
 global const float COCKPIT_COLOR_RED = 0.15
-global const float COCKPIT_COLOR_HIDDEN = 0.25
+global const float COCKPIT_COLOR_SIEGE = 0.25
+global const float COCKPIT_COLOR_THREAT = 0.35
+global const float COCKPIT_COLOR_HIDDEN = 0.45
 
 global const SP_RODEO_BOOST = 300 // Used to boost the player off the titan to prevent rodeo spam in SP
 

@@ -111,11 +111,13 @@ void function MP_AutoPrecache()
 	AP_PrecacheModel( $"models/robots/super_spectre/super_spectre_v1.mdl" )
 	AP_PrecacheModel( $"models/titans/heavy/titan_heavy_deadbolt.mdl" )
 	AP_PrecacheModel( $"models/titans/heavy/titan_heavy_ogre.mdl" )
+	AP_PrecacheModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" ) //JFS: Manually added line for Scorch Prime!
 	AP_PrecacheModel( $"models/titans/heavy/titan_heavy_rodeo_battery.mdl" )
 	AP_PrecacheModel( $"models/titans/light/titan_light_locust.mdl" )
 	AP_PrecacheModel( $"models/titans/light/titan_light_raptor.mdl" )
 	AP_PrecacheModel( $"models/titans/light/titan_light_rodeo_battery.mdl" )
 	AP_PrecacheModel( $"models/titans/medium/titan_medium_ajax.mdl" )
+	AP_PrecacheModel( $"models/titans/medium/titan_medium_ion_prime.mdl" ) //JFS: Manually added line for Ion Prime!
 	AP_PrecacheModel( $"models/titans/medium/titan_medium_rodeo_battery.mdl" )
 	AP_PrecacheModel( $"models/titans/medium/titan_medium_wraith.mdl" )
 	AP_PrecacheModel( $"models/vehicle/crow_dropship/crow_dropship.mdl" )
@@ -140,10 +142,12 @@ void function MP_AutoPrecache()
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_heavy_cockpit.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_heavy_deadbolt.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_heavy_ogre.mdl" )
+	AP_PrecacheModel( $"models/weapons/arms/pov_titan_heavy_scorch_prime.mdl" ) //JFS: Manually added line for Scorch Prime!
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_light_cockpit.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_light_locust.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_light_raptor.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_medium_ajax.mdl" )
+	AP_PrecacheModel( $"models/weapons/arms/pov_titan_medium_ion_prime.mdl" ) //JFS: Manually added line for Ion Prime!
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_medium_cockpit.mdl" )
 	AP_PrecacheModel( $"models/weapons/arms/pov_titan_medium_wraith.mdl" )
 	AP_PrecacheModel( $"models/weapons/sentry_frag/sentry_frag.mdl" )
@@ -254,11 +258,13 @@ void function MP_AutoPrecache()
 	PrecacheModel( $"models/robots/super_spectre/super_spectre_v1.mdl" )
 	PrecacheModel( $"models/titans/heavy/titan_heavy_deadbolt.mdl" )
 	PrecacheModel( $"models/titans/heavy/titan_heavy_ogre.mdl" )
+	PrecacheModel( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" ) //JFS: Manually added line for Scorch Prime!
 	PrecacheModel( $"models/titans/heavy/titan_heavy_rodeo_battery.mdl" )
 	PrecacheModel( $"models/titans/light/titan_light_locust.mdl" )
 	PrecacheModel( $"models/titans/light/titan_light_raptor.mdl" )
 	PrecacheModel( $"models/titans/light/titan_light_rodeo_battery.mdl" )
 	PrecacheModel( $"models/titans/medium/titan_medium_ajax.mdl" )
+	PrecacheModel( $"models/titans/medium/titan_medium_ion_prime.mdl" ) //JFS: Manually added line for Ion Prime!
 	PrecacheModel( $"models/titans/medium/titan_medium_rodeo_battery.mdl" )
 	PrecacheModel( $"models/titans/medium/titan_medium_wraith.mdl" )
 	PrecacheModel( $"models/vehicle/crow_dropship/crow_dropship.mdl" )
@@ -283,10 +289,12 @@ void function MP_AutoPrecache()
 	PrecacheModel( $"models/weapons/arms/pov_titan_heavy_cockpit.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_heavy_deadbolt.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_heavy_ogre.mdl" )
+	PrecacheModel( $"models/weapons/arms/pov_titan_heavy_scorch_prime.mdl" ) //JFS: Manually added line for Scorch Prime!
 	PrecacheModel( $"models/weapons/arms/pov_titan_light_cockpit.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_light_locust.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_light_raptor.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_medium_ajax.mdl" )
+	PrecacheModel( $"models/weapons/arms/pov_titan_medium_ion_prime.mdl" ) //JFS: Manually added line for Ion Prime!
 	PrecacheModel( $"models/weapons/arms/pov_titan_medium_cockpit.mdl" )
 	PrecacheModel( $"models/weapons/arms/pov_titan_medium_wraith.mdl" )
 	PrecacheModel( $"models/weapons/sentry_frag/sentry_frag.mdl" )
@@ -295,10 +303,12 @@ void function MP_AutoPrecache()
 	#if CLIENT
 	ClTitanOgre_Init( $"models/titans/heavy/titan_heavy_deadbolt.mdl" )
 	ClTitanAtlas_Init( $"models/titans/medium/titan_medium_ajax.mdl" )
+	ClTitanAtlas_Init( $"models/titans/medium/titan_medium_ion_prime.mdl" ) //JFS: Manually added line for Ion Prime!
 	ClTitanAtlas_Init( $"models/titans/medium/titan_medium_wraith.mdl" )
 	ClTitanStryder_Init( $"models/titans/light/titan_light_locust.mdl" )
 	ClTitanStryder_Init( $"models/titans/light/titan_light_raptor.mdl" )
 	ClTitanOgre_Init( $"models/titans/heavy/titan_heavy_ogre.mdl" )
+	ClTitanOgre_Init( $"models/titans/heavy/titan_heavy_scorch_prime.mdl" ) //JFS: Manually added line for Scorch Prime!
 	#endif
 }
 

@@ -497,7 +497,7 @@ function ShowScoreboardMP()
 
 				allPlayers.append( player )
 
-				RuiSetImage( rui, "playerCard", CallsignIcon_GetImage( PlayerCallsignIcon_GetActive( player ) ) )
+				RuiSetImage( rui, "playerCard", CallsignIcon_GetSmallImage( PlayerCallsignIcon_GetActive( player ) ) )
 
 				if ( GetGameState() == eGameState.Epilogue && player.GetParent() && player.GetParent().GetSignifierName() == "npc_dropship" )
 				{

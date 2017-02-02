@@ -91,6 +91,7 @@ function ClassicMP_Client_DropshipIntroSetup()
 function ClassicMP_Dropship_GameStateEnterFunc_PickLoadOut( player )
 {
 	file.introJumpingRUI = RuiCreate( $"ui/dropship_intro_jumping.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1001 )
+	RuiSetResolutionToScreenSize( file.introJumpingRUI )
 	HidePermanentCockpitRui()
 
 	if ( GameRules_GetGameMode() != LAST_TITAN_STANDING ||
@@ -255,6 +256,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 	}
 
 	file.countdownRUI = RuiCreate( $"ui/dropship_intro_countdown.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
+	RuiSetResolutionToScreenSize( file.countdownRUI )
 	RuiSetGameTime( file.countdownRUI, "gameStartTime", gameStartTime )
 
 	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
@@ -371,15 +373,12 @@ void function RefreshIntroLoadoutDisplay( entity player, int pilotLoadoutIndex, 
 	RuiSetImage( file.loadoutsRUI, "weaponImage", weaponImage )
 	RuiSetImage( file.loadoutsRUI, "tacticalImage", tacticalImage )
 
-	asset titanCoreImage = GetWeaponInfoFileKeyFieldAsset_Global( titanLoadout.coreAbility, "hud_icon" )
-	RuiSetImage( file.loadoutsRUI, "titanCoreImage", titanCoreImage )
-
-	asset titanImage = GetWeaponInfoFileKeyFieldAsset_Global( titanLoadout.primary, "hud_icon" )
+	asset titanImage = GetItemImage( titanLoadout.titanClass )
 	RuiSetImage( file.loadoutsRUI, "titanImage", titanImage )
 
 	asset burnCard1Image = GetWeaponInfoFileKeyFieldAsset_Global( "mp_ability_burncardweapon", "hud_icon" )
 
-	RuiSetBool( file.loadoutsRUI, "doubleXPAvailable", Player_GetDoubleXPCount( player ) > 0 || player.GetPlayerNetInt( "xpMultiplier" ) > 0 )
+	RuiSetBool( file.loadoutsRUI, "doubleXPAvailable", (Player_GetDoubleXPCount( player ) > 0 || player.GetPlayerNetInt( "xpMultiplier" ) > 0) && !IsPrivateMatch() )
 	RuiTrackInt( file.loadoutsRUI, "doubleXPStatus", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "xpMultiplier" ) )
 
 	RuiSetInt( file.loadoutsRUI, "doubleXPCount", Player_GetDoubleXPCount( player ) )

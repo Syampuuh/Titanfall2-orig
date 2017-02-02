@@ -80,10 +80,15 @@ struct
 	var pilotButton
 	var titanButton
 	var boostsButton
+	var storeButton
 	var factionButton
 	var bannerButton
 	var patchButton
+	var statsButton
 	var networksHeader
+	var settingsHeader
+	var browseNetworkButton
+	var faqButton
 
 	var genUpButton
 
@@ -193,7 +198,7 @@ void function Lobby_UpdateInboxButtons()
 	}
 	else
 	{
-		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_COMMS" )  )
+		SetComboButtonHeaderTitle( menu, file.inboxHeaderIndex, Localize( "#MENU_HEADER_NETWORKS" )  )
 		ComboButton_SetText( file.inboxButton, Localize( "#MENU_TITLE_READ" ) )
 	}
 
@@ -348,26 +353,12 @@ void function SetupComboButtonTest( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
+	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
 //	file.armoryButton = armoryButton
 //	Hud_AddEventHandler( armoryButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ArmoryMenu" ) ) )
 
-	headerIndex++
-	buttonIndex = 0
-	file.networksHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_COMMS" )
-	file.inboxHeaderIndex = headerIndex
-	var networksInbox = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INBOX" )
-	file.inboxButton = networksInbox
-	file.lobbyButtons.append( networksInbox )
-	Hud_AddEventHandler( networksInbox, UIE_CLICK, OnInboxButton_Activate )
-	var switchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_SWITCHCOMMUNITY" )
-	Hud_AddEventHandler( switchButton, UIE_CLICK, OnSwitchButton_Activate )
-	file.factionButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FACTION" )
-	Hud_AddEventHandler( file.factionButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "FactionChoiceMenu" ) ) )
-
-	// var networksMoreButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_MORE" )
-	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
-	// file.networksMoreButton = networksMoreButton
 
 	headerIndex++
 	buttonIndex = 0
@@ -377,12 +368,37 @@ void function SetupComboButtonTest( var menu )
 	Hud_AddEventHandler( file.bannerButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "CallsignCardSelectMenu" ) ) )
 	file.patchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_PATCH" )
 	Hud_AddEventHandler( file.patchButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "CallsignIconSelectMenu" ) ) )
+	file.factionButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FACTION" )
+	Hud_AddEventHandler( file.factionButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "FactionChoiceMenu" ) ) )
+	file.statsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STATS" )
+	Hud_AddEventHandler( file.statsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ViewStatsMenu" ) ) )
 
 	file.callsignCard = Hud_GetChild( menu, "CallsignCard" )
 
 	headerIndex++
 	buttonIndex = 0
-	var settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
+	file.networksHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_NETWORKS" )
+	file.inboxHeaderIndex = headerIndex
+	var networksInbox = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INBOX" )
+	file.inboxButton = networksInbox
+	file.lobbyButtons.append( networksInbox )
+	Hud_AddEventHandler( networksInbox, UIE_CLICK, OnInboxButton_Activate )
+	var switchButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_SWITCHCOMMUNITY" )
+	Hud_AddEventHandler( switchButton, UIE_CLICK, OnSwitchButton_Activate )
+	var browseButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_BROWSE_NETWORKS" )
+	file.lobbyButtons.append( browseButton )
+	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
+	file.browseNetworkButton = browseButton
+
+
+	// var networksMoreButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_MORE" )
+	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
+	// file.networksMoreButton = networksMoreButton
+
+
+	headerIndex++
+	buttonIndex = 0
+	file.settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
 	var controlsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CONTROLS" )
 	Hud_AddEventHandler( controlsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsMenu" ) ) )
 	file.lobbyButtons.append( controlsButton )
@@ -395,8 +411,11 @@ void function SetupComboButtonTest( var menu )
 		var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
+
 	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
 	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
+	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
+	Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
 	comboStruct.navUpButton = file.chatroomMenu_chatroomWidget
 	comboStruct.navDownButton = file.genUpButton
@@ -478,11 +497,13 @@ void function CreatePartyAndInviteFriends()
 
 void function InviteFriendsIfAllowed( var button )
 {
+/*
 	if ( InPendingOpenInvite() )
 	{
 		printt( "not inviting friends - we are in an openInvite" )
 		return
 	}
+*/
 	thread CreatePartyAndInviteFriends()
 }
 
@@ -517,6 +538,9 @@ void function OnLobbyMenu_Open()
 {
 	Assert( IsConnected() )
 
+	// code will start loading DLC info from first party unless already done
+	InitDLCStore()
+
 	thread UpdateCachedNewItems()
 	if ( file.putPlayerInMatchmakingAfterDelay ) //Start this off every time we come into the lobby. Will be cancelled by PostGameScreen if it runs
 	{
@@ -540,25 +564,37 @@ void function OnLobbyMenu_Open()
 
 	if ( IsFullyConnected() )
 	{
-		UpdateCallsignElement( file.callsignCard )
-		RefreshCreditsAvailable()
-
 		entity player = GetUIPlayer()
 		if ( !IsValid( player ) )
 			return
 
-		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player))
+		while ( player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION )
+		{
+			WaitFrame()
+		}
+
+		UpdateCallsignElement( file.callsignCard )
+		RefreshCreditsAvailable()
+
+		bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+
+		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player ) || !hasSeenStore )
 		ComboButton_SetNew( file.pilotButton, HasAnyNewPilotItems( player ) )
 		ComboButton_SetNew( file.titanButton, HasAnyNewTitanItems( player ) )
 		ComboButton_SetNew( file.boostsButton, HasAnyNewBoosts( player ) )
+		ComboButton_SetNew( file.storeButton, !hasSeenStore )
 
-		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
-		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+//		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
 
-		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ))
+
+		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ) || HasAnyNewFactions( player ))
 		ComboButton_SetNew( file.bannerButton, HasAnyNewCallsignBanners( player ) )
 		ComboButton_SetNew( file.patchButton, HasAnyNewCallsignPatches( player ) )
+		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
 
+		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes()
+		RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
+		ComboButton_SetNew( file.faqButton, faqIsNew )
 
 		TryUnlockSRSCallsign()
 
@@ -923,27 +959,23 @@ void function SetPlaylistDisplayedMapAndModeByIndex( string playlistName, int ma
 	SetDisplayedMapAndMode( mapName, modeName )
 }
 
-
-
-function UpdateAnnouncementDialog()
+void function UpdateAnnouncementDialog()
 {
 	while ( IsLobby() && IsFullyConnected() )
 	{
-		if ( uiGlobal.activeMenu == null || IsDialog( uiGlobal.activeMenu ) )
+		// Only safe on these menus. Not safe if these variables are true because they indicate the search menu or postgame menu are going to be opened.
+		if ( ( uiGlobal.activeMenu == GetMenu( "LobbyMenu" ) || uiGlobal.activeMenu == GetMenu( "PrivateLobbyMenu" ) ) && !file.putPlayerInMatchmakingAfterDelay && !uiGlobal.EOGOpenInLobby )
 		{
-			WaitFrame()
-			continue
+			entity player = GetUIPlayer()
+
+			// Only initialize here, CloseAnnouncementDialog() handles setting it when closing
+			if ( uiGlobal.announcementVersionSeen == -1 )
+				uiGlobal.announcementVersionSeen = player.GetPersistentVarAsInt( "announcementVersionSeen" )
+
+			int announcementVersion = GetConVarInt( "announcementVersion" )
+			if ( announcementVersion > uiGlobal.announcementVersionSeen )
+				OpenAnnouncementDialog()
 		}
-
-		entity player = GetUIPlayer()
-
-		// Only initialize here, CloseAnnouncementDialog() handles setting it when closing
-		if ( uiGlobal.announcementVersionSeen == -1 )
-			uiGlobal.announcementVersionSeen = player.GetPersistentVarAsInt( "announcementVersionSeen" )
-
-		int announcementVersion = GetConVarInt( "announcementVersion" )
-		if ( announcementVersion > uiGlobal.announcementVersionSeen )
-			OpenAnnouncementDialog()
 
 		WaitFrame()
 	}
@@ -1476,6 +1508,9 @@ function UpdatePlayerInfo()
 
 void function TryUnlockSRSCallsign()
 {
+	if ( Script_IsRunningTrialVersion() )
+		return
+
 	int numCallsignsToUnlock = 0
 
 	if ( GetTotalLionsCollected() >= GetTotalLionsInGame() )
@@ -1494,4 +1529,9 @@ void function TryUnlockSRSCallsign()
 void function SetPutPlayerInMatchmakingAfterDelay( bool value )
 {
 	file.putPlayerInMatchmakingAfterDelay = value
+}
+
+void function OnStoreButton_Activate( var button )
+{
+	LaunchGamePurchaseOrDLCStore()
 }

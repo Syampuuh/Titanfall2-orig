@@ -116,6 +116,7 @@ global struct ClientWeaponStruct
 
 	entity weaponOwner
 	array<int> statusEffects
+	float lastFireTime
 }
 
 

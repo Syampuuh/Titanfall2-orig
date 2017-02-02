@@ -28,6 +28,9 @@ struct
 	var BtnLastCheckpoint
 	int objectiveStringIndex
 	bool SP_displayObjectiveOnClose
+	var settingsHeader
+	var faqButton
+
 	array<var> loadoutButtons
 	array<var> loadoutHeaders
 } file
@@ -283,7 +286,7 @@ void function InitInGameMPMenu()
 
 	headerIndex++
 	buttonIndex = 0
-	var settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
+	file.settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
 	var controlsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#CONTROLS" )
 	Hud_AddEventHandler( controlsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsMenu" ) ) )
 	#if CONSOLE_PROG
@@ -295,6 +298,9 @@ void function InitInGameMPMenu()
 		var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
+
+	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
+	Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
 	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
 	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
@@ -308,6 +314,10 @@ void function InitInGameMPMenu()
 void function OnInGameMPMenu_Open()
 {
 	UI_SetPresentationType( ePresentationType.DEFAULT )
+
+	bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes()
+	RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
+	ComboButton_SetNew( file.faqButton, faqIsNew )
 
 	UpdateLoadoutButtons()
 	RefreshCreditsAvailable()
@@ -420,8 +430,6 @@ void function InitInGameSPMenu()
 		Hud_AddEventHandler( videoButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
 
-
-
 	array<var> orderedButtons
 
 	var changeDifficultyBtn = Hud_GetChild( menu, "BtnChangeDifficulty" )
@@ -464,7 +472,6 @@ void function OnOpenInGameSPMenu()
 	var collectiblesFoundDesc = Hud_GetChild( file.menuSP, "CollectiblesFoundDesc" )
 	var missionLogDesc = Hud_GetChild( file.menuSP, "MissionLogDesc" )
 	var changeDifficultyBtn = Hud_GetChild( file.menuSP, "BtnChangeDifficulty" )
-	var objectiveHintDesc = Hud_GetChild( file.menuSP, "ObjectiveHintDesc" )
 
 	Hud_SetEnabled( file.BtnLastCheckpoint, HasValidSaveGame() )
 
@@ -494,8 +501,6 @@ void function OnOpenInGameSPMenu()
 			break
 	}
 	SetButtonRuiText( changeDifficultyBtn, newDifficultyString )
-
-	Hud_EnableKeyBindingIcons( objectiveHintDesc )
 
 	string activeLevelName = GetActiveLevel()
 	if ( activeLevelName != "" )

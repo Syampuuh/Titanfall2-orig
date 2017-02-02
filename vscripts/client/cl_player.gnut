@@ -574,6 +574,9 @@ void function ClientCodeCallback_HUDThink()
 
 		PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink_5 )
 		UpdateVoiceHUD()
+		#if PC_PROG
+			UpdateChatHUDVisibility()
+		#endif // PC_PROG
 		PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink_5 )
 
 		UpdateScreenFade()
