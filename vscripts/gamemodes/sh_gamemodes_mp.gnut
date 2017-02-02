@@ -1,0 +1,244 @@
+
+global function GameModes_Init_SV_CL
+
+void function GameModes_Init_SV_CL()
+{
+	string gameMode
+
+	bool useSpawnZones = (GetCurrentPlaylistVarInt( "spawn_zone_enabled", 1 ) != 0 || GetBugReproNum() == 678 )
+
+	gameMode = CAPTURE_POINT
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeCP_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_CP )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_CP )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeCP_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareCP )
+		GameMode_AddSharedInit( gameMode, GamemodeCPShared_Init )
+	#endif
+
+	gameMode = LAST_TITAN_STANDING
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeLts_Init )
+		GameMode_AddServerInit( gameMode, TeamTitanSelection_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeLTS_Init )
+		GameMode_AddClientInit( gameMode, CLTeamTitanSelection_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareLTS )
+		GameMode_AddSharedInit( gameMode, GamemodeLtsShared_Init )
+		GameMode_AddSharedInit( gameMode, GamemodeBomb_Dialogue_Init )
+	#endif
+
+	gameMode = LTS_BOMB
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeLts_Init )
+		GameMode_AddServerInit( gameMode, TeamTitanSelection_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeLTS_Init )
+		GameMode_AddClientInit( gameMode, CLTeamTitanSelection_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareLTS )
+		GameMode_AddSharedInit( gameMode, GamemodeLtsShared_Init )
+		GameMode_AddSharedInit( gameMode, GamemodeBomb_Dialogue_Init )
+	#endif
+
+	gameMode = WINGMAN_LAST_TITAN_STANDING
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeLts_Init )
+		GameMode_AddServerInit( gameMode, TeamTitanSelection_Init )
+		GameMode_AddServerInit( gameMode, GamemodeWlts_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeLTS_Init )
+		GameMode_AddClientInit( gameMode, CLTeamTitanSelection_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareLTS )
+		GameMode_AddSharedInit( gameMode, GamemodeWltsDialogue_Init )
+		GameMode_AddSharedInit( gameMode, GamemodeWltsShared_Init )
+	#endif
+
+	gameMode = ATTRITION
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeAt_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_AT )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_AT )
+	#endif
+	#if CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeAt_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+		GameMode_AddSharedInit( gameMode, GamemodeAtShared_Init )
+	#endif
+
+	gameMode = TEAM_DEATHMATCH
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+		GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
+	#endif
+
+	gameMode = HARDCORE_TDM
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+		GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
+	#endif
+
+	gameMode = AI_TDM
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeAITdm_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+	#endif
+	#if CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeAITDM_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+		GameMode_AddSharedInit( gameMode, GamemodeAITdmShared_Init )
+	#endif
+
+	gameMode = COLISEUM
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeColiseum_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	#endif
+
+	gameMode = MARKED_FOR_DEATH
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeMfd_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeMfd_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareMFD )
+		GameMode_AddSharedInit( gameMode, GamemodeMfdDialogue_Init )
+		GameMode_AddSharedInit( gameMode, GamemodeMfdShared_Init )
+	#endif
+
+	gameMode = MARKED_FOR_DEATH_PRO
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeMfdPro_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+		GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeMfd_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareMFD )
+		GameMode_AddSharedInit( gameMode, GamemodeMfdDialogue_Init )
+		GameMode_AddSharedInit( gameMode, GamemodeMfdShared_Init )
+	#endif
+
+	gameMode = PILOT_SKIRMISH
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodePs_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+		GameMode_AddSharedInit( gameMode, GamemodePsShared_Init )
+	#endif
+
+	gameMode = WINGMAN_PILOT_SKIRMISH
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeWPS_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+		GameMode_AddSharedInit( gameMode, GamemodePsShared_Init )
+	#endif
+
+	gameMode = CAPTURE_THE_FLAG
+	#if SERVER
+		GameMode_AddServerInit( gameMode, CaptureTheFlag_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_CTF )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_CTF )
+	#elseif CLIENT
+		GameMode_AddClientInit( gameMode, ClCaptureTheFlag_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareCTF )
+		GameMode_AddSharedInit( gameMode, GamemodeCtfDialogue_Init )
+		GameMode_AddSharedInit( gameMode, CaptureTheFlagShared_Init )
+	#endif
+
+	gameMode = FFA
+#if SERVER
+	GameMode_AddServerInit( gameMode, FFA_Init )
+	GameMode_AddServerInit( gameMode, GamemodeFFAShared_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeFFAShared_Init )
+	GameMode_AddClientInit( gameMode, ClGamemodeFFA_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+	GameMode_AddSharedInit( gameMode, GamemodeFFA_Dialogue_Init )
+#endif
+
+	gameMode = FREE_AGENCY
+#if SERVER
+	GameMode_AddServerInit( gameMode, FFA_Init )
+	GameMode_AddServerInit( gameMode, GamemodeFFAShared_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeFFAShared_Init )
+	GameMode_AddClientInit( gameMode, ClGamemodeFRA_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+	GameMode_AddSharedInit( gameMode, GamemodeFFA_Dialogue_Init )
+#endif
+
+	gameMode = FORT_WAR
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeFW_Init )
+	GameMode_AddServerInit( gameMode, SHGamemodeFW_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_FW )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_FW )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, CLGamemodeFW_Init )
+	GameMode_AddClientInit( gameMode, SHGamemodeFW_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareFW )
+#endif
+
+}

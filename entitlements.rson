@@ -1,0 +1,46 @@
+// value of script const is the order in this file
+// all in one file to ensure same script const for all platforms
+
+{
+	script_const:	ET_PREORDER
+  	pc:				TITANFALL2_PREORDER_CONTENT
+  	ps4:			PREORDER01000000
+  	xb1:			Titanfall2.PreOrder
+}
+
+{
+  script_const: ET_DELUXE_EDITION
+    pc:       TITANFALL2_DELUXE_CONTENT
+    ps4:      DELUXEED01000000
+    xb1:      Titanfall2.Deluxe.Edition
+}
+
+{
+  script_const: ET_BF1
+    pc:       BF1
+    ps4:      BF1
+    xb1:      BF1
+}
+
+
+// rename appropriately
+{
+	script_const:	ET_DLC1_1
+  	pc:				TITANFALL2_DLC1_1
+  	ps4:			DLC1000000000000
+  	xb1:			Titanfall2.PreOrder.DLC1_1
+}
+
+{
+	script_const:	ET_DLC1_2
+  	pc:				TITANFALL2_DLC1_2
+  	ps4:			DLC2000000000000
+  	xb1:			Titanfall2.PreOrder.DLC1_2
+}
+
+{
+	script_const:	ET_DLC1_3
+  	pc:				TITANFALL2_DLC1_3
+  	ps4:			DLC3000000000000
+  	xb1:			Titanfall2.PreOrder.DLC1_3
+}
