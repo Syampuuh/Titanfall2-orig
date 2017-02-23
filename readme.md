@@ -31,15 +31,15 @@
 
 #### Northstar
 
-* Dash recharge rate raised from 8.33/s to 10/s
-* Turbo Engine dash recharge rate raised from 4.165/s to 6.6/s
+* Dash recharge rate raised from 8.33/s to 10/s (Recharge: from 6.0s to 5.0s per charge)
+* Turbo Engine dash recharge rate raised from 4.165/s to 6.6/s (Recharge: from 7.9s to 5.0s per charge)
 * Flight Core
   * Ideal explosive radius increased from 5 ft to 9.4 ft, eliminating explosive falloff
 
 #### Ronin
 
-* Dash recharge rate raised from 8.33/s to 10/s
-* Turbo Engine dash recharge rate raised from 4.165/s to 6.6/s
+* Dash recharge rate raised from 8.33/s to 10/s (Recharge: from 6.0s to 5.0s per charge)
+* Turbo Engine dash recharge rate raised from 4.165/s to 6.6/s (Recharge: from 7.9s to 5.0s per charge)
 
 #### Scorch
 
