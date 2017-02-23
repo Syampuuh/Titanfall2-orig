@@ -36,6 +36,7 @@ void function InitDialogCommon( var menu )
 	Hud_EnableKeyBindingIcons( Hud_GetChild( menu, "DialogHeader" ) )
 
 	AddEventHandlerToButtonClass( menu, "DialogButtonClass", UIE_GET_FOCUS, OnDialogButton_Focused )
+	AddEventHandlerToButtonClass( menu, "DialogButtonClass", UIE_LOSE_FOCUS, OnDialogButton_FocusedLose )
 	AddEventHandlerToButtonClass( menu, "DialogButtonClass", UIE_CLICK, OnDialogButton_Activate )
 
 	InitDialogFooterButtons( menu )
@@ -110,6 +111,12 @@ void function OnDialogButton_Focused( var button )
 	}
 }
 
+void function OnDialogButton_FocusedLose( var button )
+{
+	//if ( !IsDialog( uiGlobal.activeMenu ) )
+	//	return
+}
+
 void function OnDialogButton_Activate( var button )
 {
 	if ( Time() < uiGlobal.dialogInputEnableTime )
@@ -144,6 +151,8 @@ void function CancelConnect()
 
 void function OpenConnectingDialog()
 {
+	CloseAllDialogs()
+
 	Hud_Hide( uiGlobal.ConfirmMenuMessage )
 	Hud_Hide( uiGlobal.ConfirmMenuErrorCode )
 
@@ -162,7 +171,7 @@ void function OpenConnectingDialog()
 	OpenDialog( dialogData )
 }
 
-void function AddDialogButton( DialogData dialogData, string label, void functionref() activateFunc = null, string focusMessage = "", bool startFocused = false )
+DialogButtonData function AddDialogButton( DialogData dialogData, string label, void functionref() activateFunc = null, string focusMessage = "", bool startFocused = false )
 {
 	DialogButtonData newButtonData
 	newButtonData.label = label
@@ -171,6 +180,7 @@ void function AddDialogButton( DialogData dialogData, string label, void functio
 	newButtonData.startFocused = startFocused
 
 	dialogData.buttonData.append( newButtonData )
+	return newButtonData
 }
 
 void function AddDialogFooter( DialogData dialogData, string label, void functionref() activateFunc = null )
@@ -189,7 +199,7 @@ void function AddDialogPCBackButton( DialogData dialogData )
 
 void function OpenDialog( DialogData dialogData )
 {
-	if ( dialogData.noChoice )
+	if ( dialogData.noChoice || dialogData.noChoiceWithNavigateBack )
 		dialogData.forceChoice = false
 
 	if ( dialogData.inputDisableTime > 0 )
@@ -238,7 +248,8 @@ void function OpenDialog( DialogData dialogData )
 
 	array<DialogFooterData> footerData
 
-	if ( !dialogData.noChoice )
+	bool forceNoButtonsOnTheBottom = (dialogData.noChoice || dialogData.noChoiceWithNavigateBack)
+	if ( !forceNoButtonsOnTheBottom )
 	{
 		DialogFooterData defaultFooter1
 		defaultFooter1.label = "#A_BUTTON_SELECT"
@@ -337,13 +348,14 @@ void function OpenDialog( DialogData dialogData )
 	{
 		var dialogFrame = Hud_GetChild( menu, "DialogFrame" )
 		int baseDialogHeight = int( ContentScaledY( 312 ) )
-		int adjustedDialogHeight = baseDialogHeight + messageHeight + buttonsHeight
+		int bottomButtonAdjust = forceNoButtonsOnTheBottom ? int( ContentScaledY( -(BOTTOM_BUTTON_AREA_HEIGHT - BOTTOM_BUTTON_AREA_HEIGHT_WHENDISABLED) ) ) : 0
+		int adjustedDialogHeight = baseDialogHeight + messageHeight + buttonsHeight + bottomButtonAdjust
 		Hud_SetHeight( dialogFrame, adjustedDialogHeight )
 	}
 
+	uiGlobal.menuData[ menu ].dialogData = dialogData
 	UpdateDialogFooterVisibility( menu, IsControllerModeActive() )
 
-	uiGlobal.menuData[ menu ].dialogData = dialogData
 	AdvanceMenu( menu )
 }
 
@@ -368,11 +380,14 @@ var function GetSingleElementByClassname( var menu, string classname )
 	return null
 }
 
+const int BOTTOM_BUTTON_AREA_HEIGHT = 56
+const int BOTTOM_BUTTON_AREA_HEIGHT_WHENDISABLED = 20
+
 void function UpdateDialogFooterVisibility( var menu, bool isControllerModeActive )
 {
 	if ( ShouldUpdateMenuForDialogFooterVisibility( menu ) )
 	{
-		int defaultHeight = int( ContentScaledY( 56 ) )
+		int defaultHeight = int( ContentScaledY( BOTTOM_BUTTON_AREA_HEIGHT ) )
 		string footerButtonElement = "DialogFooterButtons"
 		if ( menu == GetMenu( "EULADialog" ) )
 			footerButtonElement = "FooterButtons"
@@ -380,10 +395,12 @@ void function UpdateDialogFooterVisibility( var menu, bool isControllerModeActiv
 		var dialogFooter = Hud_GetChild( menu, footerButtonElement )
 		var PCBackButton = Hud_GetChild( dialogFooter, "MouseBackFooterButton" )
 		bool isVisible = isControllerModeActive || Hud_IsVisible( PCBackButton )
+		DialogData dialogData = uiGlobal.menuData[ menu ].dialogData
+		bool forceNoButtonsOnTheBottom = (dialogData.noChoice || dialogData.noChoiceWithNavigateBack)
 
 		int newHeight = defaultHeight
-		if ( !isVisible )
-			newHeight = 0
+		if ( !isVisible || forceNoButtonsOnTheBottom )
+			newHeight = int( ContentScaledY( BOTTOM_BUTTON_AREA_HEIGHT_WHENDISABLED ) )
 
 		Hud_SetHeight( dialogFooter, newHeight )
 	}
@@ -437,6 +454,7 @@ void function LeaveDialog()
 
 	DialogData dialogData
 	dialogData.header = "#ARE_YOU_SURE_YOU_WANT_TO_LEAVE"
+	dialogData.noChoiceWithNavigateBack = true
 
 	if ( isMP )
 	{
@@ -534,6 +552,8 @@ void function CancelRestartingMatchmaking()
 
 void function CancelSearch()
 {
+	HandleMixtapeSearchCancel()
+
 	CloseActiveMenu() // "SearchMenu"
 	CancelMatchmaking()
 }

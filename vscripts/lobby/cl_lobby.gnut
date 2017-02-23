@@ -14,5 +14,7 @@ function Lobby_AddPlayer( entity player )
 	player.FreezeControlsOnClient()
 	player.HideCrosshairNames()
 
+	SetStandardAbilityBindingsForPilot( player )
+
 	thread LoopLobbyMusic()
 }

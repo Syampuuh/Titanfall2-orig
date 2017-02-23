@@ -20,6 +20,7 @@ struct
 
 	var lootDisplay
 	array<var> recentLootUnlocks
+	array<int> reportedMessageIds
 
 	var inboxMenu
 	var inboxPanel
@@ -30,12 +31,16 @@ struct
 	int inboxCurrentMessageId
 	int inboxPrevMessageId
 	int inboxNextMessageId
+	int reportAbuseCommunityId
+	int reportAbuseSeverity
 	var inboxPrevMsgButton
 	var inboxNextMsgButton
 	var inboxDeleteButton
 	var inboxAcceptButton
+	var inboxReportAbuseButton
 	var inboxCanDeleteMsg
 	var inboxCanAcceptMsg
+	var inboxCanReportAbuse
 	bool inboxThreadRunning
 
 	string oldMessageText
@@ -256,6 +261,7 @@ void function OnLootButton_Activate( var button )
 void function InitInboxMenu()
 {
 	RegisterSignal( "StopInboxThread" )
+	RegisterSignal( "StopMessageAbuseReports" )
 
 	var menu = GetMenu( "Inbox" )
 	file.inboxMenu = menu
@@ -289,6 +295,7 @@ void function InitInboxMenu()
 	// AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_INBOX_ACCEPT_ALL", "#INBOX_ACCEPT_ALL", AcceptAllMessage_OnClick, CanAcceptOrDeleteMessage )
 	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_INBOX_DONE", "#INBOX_DONE", AcceptMessage_OnClick, CanAcceptMessage )
 	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_INBOX_DONE", "#INBOX_DONE", DeleteMessage_OnClick, CanDeleteMessage )
+	AddMenuFooterOption( menu, BUTTON_Y, "#COMMUNITY_REPORTMSGABUSE_YBUTTON", "#COMMUNITY_REPORTMSGABUSE", ReportMessageAbuse_OnClick, CanReportMessageAbuse )
 }
 
 
@@ -403,6 +410,84 @@ void function AcceptMessage()
 	}
 
 	DeleteMessage_OnClick( null )
+}
+
+void function ReportMessageAbuse_Final()
+{
+	if ( file.reportedMessageIds.len() > 100 )
+		return
+
+	foreach ( messageId in file.reportedMessageIds )
+	{
+		if ( messageId == file.inboxCurrentMessageId )
+			return
+	}
+
+	ReportCommunity( file.reportAbuseCommunityId, file.reportAbuseSeverity )
+
+	file.reportedMessageIds.append( file.inboxCurrentMessageId )
+	ReportInboxMessage( file.inboxCurrentMessageId, file.reportAbuseSeverity )
+}
+
+void function ReportMessageAbuseAndLeaveNetwork_Final()
+{
+	file.reportAbuseSeverity = 1
+	ReportMessageAbuse_Final()
+	if ( AreWeInCommunity( file.reportAbuseCommunityId ) )
+		LeaveCommunity( file.reportAbuseCommunityId )
+}
+
+void function ReportMessageAbuse_Thread( InboxMessage msg )
+{
+	Signal( uiGlobal.signalDummy, "StopMessageAbuseReports" )
+	EndSignal( uiGlobal.signalDummy, "StopMessageAbuseReports" )
+
+	DialogData dialogData
+
+	file.reportAbuseCommunityId = msg.communityID
+	file.reportAbuseSeverity = 0
+
+	dialogData.header = Localize( "#REALLY_REPORT_ABUSEMSG_HEADER" )
+	dialogData.message = Localize( "#REALLY_REPORT_ABUSEMSG" )
+
+	AddDialogButton( dialogData, "#NO" )
+	AddDialogButton( dialogData, "#YES_REPORT_ABUSEMSG", ReportMessageAbuse_Final )
+	if ( AreWeInCommunity( file.reportAbuseCommunityId ) )
+		AddDialogButton( dialogData, "#YES_REPORTMSG_AND_LEAVENETWORK", ReportMessageAbuseAndLeaveNetwork_Final )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
+
+	OpenDialog( dialogData )
+}
+
+void function ReportMessageAbuse_OnClick( var button )
+{
+	EmitUISound( "Menu.Accept" )
+
+	InboxMessage msg = Inbox_GetMessage( file.inboxCurrentMessageId )
+	Assert( IsValid( msg ) )
+	if ( msg.senderUID == "" )
+		return
+
+	thread ReportMessageAbuse_Thread( msg )
+}
+
+bool function CanReportMessageAbuse()
+{
+	InboxMessage msg = Inbox_GetMessage( file.inboxCurrentMessageId )
+	Assert( IsValid( msg ) )
+
+	if ( file.reportedMessageIds.len() > 100 )
+		return false
+
+	foreach ( messageId in file.reportedMessageIds )
+	{
+		if ( messageId == msg.messageId )
+			return false
+	}
+
+	return msg.reportable
 }
 
 void function ActivateNextMessage( var button )

@@ -1,9 +1,20 @@
 
 global function GameModes_Init_SV_CL
+global function GetTitanfallEnabled
+
+#if SERVER
+	global function SetTitanfallEnabled
+	global function TitanfallEnabled_Init
+	global function SyncTitanfallEnabledClient
+#endif //SERVER
 
 void function GameModes_Init_SV_CL()
 {
 	string gameMode
+
+	#if SERVER
+		TitanfallEnabled_Init()
+	#endif
 
 	bool useSpawnZones = (GetCurrentPlaylistVarInt( "spawn_zone_enabled", 1 ) != 0 || GetBugReproNum() == 678 )
 
@@ -125,8 +136,12 @@ void function GameModes_Init_SV_CL()
 	gameMode = COLISEUM
 	#if SERVER
 		GameMode_AddServerInit( gameMode, GamemodeColiseum_Init )
+		GameMode_SetCustomIntroAnnouncement( gameMode, GamemodeColiseum_CustomIntro )
 		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
 		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	#endif
+	#if CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeColiseum_Init )
 	#endif
 	#if !UI
 		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
@@ -241,4 +256,107 @@ void function GameModes_Init_SV_CL()
 	GameMode_SetScoreCompareFunc( gameMode, CompareFW )
 #endif
 
+	gameMode = HUNTED
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeHunted_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Hunted )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Hunted )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeHuntedClient_Init )
+	GameMode_AddClientInit( gameMode, GamemodeHuntedShared_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareHunter )
+	GameMode_AddSharedInit( gameMode, GamemodeHuntedShared_Init )
+#endif
+
+	gameMode = DON
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeDON_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeDONClient_Init )
+	GameMode_AddClientInit( gameMode, GamemodeDONShared_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	GameMode_AddSharedInit( gameMode, GamemodeDONShared_Init )
+#endif
+
+	gameMode = SPEEDBALL
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeSpeedball_Init )
+	//GameMode_AddServerInit( gameMode, SHGamemodeSpeedball_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeSpeedballClient_Init )
+	//GameMode_AddClientInit( gameMode, SHGamemodeSpeedball_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareCTF )
+#endif
+
+gameMode = RAID
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeRaid_Init )
+	GameMode_AddServerInit( gameMode, GamemodeRaidShared_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, GamemodeRaidClient_Init )
+	GameMode_AddClientInit( gameMode, GamemodeRaidShared_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+#endif
+
+gameMode = ATCOOP
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeATCOOP_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : ATCOOP_RateSpawnpoints )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : ATCOOP_RateSpawnpoints )
+	#endif
+	#if CLIENT
+		GameMode_AddClientInit( gameMode, ClGamemodeATCOOP_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareATCOOP )
+		GameMode_AddSharedInit( gameMode, GamemodeATCOOPShared_Init )
+	#endif
+
+}
+
+#if SERVER
+void function SetTitanfallEnabled( bool state )
+{
+	printt( "SetTitanfallEnabled", state )
+	DumpStack()
+	svGlobal.titanfallEnabled = state
+	if ( !Flag( "EntitiesDidLoad" ) )
+		return
+
+	SetGlobalNetBool( "titanfallEnabled", svGlobal.titanfallEnabled )
+}
+
+void function TitanfallEnabled_Init()
+{
+	AddCallback_EntitiesDidLoad( SyncTitanfallEnabledClient )
+}
+
+void function SyncTitanfallEnabledClient()
+{
+	SetTitanfallEnabled( GetTitanfallEnabled() )
+}
+#endif //SERVER
+
+
+bool function GetTitanfallEnabled()
+{
+	#if SERVER
+		return svGlobal.titanfallEnabled
+	#else
+		return GetGlobalNetBool( "titanfallEnabled" )
+	#endif
 }

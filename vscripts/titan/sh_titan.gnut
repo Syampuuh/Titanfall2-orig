@@ -434,7 +434,7 @@ function TitanEjectPlayer( entity ejectTitan, bool instant = false ) //TODO: Thi
 				continue
 
 			float dist = Distance( guy.GetOrigin(), origin )
-			float result = Graph( dist, 1000, 2000, 5.0, 0.0 )
+			float result = Graph( dist, 750, 1500, 5.0, 0.0 )
 			Remote_CallFunction_Replay( guy, "ServerCallback_ScreenShake", result, frequency, duration )
 		}
 
@@ -595,7 +595,7 @@ function TitanEjectPlayer( entity ejectTitan, bool instant = false ) //TODO: Thi
 		float gravityScale = expect float ( rider.GetPlayerSettingsField( "gravityscale" ) )
 		vector riderVelocity = AnglesToForward( riderEjectAngles ) * (speed * gravityScale) * 0.95
 
-		ThrowRiderOff( rider, ejectTitan, riderVelocity )
+		ThrowRiderOff( rider, titan, riderVelocity )
 
 		wait 0.05
 	}

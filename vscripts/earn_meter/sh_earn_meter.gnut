@@ -195,7 +195,22 @@ EarnObject function EarnObject_GetByRef( string ref )
 
 bool function EarnMeterMP_IsTitanEarnGametype()
 {
+
+	#if MP
+	if ( !GetTitanfallEnabled() )
+ 		return false
+ 	#endif
+
 	if ( GAMETYPE == PILOT_SKIRMISH )
+		return false
+
+	if ( GAMETYPE == HUNTED )
+		return false
+
+	if ( GAMETYPE == DON )
+		return false
+
+	if ( GAMETYPE == SPEEDBALL )
 		return false
 
 	if ( GAMETYPE == FREE_AGENCY )

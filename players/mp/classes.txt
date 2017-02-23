@@ -62,12 +62,14 @@
 	import	"titan_ogre_minigun.set"
 	import	"titan_ogre_meteor.set"
 	import	"titan_ogre_scorch_prime.set"
+	import  "titan_ogre_legion_prime.set"
 
 	import	"titan_stryder.set"
 	import	"titan_stryder_arc.set"
 	import	"titan_stryder_rocketeer.set"
 	import	"titan_stryder_leadwall.set"
 	import	"titan_stryder_sniper.set"
+	import  "titan_stryder_northstar_prime.set"
 
 	// Titan Misc
 	import	"titan_ctt.set"

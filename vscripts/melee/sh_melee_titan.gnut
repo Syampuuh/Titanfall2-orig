@@ -87,6 +87,7 @@ void function TitanMeleeAttack( entity titan )
 	if ( titan.IsPhaseShifted() )
 		return
 
+	Assert( titan.PlayerMelee_IsAttackActive() )
 	if ( !titan.PlayerMelee_IsAttackActive() ) //JFS, Defensive fix for 209347
 	    return
 

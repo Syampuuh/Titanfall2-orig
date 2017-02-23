@@ -48,6 +48,7 @@ struct OpenInviteUI
 	var openInviteMessage
 	var openInviteCountdownText
 	array openInvitePlayerSlots
+	array openInvitePlaylistSlots
 }
 
 global struct UserInfoPanel
@@ -566,6 +567,14 @@ void function InitChatroom( var parentMenu )
 		openInviteUI.openInvitePlayerSlots.append( widget )
 		i++
 	}
+	for ( int idx = 0; idx < 9; ++idx )
+	{
+		string widgetName = ("OpenInvitePlaylist" + format( "%02d", idx ))
+		var widget = Hud_GetChild( openInviteUI.openInvitePanel, widgetName )
+		openInviteUI.openInvitePlaylistSlots.append( widget )
+		i++
+	}
+
 	openInviteUI.openInviteJoinButton = Hud_GetChild( openInviteUI.openInvitePanel, "JoinOpenInviteButton" )
 	Hud_EnableKeyBindingIcons( openInviteUI.openInviteJoinButton )
 
@@ -717,8 +726,43 @@ void function UpdateOpenInvites( OpenInvite openInvite, string message, string p
 			}
 			i++
 		}
+
+		array<string> checklistPlaylists = GetChecklistPlaylistsArray()
+		array<string> invitePlaylists = split( openInvite.playlistName, "," )
+		bool shouldShowCheckboxPlaylists = true
+		if ( !MixtapeMatchmakingIsEnabled() )
+			shouldShowCheckboxPlaylists = false
+		else if ( invitePlaylists.len() == 0 )
+			shouldShowCheckboxPlaylists = false
+		else if ( (invitePlaylists.len() == 1) && (!checklistPlaylists.contains( invitePlaylists[0] )) )
+			shouldShowCheckboxPlaylists = false
+
+		int playlistSlotCount = chatroomUI.openInviteUI.openInvitePlaylistSlots.len()
+		for( int idx = 0; idx < playlistSlotCount; ++idx )
+		{
+			var slot = chatroomUI.openInviteUI.openInvitePlaylistSlots[idx]
+
+			string thisPlaylistName = checklistPlaylists[idx]
+			if ( (thisPlaylistName == "") || !shouldShowCheckboxPlaylists )
+			{
+				Hud_Hide( slot )
+				continue
+			}
+
+			Hud_Show( slot )
+			var slotRui = Hud_GetRui( slot )
+			asset playlistThumbnail = GetPlaylistThumbnailImage( thisPlaylistName )
+			RuiSetImage( slotRui, "checkImage", playlistThumbnail )
+
+			bool isChecked = invitePlaylists.contains( thisPlaylistName )
+			RuiSetBool( slotRui, "isChecked", isChecked )
+
+			string abbr = GetPlaylistVarOrUseValue( thisPlaylistName, "abbreviation", "" )
+			RuiSetString( slotRui, "abbreviation", Localize( abbr ) )
+		}
 	}
 }
+
 
 void function HideOpenInvite()
 {

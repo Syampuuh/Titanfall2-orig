@@ -29,7 +29,7 @@
 
 		armsmodel			"models/weapons/arms/pov_titan_light_raptor.mdl"
 
-		powerregenrate		8.33
+		powerregenrate		10
 	    dodgePowerDrain		50
 
 	    footstep_type			"northstar"
@@ -40,7 +40,7 @@
 			pas_mobility_dash_capacity
 			{
 				dodgePowerDrain		33
-				powerregenrate		4.165
+				powerregenrate		6.6
 			}
 		}
 	}

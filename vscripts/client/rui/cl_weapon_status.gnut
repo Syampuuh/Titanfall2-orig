@@ -36,7 +36,11 @@ void function ClWeaponStatus_RefreshWeaponStatus( entity player )
 		return
 
 	UpdatePrimaryWeaponHint()
-	UpdateOffhandRuis( player )
+
+	if ( !IsValid( GetLocalViewPlayer() ) )
+		return
+
+	InitWeaponStatusRuis( GetLocalViewPlayer() )
 }
 
 var function ClWeaponStatus_GetWeaponHudRui( entity player, entity weapon )
@@ -199,9 +203,19 @@ void function UpdateOffhandRuis( entity player )
 	UpdateOffhandRuiVisibility( file.ability_right_hud, "%offhand0%" )
 
 	if ( IsMultiplayer() )
+	{
+		// need to recreate this since RuiTrackInt cannot be undone with RuiSetInt
+		RuiDestroy( file.dpad_left_hud )
+		var rui = CreateCockpitRui( $"ui/inventory_hud.rpak" )
+		RuiSetInt( rui, "xPos", 1 )
+		RuiSetInt( rui, "yPos", 1 )
+		file.dpad_left_hud = rui
 		UpdateOffhandRuiVisibility( file.dpad_left_hud, "%offhand4%" )
+	}
 	else
+	{
 		UpdateOffhandRuiVisibility( file.dpad_left_hud, "%weaponSelectOrdnance%" )
+	}
 }
 
 void function InitWeaponStatusRuis( entity player )

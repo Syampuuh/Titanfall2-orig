@@ -315,7 +315,7 @@ void function OnInGameMPMenu_Open()
 {
 	UI_SetPresentationType( ePresentationType.DEFAULT )
 
-	bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes()
+	bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
 	RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
 	ComboButton_SetNew( file.faqButton, faqIsNew )
 

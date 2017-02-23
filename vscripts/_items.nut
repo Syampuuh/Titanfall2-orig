@@ -135,6 +135,8 @@ global function ClearItemOwned
 global function CodeCallback_GivePersistentItem
 global function Player_AddRecentUnlock
 global function PersistenceCleanup
+global function GetNoseArtRefFromTitanClassAndPersistenceValue
+global function GetSkinRefFromTitanClassAndPersistenceValue
 #endif
 global function GetUnlockItemsForPlayerLevels
 global function GetUnlockItemsForTitanLevels
@@ -349,6 +351,9 @@ struct
 	table<string, Unlock> entitlementUnlocks
 
 	table<string, array<int> > sortedElems
+
+	table<string, table<int, string> > titanClassAndPersistenceValueToNoseArtRefTable //Primarily used to speed up validation of persistence data
+	table<string, table<int, string> > titanClassAndPersistenceValueToSkinRefTable //Primarily used to speed up validation of persistence data
 } file
 
 void function InitItems()
@@ -447,16 +452,18 @@ void function InitItems()
 
 		int datatableIndex = row
 
+		const bool IS_HIDDEN_ARG = false
+
 		ItemData item
-		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN_PILOT, pilotCamoRef, name, desc, desc, image, pilotCost )
+		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN_PILOT, pilotCamoRef, name, desc, desc, image, pilotCost, IS_HIDDEN_ARG )
 		item.imageAtlas = IMAGE_ATLAS_CAMO
 		item.i.categoryId <- categoryId
 
-		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN_TITAN, titanCamoRef, name, desc, desc, image )
+		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN_TITAN, titanCamoRef, name, desc, desc, image, 0, IS_HIDDEN_ARG )
 		item.imageAtlas = IMAGE_ATLAS_CAMO
 		item.i.categoryId <- categoryId
 
-		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN, camoRef, name, desc, desc, image )
+		item = CreateGenericItem( datatableIndex, eItemTypes.CAMO_SKIN, camoRef, name, desc, desc, image, 0, IS_HIDDEN_ARG )
 		item.imageAtlas = IMAGE_ATLAS_CAMO
 		item.i.categoryId <- categoryId
 	}
@@ -670,7 +677,8 @@ void function InitItems()
 		int cost			= GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "cost" ) )
 		string specificType = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "specificType" ) )
 
-		ItemData featureItem = CreateGenericItem( featureIndex, eItemTypes.FEATURE, featureRef, name, desc, "", image, cost )
+		const bool IS_HIDDEN_ARG = false
+		ItemData featureItem = CreateGenericItem( featureIndex, eItemTypes.FEATURE, featureRef, name, desc, "", image, cost, IS_HIDDEN_ARG )
 		featureItem.i.specificType <- specificType
 
 		featureIndex++
@@ -685,12 +693,32 @@ void function InitItems()
 		asset image			= GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "image" ) )
 		int cost			= GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "cost" ) )
 
-		ItemData featureItem = CreateGenericItem( featureIndex, eItemTypes.FEATURE, playlistRef, name, "", "", image, cost )
+		const bool IS_HIDDEN_ARG = false
+		ItemData featureItem = CreateGenericItem( featureIndex, eItemTypes.FEATURE, playlistRef, name, "", "", image, cost, IS_HIDDEN_ARG )
 		featureItem.i.specificType <- "#ITEM_TYPE_PLAYLIST"
 		featureItem.i.isPlaylist <- true
 
 		featureIndex++
 	}
+
+	//{
+	//	int featureIndex = 0
+	//	int gameModeCount = PersistenceGetEnumCount( "gameModes" )
+	//	for ( int modeIndex = 0; modeIndex < gameModeCount; modeIndex++ )
+	//	{
+	//		string gameModeRef = PersistenceGetEnumItemNameForIndex( "gameModes", modeIndex )
+	//		if ( !IsRefValid( gameModeRef ) )
+	//		{
+	//			string name = GameMode_GetName( gameModeRef )
+	//			string desc = GameMode_GetDesc( gameModeRef )
+	//			asset image = GameMode_GetIcon( gameModeRef )
+	//			int cost = 0
+	//
+	//			CreateGenericItem( featureIndex, eItemTypes.GAME_MODE, gameModeRef, name, desc, "", image, cost )
+	//			featureIndex++
+	//		}
+	//	}
+	//}
 
 	dataTable = GetDataTable( $"datatable/pilot_weapon_features.rpak" )
 	numRows = GetDatatableRowCount( dataTable )
@@ -702,7 +730,8 @@ void function InitItems()
 		asset image			= GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "featureIcon" ) )
 		int cost			= GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "cost" ) )
 		int dataTableIndex = i
-		CreateGenericItem( dataTableIndex, eItemTypes.WEAPON_FEATURE, featureRef, name, desc, "", image, cost )
+		const bool IS_HIDDEN_ARG = false
+		CreateGenericItem( dataTableIndex, eItemTypes.WEAPON_FEATURE, featureRef, name, desc, "", image, cost, IS_HIDDEN_ARG )
 	}
 
 	/////////////////////
@@ -823,7 +852,8 @@ void function InitItems()
 		asset image        = GetDataTableAsset( dataTable, i, TITAN_VOICE_IMAGE_COLUMN )
 		bool hidden        = GetDataTableBool( dataTable, i, TITAN_VOICE_HIDDEN_COLUMN )
 
-		CreateGenericItem( i, eItemTypes.TITAN_OS, itemRef, name, description, description, image )
+		const bool IS_HIDDEN_ARG = false
+		CreateGenericItem( i, eItemTypes.TITAN_OS, itemRef, name, description, description, image, 0, IS_HIDDEN_ARG )
 	}
 
 
@@ -936,26 +966,13 @@ void function InitItems()
 		//CreateBaseItemData( eItemTypes.TITAN_NOSE_ART, ref, false )
 		CreateNoseArtData( decalIndexTable[titanRef], eItemTypes.TITAN_NOSE_ART, false, ref, name, image, decalIndexTable[titanRef] )
 		CreateGenericSubItemData( eItemTypes.TITAN_NOSE_ART, titanRef, ref, cost )
-	}
 
-	dataTable = GetDataTable( $"datatable/prime_titan_nose_art.rpak" )
-	table<string, int> primeDecalIndexTable
-	for ( int row = 0; row < GetDatatableRowCount( dataTable ); row++ )
-	{
-		string titanRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "titanRef" ) )
-		string ref = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ref" ) )
-		asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, "image" ) )
-		string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "name" ) )
 
-		int datatableIndex = row
+		if ( !( titanRef in file.titanClassAndPersistenceValueToNoseArtRefTable ) )
+			file.titanClassAndPersistenceValueToNoseArtRefTable[ titanRef ] <- {}
 
-		if ( !( titanRef in primeDecalIndexTable ) )
-			primeDecalIndexTable[titanRef] <- 0
-		else
-			primeDecalIndexTable[titanRef]++
+		file.titanClassAndPersistenceValueToNoseArtRefTable[ titanRef ][ decalIndexTable[titanRef] ] <- ref
 
-		CreateNoseArtData( primeDecalIndexTable[titanRef], eItemTypes.PRIME_TITAN_NOSE_ART, false, ref, name, image, primeDecalIndexTable[titanRef] )
-		CreateGenericSubItemData( eItemTypes.PRIME_TITAN_NOSE_ART, titanRef, ref )
 	}
 
 	dataTable = GetDataTable( $"datatable/titan_skins.rpak" )
@@ -971,6 +988,11 @@ void function InitItems()
 
 		CreateSkinData( datatableIndex, eItemTypes.TITAN_WARPAINT, false, ref, name, image, skinIndex )
 		CreateGenericSubItemData( eItemTypes.TITAN_WARPAINT, titanRef, ref, cost, { skinIndex = skinIndex } )
+
+		if ( !( titanRef in file.titanClassAndPersistenceValueToSkinRefTable ) )
+			file.titanClassAndPersistenceValueToSkinRefTable[ titanRef ] <- {}
+
+		file.titanClassAndPersistenceValueToSkinRefTable[ titanRef ][ skinIndex ] <- ref
 	}
 
 	{
@@ -981,13 +1003,19 @@ void function InitItems()
 			string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, CALLING_CARD_NAME_COLUMN_NAME ) )
 			asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, CALLING_CARD_IMAGE_COLUMN_NAME ) )
 			int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
+			bool isHidden = false
+			if ( cost < 0 )
+			{
+				isHidden = true
+				cost = 0
+			}
 
 			string desc = "Undefined"
 			string longdesc = "Undefined"
 
 			int datatableIndex = row
 
-			CreateGenericItem( datatableIndex, eItemTypes.CALLING_CARD, cardRef, name, desc, longdesc, image, cost )
+			CreateGenericItem( datatableIndex, eItemTypes.CALLING_CARD, cardRef, name, desc, longdesc, image, cost, isHidden )
 			GetItemData( cardRef ).imageAtlas = IMAGE_ATLAS_CALLINGCARD
 		}
 	}
@@ -1000,13 +1028,19 @@ void function InitItems()
 			string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, CALLSIGN_ICON_NAME_COLUMN_NAME ) )
 			asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, CALLSIGN_ICON_IMAGE_COLUMN_NAME ) )
 			int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
+			bool isHidden = false
+			if ( cost < 0 )
+			{
+				isHidden = true
+				cost = 0
+			}
 
 			string desc = "Undefined"
 			string longdesc = "Undefined"
 
 			int datatableIndex = row
 
-			CreateGenericItem( datatableIndex, eItemTypes.CALLSIGN_ICON, iconRef, name, desc, longdesc, image, cost )
+			CreateGenericItem( datatableIndex, eItemTypes.CALLSIGN_ICON, iconRef, name, desc, longdesc, image, cost, isHidden )
 			GetItemData( iconRef ).imageAtlas = IMAGE_ATLAS_CALLINGCARD
 		}
 	}
@@ -1063,7 +1097,8 @@ void function InitItems()
 			PrecacheModel( model )
 		#endif // SERVER || CLIENT
 
-		CreateGenericItem( row, eItemTypes.BURN_METER_REWARD, itemRef, name, description, description, image, cost )
+		const bool IS_HIDDEN_ARG = false
+		CreateGenericItem( row, eItemTypes.BURN_METER_REWARD, itemRef, name, description, description, image, cost, IS_HIDDEN_ARG )
 	}
 
 	InitRandomUnlocks()
@@ -1136,6 +1171,8 @@ void function InitUnlocks()
 {
 	InitUnlock( "race_human_male", "", eUnlockType.PLAYER_LEVEL, 1 )
 	InitUnlock( "race_human_female", "", eUnlockType.PLAYER_LEVEL, 1 )
+
+	InitUnlock( "speedball", "", eUnlockType.PLAYER_LEVEL, 1 )
 
 	var dataTable = GetDataTable( $"datatable/unlocks_player_level.rpak" )
 	int numRows = GetDatatableRowCount( dataTable )
@@ -1434,7 +1471,72 @@ void function InitUnlocks()
 	InitUnlock( "callsign_65_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
 	InitUnlock( "callsign_14_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
 	InitUnlock( "callsign_14_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+
+	InitUnlock( "callsign_126_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_127_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_129_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_130_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_131_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_132_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_133_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_134_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_135_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_136_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_137_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_125_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_126_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_127_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_129_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_130_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_131_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_132_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_133_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_134_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_135_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_136_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_137_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_125_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_126_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_127_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_129_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_130_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_131_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_132_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_133_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_134_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_135_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_136_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_137_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_125_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_126_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_127_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_128_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_129_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_130_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_131_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_132_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_133_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_134_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_135_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_136_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_137_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_138_col_prism", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_140_col", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_140_col_fire", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "callsign_140_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+
 //	InitUnlock( "callsign_14_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
+
+	InitUnlock( "gc_icon_balance", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_boot", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_bt_eye", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_peace", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_srs", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_starline", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_thumbdown", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_thumbup", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_vanguard", "", eUnlockType.PERSISTENT_ITEM, 0 )
+	InitUnlock( "gc_icon_deuce", "", eUnlockType.PERSISTENT_ITEM, 0 )
 
 	for ( int i = 0; i < titanClassEnumCount; i++ )
 	{
@@ -1458,6 +1560,25 @@ void function InitUnlocks()
 //	InitUnlockForStatInt( "titan_camo_skin67", "ion", 100, "misc_stats", "titanFalls" )
 
 ////////////////// CALLSIGN CHALLENGES //////////////////////////////////////////////////////////////////
+
+	//Live Fire Wins
+	InitUnlockForStatInt( "callsign_142_col", "", 5, "game_stats", "mode_won", "speedball" )
+	InitUnlockForStatInt( "callsign_142_col_fire", "", 10, "game_stats", "mode_won", "speedball" )
+	InitUnlockForStatInt( "callsign_142_col_gold", "", 20, "game_stats", "mode_won", "speedball" )
+	InitUnlockForStatInt( "callsign_138_col", "", 35, "game_stats", "mode_won", "speedball" )
+	InitUnlockForStatInt( "callsign_138_col_fire", "", 50, "game_stats", "mode_won", "speedball" )
+	InitUnlockForStatInt( "callsign_138_col_gold", "", 100, "game_stats", "mode_won", "speedball" )
+	//Live Fire Played
+	InitUnlockForStatInt( "callsign_141_col", "", 2, "game_stats", "mode_played", "speedball" )
+	InitUnlockForStatInt( "callsign_141_col_fire", "", 5, "game_stats", "mode_played", "speedball" )
+	InitUnlockForStatInt( "callsign_141_col_gold", "", 15, "game_stats", "mode_played", "speedball" )
+	//Live Fire Kills
+	InitUnlockForStatInt( "gc_icon_threebullets", "", 3, "game_stats", "pvp_kills_by_mode", "speedball" )
+	InitUnlockForStatInt( "gc_icon_prowlerhead", "", 10, "game_stats", "pvp_kills_by_mode", "speedball" )
+	InitUnlockForStatInt( "gc_icon_shuriken", "", 25, "game_stats", "pvp_kills_by_mode", "speedball" )
+	InitUnlockForStatInt( "gc_icon_squid", "", 50, "game_stats", "pvp_kills_by_mode", "speedball" )
+	InitUnlockForStatInt( "gc_icon_tick", "", 100, "game_stats", "pvp_kills_by_mode", "speedball" )
+	InitUnlockForStatInt( "gc_icon_scythe", "", 250, "game_stats", "pvp_kills_by_mode", "speedball" )
 
 	//Distance
 	InitUnlockForStatFloat( "callsign_97_col", "", 40.0, "distance_stats", "total" )
@@ -1507,6 +1628,9 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "pilot_camo_skin62", "", 10, "kills_stats", "pilotExecutePilot" )
 	InitUnlockForStatInt( "pilot_camo_skin59", "", 25, "kills_stats", "pilotExecutePilot" )
 	InitUnlockForStatInt( "execution_telefrag", "", 50, "kills_stats", "pilotExecutePilot" )
+	InitUnlockForStatInt( "execution_stim", "", 10, "kills_stats", "pilotExecutePilotUsing_execution_telefrag" )
+	InitUnlockForStatInt( "execution_grapple", "", 75, "kills_stats", "pilotExecutePilot" )
+
 	//Distance
 	InitUnlockForStatFloat( "pilot_camo_skin56", "", 100.0, "distance_stats", "asPilot" )
 	InitUnlockForStatFloat( "pilot_camo_skin58", "", 250.0, "distance_stats", "asPilot" )
@@ -1535,6 +1659,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin66", "mp_weapon_rspn101", 500, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin64", "mp_weapon_rspn101", 1000, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin63", "mp_weapon_rspn101", 2500, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101" )
+
+	InitUnlockForStatInt( "camo_skin67", "mp_weapon_rspn101_og", 100, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin65", "mp_weapon_rspn101_og", 250, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin66", "mp_weapon_rspn101_og", 500, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin64", "mp_weapon_rspn101_og", 1000, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin63", "mp_weapon_rspn101_og", 2500, "weapon_kill_stats", "pilots" , "mp_weapon_rspn101_og" )
 
 	InitUnlockForStatInt( "camo_skin67", "mp_weapon_hemlok", 100, "weapon_kill_stats", "pilots" , "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin65", "mp_weapon_hemlok", 250,  "weapon_kill_stats", "pilots" , "mp_weapon_hemlok" )
@@ -1710,6 +1840,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin57", "mp_weapon_rspn101", 1000, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin91", "mp_weapon_rspn101", 2500, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101" )
 
+	InitUnlockForStatInt( "camo_skin56", "mp_weapon_rspn101_og", 10, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin58", "mp_weapon_rspn101_og", 100, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin55", "mp_weapon_rspn101_og", 500, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin57", "mp_weapon_rspn101_og", 1000, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin91", "mp_weapon_rspn101_og", 2500, "weapon_kill_stats", "assistsTotal" , "mp_weapon_rspn101_og" )
+
 	InitUnlockForStatInt( "camo_skin56", "mp_weapon_hemlok", 10, "weapon_kill_stats", "assistsTotal" , "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin58", "mp_weapon_hemlok", 100, "weapon_kill_stats", "assistsTotal" , "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin55", "mp_weapon_hemlok", 500, "weapon_kill_stats", "assistsTotal" , "mp_weapon_hemlok" )
@@ -1884,6 +2020,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin07", "mp_weapon_rspn101", 25, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin85", "mp_weapon_rspn101", 50, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101" )
 
+	InitUnlockForStatInt( "camo_skin93", "mp_weapon_rspn101_og", 2, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin94", "mp_weapon_rspn101_og", 5, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin13", "mp_weapon_rspn101_og", 10, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin07", "mp_weapon_rspn101_og", 25, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin85", "mp_weapon_rspn101_og", 50, "weapon_kill_stats", "killingSprees" , "mp_weapon_rspn101_og" )
+
 	InitUnlockForStatInt( "camo_skin93", "mp_weapon_hemlok", 2, "weapon_kill_stats", "killingSprees" , "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin94", "mp_weapon_hemlok", 5, "weapon_kill_stats", "killingSprees" , "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin13", "mp_weapon_hemlok", 10, "weapon_kill_stats", "killingSprees" , "mp_weapon_hemlok" )
@@ -2057,6 +2199,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin62", "mp_weapon_rspn101", 50, "weapon_stats", "headshots", "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin59", "mp_weapon_rspn101", 100, "weapon_stats", "headshots", "mp_weapon_rspn101" )
 	InitUnlockForStatInt( "camo_skin87", "mp_weapon_rspn101", 250, "weapon_stats", "headshots", "mp_weapon_rspn101" )
+
+	InitUnlockForStatInt( "camo_skin60", "mp_weapon_rspn101_og", 10, "weapon_stats", "headshots", "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin61", "mp_weapon_rspn101_og", 25, "weapon_stats", "headshots", "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin62", "mp_weapon_rspn101_og", 50, "weapon_stats", "headshots", "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin59", "mp_weapon_rspn101_og", 100, "weapon_stats", "headshots", "mp_weapon_rspn101_og" )
+	InitUnlockForStatInt( "camo_skin87", "mp_weapon_rspn101_og", 250, "weapon_stats", "headshots", "mp_weapon_rspn101_og" )
 
 	InitUnlockForStatInt( "camo_skin60", "mp_weapon_hemlok", 10, "weapon_stats", "headshots", "mp_weapon_hemlok" )
 	InitUnlockForStatInt( "camo_skin61", "mp_weapon_hemlok", 25, "weapon_stats", "headshots", "mp_weapon_hemlok" )
@@ -2607,40 +2755,9 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "callsign_71_col_gold", "", ET_PREORDER )
 
 	//////////////////////////
-	// BWW
-	//////////////////////////
-	InitUnlock( "ion_nose_art_05", "ion", eUnlockType.PERSISTENT_ITEM, 0 )
-
-	//////////////////////////
-	// TARGET
-	//////////////////////////
-	for ( int i = 0; i < titanClassEnumCount; i++ )
-	{
-		string titanClass = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
-		if ( titanClass != "" )
-		{
-			InitUnlock( "titan_camo_skin08", titanClass, eUnlockType.PERSISTENT_ITEM, 0 )
-			InitUnlock( "camo_skin08", titanClass, eUnlockType.PERSISTENT_ITEM, 0 )
-		}
-	}
-
-	InitUnlock( "pilot_camo_skin08", "", eUnlockType.PERSISTENT_ITEM, 0 )
-
-	foreach ( weaponClassName in pilotWeaponRefs )
-	{
-		InitUnlock( "camo_skin08", weaponClassName, eUnlockType.PERSISTENT_ITEM, 0 )
-	}
-
-	//////////////////////////
 	// BF1
 	//////////////////////////
 	InitUnlockAsEntitlement( "ion_skin_06", "ion", ET_BF1 )
-
-	//////////////////////////
-	// Mountain Dew
-	//////////////////////////
-	InitUnlock( "execution_face_stab", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "ion_skin_03", "ion", eUnlockType.PERSISTENT_ITEM, 0 )
 
 	//////////////////////////
 	// DLC1
@@ -2648,9 +2765,7 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "ion_prime", "", ET_DLC1_PRIME_ION )
 	InitUnlockAsEntitlement( "tone_prime", "", ET_DLC5_PRIME_TONE )
 	InitUnlockAsEntitlement( "scorch_prime", "", ET_DLC1_PRIME_SCORCH )
-	InitUnlockAsEntitlement( "legion_prime", "", ET_DLC3_LEGION_TONE )
-	InitUnlockAsEntitlement( "ronin_prime", "", ET_DLC3_PRIME_RONIN )
-	InitUnlockAsEntitlement( "northstar_prime", "", ET_DLC5_PRIME_NORTHSTAR )
+	InitUnlockAsEntitlement( "ronin_prime", "", ET_DLC5_PRIME_RONIN )
 
 	InitUnlockAsEntitlement( "ion_nose_art_17", "ion", ET_DLC1_ION )
 	InitUnlockAsEntitlement( "ion_nose_art_18", "ion", ET_DLC1_ION )
@@ -2757,19 +2872,93 @@ void function InitUnlocks()
 	}
 
 	//////////////////////////
-	// PrimeTitan Nose Art
+	// DLC3
 	//////////////////////////
-	InitUnlockAsEntitlement( "ion_prime_nose_art_none", "ion_prime", ET_DLC1_PRIME_ION )
-	InitUnlockAsEntitlement( "ion_prime_nose_art_01", 	"ion_prime", ET_DLC1_PRIME_ION )
-	InitUnlockAsEntitlement( "ion_prime_nose_art_02", 	"ion_prime", ET_DLC1_PRIME_ION )
-	InitUnlockAsEntitlement( "ion_prime_nose_art_03", 	"ion_prime", ET_DLC1_PRIME_ION )
-	InitUnlockAsEntitlement( "ion_prime_nose_art_04", 	"ion_prime", ET_DLC1_PRIME_ION )
+	InitUnlockAsEntitlement( "legion_prime", "", ET_DLC3_PRIME_LEGION )
+	InitUnlockAsEntitlement( "northstar_prime", "", ET_DLC3_PRIME_NORTHSTAR )
 
-	InitUnlockAsEntitlement( "scorch_prime_nose_art_none", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
-	InitUnlockAsEntitlement( "scorch_prime_nose_art_01", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
-	InitUnlockAsEntitlement( "scorch_prime_nose_art_02", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
-	InitUnlockAsEntitlement( "scorch_prime_nose_art_03", 	"scorch_prime", ET_DLC1_PRIME_SCORCH )
-	InitUnlockAsEntitlement( "scorch_prime_nose_art_04", 	"scorch_prime",	ET_DLC1_PRIME_SCORCH )
+	InitUnlockAsEntitlement( "ion_nose_art_22", "ion", ET_DLC3_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_23", "ion", ET_DLC3_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_24", "ion", ET_DLC3_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_25", "ion", ET_DLC3_ION )
+	InitUnlockAsEntitlement( "ion_nose_art_26", "ion", ET_DLC3_ION )
+	InitUnlockAsEntitlement( "ion_skin_11", "ion", ET_DLC3_ION )
+
+	InitUnlockAsEntitlement( "scorch_nose_art_20", "scorch", ET_DLC3_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_21", "scorch", ET_DLC3_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_22", "scorch", ET_DLC3_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_23", "scorch", ET_DLC3_SCORCH )
+	InitUnlockAsEntitlement( "scorch_nose_art_24", "scorch", ET_DLC3_SCORCH )
+	InitUnlockAsEntitlement( "scorch_skin_08", "scorch", ET_DLC3_SCORCH )
+
+	InitUnlockAsEntitlement( "ronin_nose_art_21", "ronin", ET_DLC3_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_22", "ronin", ET_DLC3_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_23", "ronin", ET_DLC3_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_24", "ronin", ET_DLC3_RONIN )
+	InitUnlockAsEntitlement( "ronin_nose_art_25", "ronin", ET_DLC3_RONIN )
+	InitUnlockAsEntitlement( "ronin_skin_11", "ronin", ET_DLC3_RONIN )
+
+	InitUnlockAsEntitlement( "tone_nose_art_22", "tone", ET_DLC3_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_23", "tone", ET_DLC3_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_24", "tone", ET_DLC3_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_25", "tone", ET_DLC3_TONE )
+	InitUnlockAsEntitlement( "tone_nose_art_26", "tone", ET_DLC3_TONE )
+	InitUnlockAsEntitlement( "tone_skin_07", "tone", ET_DLC3_TONE )
+
+	InitUnlockAsEntitlement( "northstar_nose_art_23", "northstar", ET_DLC3_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_24", "northstar", ET_DLC3_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_25", "northstar", ET_DLC3_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_26", "northstar", ET_DLC3_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_nose_art_27", "northstar", ET_DLC3_NORTHSTAR )
+	InitUnlockAsEntitlement( "northstar_skin_11", "northstar", ET_DLC3_NORTHSTAR )
+
+	InitUnlockAsEntitlement( "legion_nose_art_22", "legion", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_23", "legion", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_24", "legion", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_25", "legion", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "legion_nose_art_26", "legion", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "legion_skin_08", "legion", ET_DLC3_LEGION )
+
+	for ( int i = 121; i <= 140; i++ )
+	{
+		for ( int j = 0; j < titanClassEnumCount; j++ )
+		{
+			string titanClass = PersistenceGetEnumItemNameForIndex( "titanClasses", j )
+			if ( titanClass != "" )
+			{
+				InitUnlockAsEntitlement( "titan_camo_skin" + i, titanClass, ET_DLC3_CAMO )
+				InitUnlockAsEntitlement( "camo_skin" + i, titanClass, ET_DLC3_CAMO )
+			}
+		}
+
+		InitUnlockAsEntitlement( "pilot_camo_skin" + i, "", ET_DLC3_CAMO )
+
+		foreach ( weaponClassName in pilotWeaponRefs )
+		{
+			InitUnlockAsEntitlement( "camo_skin" + i, weaponClassName, ET_DLC3_CAMO )
+		}
+	}
+
+	InitUnlockAsEntitlement( "callsign_143_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_144_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_145_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_146_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_147_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_148_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_149_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_150_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_151_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_152_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_153_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_154_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_155_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_156_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_157_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_158_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_159_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_160_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_161_col", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "callsign_162_col", "", ET_DLC3_CALLSIGN )
 
 	#if DEV
 	#if SERVER
@@ -4408,9 +4597,9 @@ void function CreateGenericSubItemData( int itemType, string parentRef, string i
 }
 
 
-ItemData function CreateGenericItem( int dataTableIndex, int itemType, string ref, string name, string desc, string longdesc, asset image, int cost = 0 )
+ItemData function CreateGenericItem( int dataTableIndex, int itemType, string ref, string name, string desc, string longdesc, asset image, int cost, bool isHidden )
 {
-	ItemData item 			= CreateBaseItemData( itemType, ref, false )
+	ItemData item 			= CreateBaseItemData( itemType, ref, isHidden )
 	item.name               = name
 	item.desc               = desc
 	item.longdesc           = longdesc
@@ -5150,6 +5339,7 @@ bool function ItemLockedShouldUseRawLevel( string ref )
 		case eItemTypes.BURN_METER_REWARD:
 		case eItemTypes.PILOT_MELEE:
 		case eItemTypes.TITAN:
+		case eItemTypes.PRIME_TITAN:
 		case eItemTypes.FEATURE:
 		case eItemTypes.WEAPON_FEATURE:
 		case eItemTypes.SUB_PILOT_WEAPON_MOD:
@@ -5807,7 +5997,7 @@ bool function RefHasAnyNewSubitem( entity player, string ref, int subitemType = 
 		if ( subitemType != -1 && GetSubitemType( ref, subitem.ref ) != subitemType )
 			continue
 
-		if ( isPrimeTitanRef && ( subitem.itemType == eItemTypes.TITAN_WARPAINT || subitem.itemType == eItemTypes.TITAN_NOSE_ART ) )
+		if ( isPrimeTitanRef && subitem.itemType == eItemTypes.TITAN_WARPAINT )
 			continue
 
 		if ( IsItemNew( player, subitem.ref, ref ) )
@@ -5915,7 +6105,7 @@ bool function HasAnyNewItemOfType( entity player, int refType, int parentRefType
 
 			foreach ( subItem in item.subitems )
 			{
-				if ( isPrimeTitanRef && ( subItem.itemType == eItemTypes.TITAN_WARPAINT || subItem.itemType == eItemTypes.TITAN_NOSE_ART ) )
+				if ( isPrimeTitanRef && subItem.itemType == eItemTypes.TITAN_WARPAINT )
 					continue
 
 				if ( subItem.itemType in checkedSubItemTypes )
@@ -6303,7 +6493,21 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 
 bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 {
+	if ( args.len() == 0 )
+		return false
+
 	string ref = args[0]
+
+	if ( !ItemDefined( ref ) )
+	{
+		if ( args.len() != 2 )
+			return false
+
+		string parentRef = args[1]
+
+		if ( !SubitemDefined( parentRef, ref ) )
+			return false
+	}
 
 	ItemData itemData = GetItemData( ref )
 	int refType = itemData.itemType
@@ -6458,12 +6662,25 @@ void function ClearItemOwned( entity player, string ref, string parentRef = "" )
 
 bool function ClientCommand_BuyItem( entity player, array<string> args )
 {
-	Assert( args.len() > 0 )
+	if ( args.len() == 0 )
+		return false
+
+	string ref = args[0]
+
+	if ( !ItemDefined( ref ) )
+	{
+		if ( args.len() != 2 )
+			return false
+
+		string parentRef = args[1]
+
+		if ( !SubitemDefined( parentRef, ref ) )
+			return false
+	}
 
 	if ( !IsValid( player ) )
 		return false
 
-	string ref = args[ 0 ]
 	string parentRef
 
 	int cost
@@ -6555,7 +6772,6 @@ void function CodeCallback_GivePersistentItem( entity player, string itemName, i
 				Player_GiveCredits( player, count )
 				ItemDisplayData displayData = GetItemDisplayData( "credit_award" )
 				Player_AddRecentUnlock( player, displayData, count )
-				PIN_GiveCredits( player, count )
 			}
 			break
 
@@ -6772,6 +6988,7 @@ void function Player_GiveCredits( entity player, int count )
 {
 	int currentCredits = GetAvailableCredits( player )
 	SetAvailableCredits( player, currentCredits + count )
+	PIN_GiveCredits( player, count )
 }
 
 void function Player_GiveColiseumTickets( entity player, int count )
@@ -8606,6 +8823,30 @@ void function PersistenceCleanup( entity player )
 {
 	ClearTargetNew( player )
 	FixupLevelCamosForRegen( player )
+}
+
+string function GetNoseArtRefFromTitanClassAndPersistenceValue( string titanClass, int persistenceValue ) //TODO: Replace NoseArtIndexToRef() with this eventually
+{
+	if ( !( titanClass in file.titanClassAndPersistenceValueToNoseArtRefTable ) )
+		return INVALID_REF
+
+	if ( !( persistenceValue in file.titanClassAndPersistenceValueToNoseArtRefTable[ titanClass ] ) )
+		return INVALID_REF
+
+	return file.titanClassAndPersistenceValueToNoseArtRefTable[ titanClass ][ persistenceValue ]
+
+}
+
+string function GetSkinRefFromTitanClassAndPersistenceValue( string titanClass, int persistenceValue )
+{
+	if ( !( titanClass in file.titanClassAndPersistenceValueToSkinRefTable ) )
+		return INVALID_REF
+
+	if ( !( persistenceValue in file.titanClassAndPersistenceValueToSkinRefTable[ titanClass ] ) )
+		return INVALID_REF
+
+	return file.titanClassAndPersistenceValueToSkinRefTable[ titanClass ][ persistenceValue ]
+
 }
 #endif
 

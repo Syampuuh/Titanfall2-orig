@@ -63,7 +63,7 @@ WeaponData
 
 	"low_ammo_sound_name_1"							"MGL_LowAmmo_Shot1"
 	"low_ammo_sound_name_2"							"MGL_LowAmmo_Shot2"
-	"low_ammo_sound_name_3"							"MGL_LowAmmo_Shot3"	
+	"low_ammo_sound_name_3"							"MGL_LowAmmo_Shot3"
 
 	"fx_muzzle_flash_view"							"P_wpn_muzzleflash_mgl_FP_FULL"
 	"fx_muzzle_flash_world"							"P_wpn_muzzleflash_mgl_FULL"
@@ -74,7 +74,7 @@ WeaponData
 
 	"damage_type" 									"burn"
 
-	"projectile_launch_speed"						"1800"
+	"projectile_launch_speed"						"1200"
 	"projectile_first_person_offset_fraction"		"2"
 	"projectile_launch_pitch_offset"				"6"
 	"npc_self_explosion_safety"						"0"
@@ -221,7 +221,7 @@ WeaponData
 	"grenade_bounce_randomness"						"0.2"
 	"grenade_bounce_extra_vertical_randomness"		"0.2"
 	"grenade_roll_vel_frac_per_second"				"0.1"
-	"grenade_fuse_time"								"0.8"
+	"grenade_fuse_time"								"1.2"
 	"sprint_fractional_anims"						"0"
 
 	"aimassist_disable_hipfire"						"0"
@@ -430,7 +430,7 @@ WeaponData
 		}
 		pro_screen
 		{
-			"ui8_enable"		"1"			
+			"ui8_enable"		"1"
 			"bodygroup1_set"				"0"
 			"bodygroup6_set"				"1"
 		}
@@ -504,7 +504,7 @@ WeaponData
 			vis							player_zoomfrac
 		}
 	}
-	
+
 	"ui8_enable"		"0"
 	UiData8
 	{
@@ -515,7 +515,7 @@ WeaponData
 			proValue							proscreen_int0
 			proOwnedByPlayer			proscreen_owner_is_player
 		}
-	}	
+	}
 
 	RUI_CrosshairData
 	{

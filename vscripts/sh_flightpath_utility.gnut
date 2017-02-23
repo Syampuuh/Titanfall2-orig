@@ -103,22 +103,22 @@ bool function IsLegalFlightPath( FlightPath flightPath, vector origin, vector fo
 		{
 			if ( result.hitSky )
 			{
-				DebugDrawLine( orgs[i-1], orgs[i], 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
+//				DebugDrawLine( orgs[i-1], orgs[i], 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
 				continue
 			}
 
 			if ( Distance( result.endPos, endPos ) > 16 )
 			{
-				if ( draw )
-					DebugDrawLine( orgs[i-1], orgs[i], 255, 0, 0, true, ANALYSIS_PREVIEW_TIME )
+//				if ( draw )
+//					DebugDrawLine( orgs[i-1], orgs[i], 255, 0, 0, true, ANALYSIS_PREVIEW_TIME )
 
 				DoTraceCoordCheck( true )
 				return false
 			}
 		}
 
-		if ( draw )
-			DebugDrawLine( orgs[i-1], orgs[i], 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
+//		if ( draw )
+//			DebugDrawLine( orgs[i-1], orgs[i], 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
 	}
 
 //	DebugDrawLine( result.endPos, result.endPos + RandomVec( 50.0 ), 255, 255, 0, true, 0.2 )

@@ -4,8 +4,14 @@ global function GetVisiblePlaylists
 
 global function InitPlaylistMenu
 global function SendOpenInvite
+global function IsSendOpenInviteTrue
 global function GetPlaylistImage
+global function GetPlaylistThumbnailImage
 global function BuyIntoColiseumTicket
+global function UpdatePlaylistButton
+global function PlaylistButton_Click_Internal
+global function PlaylistShouldShowAsLocked
+global function CanPlaylistFitMyParty
 
 struct
 {
@@ -16,6 +22,10 @@ struct
 	var unlockReq
 
 	bool sendOpenInvite = false
+
+	bool showColiseumPartyWarning = true
+	array<var> coliseumRefreshButtons
+	var coliseumButton
 } file
 
 void function InitPlaylistMenu()
@@ -40,6 +50,7 @@ bool function PlaylistButtonInit( var button, int elemNum )
 
 	string levelName = GetPlaylistVarOrUseValue( playlistName, "name", "#UNKNOWN_PLAYLIST_NAME" )
 	string imageName = GetPlaylistVarOrUseValue( playlistName, "image", "default" )
+	bool doubleXP = GetPlaylistVarOrUseValue( playlistName, "double_xp_enabled", "0" ) == "1"
 	var dataTable = GetDataTable( $"datatable/playlist_items.rpak" )
 
 	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "playlist" ), imageName )
@@ -47,6 +58,7 @@ bool function PlaylistButtonInit( var button, int elemNum )
 
 	RuiSetImage( rui, "itemImage", levelImage )
 	RuiSetString( rui, "title", levelName )
+	RuiSetBool( rui, "doubleXP", doubleXP )
 
 	return true
 }
@@ -61,10 +73,24 @@ asset function GetPlaylistImage( string playlistName )
 	return levelImage
 }
 
+asset function GetPlaylistThumbnailImage( string playlistName )
+{
+	string imageName = GetPlaylistVarOrUseValue( playlistName, "image", "default" )
+	var dataTable = GetDataTable( $"datatable/playlist_items.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "playlist" ), imageName )
+	asset levelImage = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, "thumbnail" ) )
+
+	return levelImage
+}
 
 void function SendOpenInvite( bool state )
 {
 	file.sendOpenInvite = state
+}
+
+bool function IsSendOpenInviteTrue()
+{
+	return file.sendOpenInvite
 }
 
 void function PlaylistButton_GetFocus( var button, int elemNum )
@@ -87,6 +113,7 @@ void function PlaylistButton_GetFocus( var button, int elemNum )
 
 void function OnPlaylistMenu_Open()
 {
+	file.showColiseumPartyWarning = true
 	StopMatchmaking()
 
 	var menu = GetMenu( "PlaylistMenu" )
@@ -131,6 +158,7 @@ void function OnPlaylistMenu_Open()
 
 void function OnPlaylistMenu_Close()
 {
+	file.showColiseumPartyWarning = true
 	var menu = GetMenu( "PlaylistMenu" )
 	Grid_MenuClosed( menu )
 
@@ -142,6 +170,12 @@ bool function CanPlaylistFitMyParty( string playlistName )
 	int maxTeams = GetMaxTeamsForPlaylistName( playlistName )
 	int maxPlayersPerTeam = int( max( maxPlayers / maxTeams, 1 ) )
 
+	if ( playlistName == "coliseum" )
+	{
+		if ( GetPartySize() == 2 && GetCurrentPlaylistVarInt( "enable_coliseum_updates", 0 ) == 1 )
+			return true
+	}
+
 	if ( GetPartySize() > maxPlayersPerTeam )
 		return false
 
@@ -150,6 +184,61 @@ bool function CanPlaylistFitMyParty( string playlistName )
 
 	return true
 }
+
+bool function PlaylistShouldShowAsLocked( string playlistName )
+{
+	bool isLocked = false
+
+	if ( playlistName == "private_match" )
+	{
+		isLocked = false
+	}
+	else if ( !CanPlaylistFitMyParty( playlistName ) )
+	{
+		isLocked = true
+	}
+	else if ( IsUnlockValid( playlistName ) && IsItemLocked( GetUIPlayer(), playlistName ) )
+	{
+		isLocked = true
+	}
+
+	return isLocked
+}
+
+void function UpdatePlaylistButton( var button, string playlistName, bool forceLocked )
+{
+	if ( playlistName == "coliseum" )
+	{
+		var rui = Hud_GetRui( button )
+		RuiSetInt( rui, "specialObjectCount", Player_GetColiseumTicketCount( GetUIPlayer() ) )
+		RuiSetImage( rui, "specialObjectIcon", $"rui/menu/common/ticket_icon" )
+		RuiSetFloat( rui, "specialAlpha", 1.0 )
+	}
+	else
+	{
+		var rui = Hud_GetRui( button )
+		RuiSetInt( rui, "specialObjectCount", 0 )
+		RuiSetImage( rui, "specialObjectIcon", $"" )
+		RuiSetFloat( rui, "specialAlpha", 0.0 )
+	}
+
+	int costOverride = -1
+	if ( playlistName == "private_match" )
+	{
+		costOverride = 0
+	}
+	else if ( !CanPlaylistFitMyParty( playlistName ) )
+	{
+		costOverride = 0
+	}
+
+	bool isLocked = PlaylistShouldShowAsLocked( playlistName )
+	Hud_SetLocked( button, (isLocked || forceLocked) )
+
+	if ( IsRefValid( playlistName ) )
+		RefreshButtonCost( button, playlistName, "", -1, costOverride )
+}
+
 
 void function UpdatePlaylistButtons()
 {
@@ -162,90 +251,62 @@ void function UpdatePlaylistButtons()
 			foreach ( buttonIndex, button in activePageButtons )
 			{
 				string playlistName = file.playlistNames[ buttonIndex ]
-
-				bool isLocked = false
-
-				if ( playlistName == "coliseum" )
-				{
-					var rui = Hud_GetRui( button )
-					RuiSetInt( rui, "specialObjectCount", Player_GetColiseumTicketCount( GetUIPlayer() ) )
-					RuiSetImage( rui, "specialObjectIcon", $"rui/menu/common/ticket_icon" )
-					RuiSetFloat( rui, "specialAlpha", 1.0 )
-				}
-				else
-				{
-					var rui = Hud_GetRui( button )
-					RuiSetInt( rui, "specialObjectCount", 0 )
-					RuiSetImage( rui, "specialObjectIcon", $"" )
-					RuiSetFloat( rui, "specialAlpha", 0.0 )
-				}
-
-				int costOverride = -1
-				if ( playlistName == "private_match" )
-				{
-					isLocked = false
-					costOverride = 0
-				}
-				else if ( !CanPlaylistFitMyParty( playlistName ) )
-				{
-					isLocked = true
-					costOverride = 0
-				}
-				else if ( IsUnlockValid( playlistName ) && IsItemLocked( GetUIPlayer(), playlistName ) )
-				{
-					isLocked = true
-				}
-
-				Hud_SetLocked( button, isLocked )
-
-				if ( IsRefValid( playlistName ) )
-					RefreshButtonCost( button, playlistName, "", -1, costOverride )
+				UpdatePlaylistButton( button, playlistName, false )
 			}
 		}
 		WaitFrame()
 	}
 }
 
-void function PlaylistButton_Click( var button, int elemNum )
+bool function PlaylistButton_Click_Internal( var button, string playlistName, array<var> refreshButtons )
 {
-	string playlistName = file.playlistNames[ elemNum ]
 	if ( playlistName == "private_match" )
 	{
 		if ( Hud_IsLocked( button ) )
-			return
+			return false
 
 		if ( !file.sendOpenInvite )
 		{
 			StartPrivateMatch()
-			return
+			return false
 		}
 	}
 
 	if ( Hud_IsLocked( button ) )
 	{
 		if ( !CanPlaylistFitMyParty( playlistName ) )
-			return
+			return false
 
-		array<var> buttons = GetElementsByClassname( file.menu, "GridButtonClass" )
-		OpenBuyItemDialog( buttons, button, GetItemName( playlistName ), playlistName )
-		return
+		if ( ItemDefined( playlistName ) )
+			OpenBuyItemDialog( refreshButtons, button, GetItemName( playlistName ), playlistName )
+		else
+			printt( "Not calling OpenBuyItemDialog() for '" + playlistName + "', because it doesn't exist as an Item." )
+		return false
 	}
 
 	//DO CHECK HERE TO SEE IF WE ARE TYING TO ENTER COLISEUM
 	if ( playlistName == "coliseum" )
 	{
 		// Does player have a ticket?
-		if ( Player_GetColiseumTicketCount( GetLocalClientPlayer() ) > 0 )
+
+		int requiredTickets = 1
+		if ( GetPartySize() == 2 )
+			requiredTickets = 2
+
+		if ( Player_GetColiseumTicketCount( GetLocalClientPlayer() ) >= requiredTickets )
 		{
-			ColiseumPlaylist_SpendTicketDialogue( button )
-			return
+			ColiseumPlaylist_SpendTicketDialogue( button, requiredTickets )
+			return false
+		}
+		else if ( requiredTickets == 2 && file.showColiseumPartyWarning )
+		{
+			ColiseumPlaylist_WarnFriendDialogue( refreshButtons, button )
+			return false
 		}
 		else
 		{
-			//OFFER PLAYER BUY TICKET
-			array<var> buttons = GetElementsByClassname( file.menu, "GridButtonClass" )
-			OpenBuyTicketDialog( buttons, button )
-			return
+			ColiseumPlaylist_OfferToBuyTickets( refreshButtons, button )
+			return false
 		}
 	}
 
@@ -256,6 +317,15 @@ void function PlaylistButton_Click( var button, int elemNum )
 		ClientCommand( "openinvite playlist " + playlistName )
 	else
 		StartMatchmaking( playlistName )
+
+	return true
+}
+
+void function PlaylistButton_Click( var button, int elemNum )
+{
+	string playlistName = file.playlistNames[ elemNum ]
+	array<var> refreshButtons = GetElementsByClassname( file.menu, "GridButtonClass" )
+	PlaylistButton_Click_Internal( button, playlistName, refreshButtons )
 }
 
 array<string> function GetVisiblePlaylists()
@@ -313,19 +383,67 @@ void function FadePlaylistButton( var elem, int fadeTarget, float fadeTime )
 	RuiSetGameTime( rui, "fadeEndTime", Time() + fadeTime )
 }
 
-void function ColiseumPlaylist_SpendTicketDialogue( var button )
+void function ColiseumPlaylist_WarnFriendDialogue( array<var> refreshButtons, var button )
 {
 	DialogData dialogData
-	dialogData.header = "#COLISEUM_PAY_HEADER"
-	dialogData.message = "#COLISEUM_PAY_MESSAGE"
+	dialogData.header = "#COLISEUM_WARN_HEADER_INVITE"
+	dialogData.message = "#COLISEUM_WARN_MESSAGE_INVITE"
 
-	AddDialogButton( dialogData, "#YES", BuyIntoColiseumTicket )
+	file.coliseumRefreshButtons = refreshButtons
+	file.coliseumButton = button
+
+	AddDialogButton( dialogData, "#YES", ColiseumPlaylist_OfferToBuyTicketAfterWarn )
 	AddDialogButton( dialogData, "#NO" )
 
 	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
 
 	OpenDialog( dialogData )
+}
+
+void function ColiseumPlaylist_SpendTicketDialogue( var button, int numTickets = 1 )
+{
+	DialogData dialogData
+	if ( numTickets == 1 )
+	{
+		dialogData.header = "#COLISEUM_PAY_HEADER"
+		dialogData.message = "#COLISEUM_PAY_MESSAGE"
+		AddDialogButton( dialogData, "#YES", BuyIntoColiseumTicket )
+	}
+	else
+	{
+		dialogData.header = "#COLISEUM_PAY_HEADER_INVITE"
+		dialogData.message = "#COLISEUM_PAY_MESSAGE_INVITE"
+		AddDialogButton( dialogData, "#YES", BuyIntoColiseumTicketParty )
+	}
+
+	AddDialogButton( dialogData, "#NO" )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
+
+	OpenDialog( dialogData )
+}
+
+void function ColiseumPlaylist_OfferToBuyTicketAfterWarn()
+{
+	file.showColiseumPartyWarning = false
+	ColiseumPlaylist_OfferToBuyTickets( file.coliseumRefreshButtons, file.coliseumButton )
+}
+
+void function ColiseumPlaylist_OfferToBuyTickets( array<var> refreshButtons, var button )
+{
+	OpenBuyTicketDialog( refreshButtons, button )
+}
+
+void function BuyIntoColiseumTicketParty()
+{
+	string playlistName = "coliseum"
+	CloseActiveMenu() // playlist selection menu
+	AdvanceMenu( GetMenu( "SearchMenu" ) )
+	ClientCommand( "MarkForDoubleColiseumTicket" )
+
+	StartMatchmaking( playlistName )
 }
 
 void function BuyIntoColiseumTicket()

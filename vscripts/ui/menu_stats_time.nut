@@ -98,14 +98,12 @@ void function UpdateViewStatsTimeMenu()
 	// 		  Time By Mode Pie Chart
 	//#########################################
 
-	string gameModePlayedVar = GetStatVar( "game_stats", "mode_played" )
 	array<string> gameModesArray = GetPersistenceEnumAsArray( "gameModes" )
 
 	array<PieChartEntry> modes
 	foreach ( modeName in gameModesArray )
 	{
-		string gameModePlaysVar = StringReplace( gameModePlayedVar, "%gamemode%", modeName )
-
+		string gameModePlaysVar = GetStatVar( "game_stats", "mode_played", modeName )
 		int playCount = player.GetPersistentVarAsInt( gameModePlaysVar )
 		if ( playCount > 0 )
 			AddPieChartEntry( modes, GAMETYPE_TEXT[ modeName ], float( playCount ) )

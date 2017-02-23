@@ -139,6 +139,13 @@ global struct CommunityMembership
 	string membershipLevel
 }
 
+global struct CommunityFriends
+{
+	bool isValid
+	array<string>  ids
+	array<string>  names
+}
+
 global struct CommunityUserInfo
 {
 	string hardware
@@ -204,6 +211,7 @@ global struct InboxMessage
 	string messageType
 	bool deletable
 	bool deleting
+	bool reportable
 	bool doneResolving
 
 	string dateSent

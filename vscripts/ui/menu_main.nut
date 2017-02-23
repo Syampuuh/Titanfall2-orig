@@ -56,6 +56,7 @@ void function OnMainMenu_Open()
 	Signal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
 	EndSignal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
 
+	TryUnlockCollectiblesAchievement()
 	TryUnlockCompletedGameAchievements()
 
 	thread UpdateTrialLabel()

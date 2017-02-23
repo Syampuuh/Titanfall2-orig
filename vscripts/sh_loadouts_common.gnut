@@ -72,6 +72,7 @@ TitanLoadoutDef function GetTitanLoadoutForRow( var dataTable, int row )
 {
 	TitanLoadoutDef loadout
 	loadout.setFile			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "setFile" ) )
+	loadout.titanClass		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "titanRef" ) )
 	loadout.primeTitanRef	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primeTitanRef" ) )
 	loadout.primary			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "primary" ) )
 	loadout.special			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "special" ) )

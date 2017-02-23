@@ -94,10 +94,10 @@ WeaponData
 		"critical_hit"									"0"
 
 		// Damage - When Used by Players
-		"damage_near_value"   							"50"
-		"damage_far_value"								"50"
-		"damage_near_value_titanarmor"					"850"
-		"damage_far_value_titanarmor" 					"850"
+		"damage_near_value"   							"70"
+		"damage_far_value"								"70"
+		"damage_near_value_titanarmor"					"1000"
+		"damage_far_value_titanarmor" 					"1000"
 		"explosion_damage"								"40"
 		"explosion_damage_heavy_armor"					"250"
 		"damage_near_distance"							"1200"
@@ -390,8 +390,8 @@ WeaponData
 		{
 			"is_burn_mod"		"1"
 
-			"damage_near_value"   							"75"
-			"damage_far_value"								"75"
+			"damage_near_value"   							"90"
+			"damage_far_value"								"90"
 			"damage_near_value_titanarmor"					"1350"
 			"damage_far_value_titanarmor" 					"1350"
 			"explosion_damage"								"60"

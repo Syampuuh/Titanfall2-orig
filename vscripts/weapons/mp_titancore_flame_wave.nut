@@ -69,11 +69,6 @@ void function OnAbilityChargeEnd_FlameWave( entity weapon )
 
 var function OnWeaponPrimaryAttack_titancore_flame_wave( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	//JFS - Bug 198536
-	Assert( IsValid( weapon.GetWeaponOwner() ), "JFS returning out - need to investigate why the owner is invalid." )
-	if ( !IsValid( weapon.GetWeaponOwner() ) )
-		return
-
 	OnAbilityStart_TitanCore( weapon )
 
 	#if SERVER
@@ -97,6 +92,11 @@ var function OnWeaponPrimaryAttack_titancore_flame_wave( entity weapon, WeaponPr
 	int count = 0
 	while ( count < offsets.len() )
 	{
+		//JFS - Bug 210617
+		Assert( IsValid( weapon.GetWeaponOwner() ), "JFS returning out - need to investigate why the owner is invalid." )
+		if ( !IsValid( weapon.GetWeaponOwner() ) )
+			return
+
 		vector right = CrossProduct( attackParams.dir, <0,0,1> )
 		vector offset = offsets[count] * right * PROJECTILE_SEPARATION
 

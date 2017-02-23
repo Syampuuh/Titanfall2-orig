@@ -9,6 +9,8 @@ global function GameMode_GetGameModeAnnouncement
 global function GameMode_GetGameModeAttackAnnouncement
 global function GameMode_GetGameModeDefendAnnouncement
 global function GameMode_GetDesc
+global function GameMode_GetName
+global function GameMode_GetIcon
 global function GameMode_GetAttackDesc
 global function GameMode_GetDefendDesc
 global function GameMode_GetPilotSpawnpointsRatingFunc
@@ -21,6 +23,7 @@ global function GameMode_GetGameEndingConversation
 global function GameMode_GetScoreboardColumnTitles
 global function GameMode_GetScoreboardColumnScoreTypes
 global function GameMode_GetScoreboardColumnNumDigits
+global function GameMode_GetCustomIntroAnnouncement
 global function GameMode_RunServerInits
 global function GameMode_RunClientInits
 global function GameMode_RunSharedInits
@@ -32,6 +35,7 @@ global function GameMode_AddSharedInit
 global function GameMode_SetScoreCompareFunc
 global function GameMode_SetPilotSpawnpointsRatingFunc
 global function GameMode_SetTitanSpawnpointsRatingFunc
+global function GameMode_SetCustomIntroAnnouncement
 
 global function GameMode_SetEvacEnabled
 
@@ -63,6 +67,7 @@ global struct GamemodeSettings
 	array<string> scoreboardColumnTitles
 	array<int> scoreboardColumnScoreTypes
 	array<int> scoreboardColumnNumDigits
+	void functionref(entity) customIntroAnnouncementFunc
 }
 
 
@@ -95,6 +100,11 @@ global enum eGameModes
 	COLISEUM_ID =						19,
 	LTS_BOMB_ID =						20,
 	AI_TDM_ID =							21,
+	HUNTED_ID =							22,
+	DON_ID = 							23,
+	SPEEDBALL_ID =						24,
+	RAID_ID = 							25,
+	ATCOOP_ID = 						26
 }
 
 
@@ -121,6 +131,11 @@ global const table<string, int> gameModesStringToIdMap = {
 	[ COLISEUM ]							= eGameModes.COLISEUM_ID,
 	[ LTS_BOMB ]							= eGameModes.LTS_BOMB_ID,
 	[ AI_TDM ]								= eGameModes.AI_TDM_ID,
+	[ HUNTED ]								= eGameModes.HUNTED_ID,
+	[ DON ]									= eGameModes.DON_ID,
+	[ SPEEDBALL ]							= eGameModes.SPEEDBALL_ID,
+	[ RAID ]								= eGameModes.RAID_ID,
+	[ ATCOOP ]								= eGameModes.ATCOOP_ID
 }
 
 struct
@@ -234,7 +249,7 @@ void function GameModes_Init()
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
 	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 
@@ -265,7 +280,7 @@ void function GameModes_Init()
 	GameMode_SetDefaultScoreLimits( gameMode, 1, 0 )
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 3 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 1 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_GRUNT_KILLS", PGS_NPC_KILLS, 2 )
 	// GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
@@ -406,6 +421,92 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSAULT", PGS_ASSAULT_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEFENSE", PGS_DEFENSE_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+
+	gameMode = HUNTED
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_hunted" )
+	#if FACTION_DIALOGUE_ENABLED
+		GameMode_SetGameModeAnnouncement( gameMode, "pvp_modeDesc" )
+	#else
+		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
+	#endif
+	GameMode_SetDesc( gameMode, "#PL_hunted_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 100, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_HUNTER", PGS_ASSAULT_SCORE, 4 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_HUNTED", PGS_DEFENSE_SCORE, 4 )
+
+	gameMode = DON
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_don" )
+	#if FACTION_DIALOGUE_ENABLED
+		GameMode_SetGameModeAnnouncement( gameMode, "pvp_modeDesc" )
+	#else
+		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
+	#endif
+	GameMode_SetDesc( gameMode, "#PL_don_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 100, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+
+	gameMode = SPEEDBALL
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_speedball" )
+	#if FACTION_DIALOGUE_ENABLED
+		GameMode_SetGameModeAnnouncement( gameMode, "gnrc_modeDesc" )
+	#else
+		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_CTF" )
+	#endif
+	GameMode_SetDesc( gameMode, "#PL_speedball_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/ctf" )
+	GameMode_SetDefaultScoreLimits( gameMode, 0, 5 )
+	GameMode_SetDefaultTimeLimits( gameMode, 0, 1.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_FLAGS_SECURED", PGS_ASSAULT_SCORE, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PICKUPS", PGS_DEFENSE_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+
+	gameMode = RAID
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_raid" )
+	#if FACTION_DIALOGUE_ENABLED
+		GameMode_SetGameModeAnnouncement( gameMode, "hp_modeDesc" )
+	#else
+		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
+	#endif
+	GameMode_SetDesc( gameMode, "#PL_raid_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetSuddenDeath( gameMode, true )
+	GameMode_SetDefaultScoreLimits( gameMode, 0, 5 )
+	GameMode_SetDefaultTimeLimits( gameMode, 0, 5.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_PLANT", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_DEFUSE", PGS_DEFENSE_SCORE, 2 )
+
+	gameMode = ATCOOP
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_atcoop" )
+	#if FACTION_DIALOGUE_ENABLED
+		GameMode_SetGameModeAnnouncement( gameMode, "bh_modeDesc" )
+	#else
+		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_AT" )
+	#endif
+	GameMode_SetDesc( gameMode, "#PL_atcoop_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/at" )
+	GameMode_SetDefaultScoreLimits( gameMode, 5000, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 4 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_NPC_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "$", PGS_SCORE, 4 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_SCORE, 4 )
+
+
 
 	#if SERVER || CLIENT
 	GameModes_Init_SV_CL()
@@ -561,6 +662,12 @@ void function GameMode_SetGameEndingConversation( string gameModeName, string co
 	file.gameModeDefs[gameModeName].gameModeEndingConversation = conversation
 }
 
+void function GameMode_SetCustomIntroAnnouncement( string gameModeName, void functionref(entity) func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].customIntroAnnouncementFunc = func
+}
+
 /*************************************************************
 	Getters
 *************************************************************/
@@ -611,6 +718,18 @@ string function GameMode_GetDesc( string gameModeName )
 {
 	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
 	return file.gameModeDefs[gameModeName].desc_localized
+}
+
+string function GameMode_GetName( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].name_localized
+}
+
+asset function GameMode_GetIcon( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].icon
 }
 
 string function GameMode_GetAttackDesc( string gameModeName )
@@ -685,6 +804,12 @@ array<int> function GameMode_GetScoreboardColumnNumDigits( string gameModeName )
 {
 	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
 	return file.gameModeDefs[gameModeName].scoreboardColumnNumDigits
+}
+
+void functionref(entity) function GameMode_GetCustomIntroAnnouncement( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].customIntroAnnouncementFunc
 }
 
 /*************************************************************

@@ -273,7 +273,7 @@ void function AddColorStatusEffect( entity player )
 {
 	ColorSwapStruct info
 	info.weaponOwner = player
-	info.statusEffectId = StatusEffect_AddEndless( player, eStatusEffect.cockpitColor, COCKPIT_COLOR_THREAT )
+	info.statusEffectId = StatusEffect_AddTimed( player, eStatusEffect.cockpitColor, COCKPIT_COLOR_THREAT, 100000, 0 )
 	file.colorSwapStatusEffects.append( info )
 }
 #endif

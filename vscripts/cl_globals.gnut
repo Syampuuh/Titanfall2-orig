@@ -24,6 +24,7 @@ global struct ClGlobals
 	array<void functionref( entity, entity )>  titanHudCallbacks
 	array<void functionref( entity )>  onLocalViewPlayerSpawnedCallbacks
 	array<void functionref( entity )>  onLocalClientPlayerSpawnedCallbacks
+	array<void functionref( entity )>  onMinimapEntSpawnedCallbacks
 	array<void functionref( entity )> addPlayerFuncs
 	table< int, array<void functionref( float, vector, int, int, entity ) > > onLocalPlayerTookDamageCallback
 	array<void functionref( entity, entity, vector, int ) > onLocalPlayerDidDamageCallback

@@ -37,16 +37,23 @@ void function InitStatsTables()
 	AddPersistentStat( "game_stats", "mvp", 								"",	 	"mapStats[%mapname%].topPlayerOnTeam[%gamemode%]", "#" )
 	AddPersistentStat( "game_stats", "top3OnTeam", 							"",	 	"mapStats[%mapname%].top3OnTeam[%gamemode%]", "#" )
 	AddPersistentStat( "game_stats", "hoursPlayed", 						"",		"mapStats[%mapname%].hoursPlayed[%gamemode%]", "#" )
-	AddPersistentStat( "game_stats", "mode_played", 						"",	 	"gameStats.modesPlayed[%gamemode%]", "#" )
-	AddPersistentStat( "game_stats", "mode_won", 							"",	 	"gameStats.modesWon[%gamemode%]", "#" )
+
+	int gameModeCount = PersistenceGetEnumCount( "gameModes" )
+	for ( int modeIndex = 0; modeIndex < gameModeCount; modeIndex++ )
+	{
+		string gameModeName = PersistenceGetEnumItemNameForIndex( "gameModes", modeIndex )
+
+		AddPersistentStat( "game_stats", "mode_played", 						gameModeName,	 	"gameStats.modesPlayed[" + gameModeName + "]", "#UNLOCK_MODE_PLAYED" )
+		AddPersistentStat( "game_stats", "mode_won", 							gameModeName,	 	"gameStats.modesWon[" + gameModeName + "]", "#UNLOCK_MODE_WON" )
+
+		AddPersistentStat( "game_stats", "pvp_kills_by_mode",					gameModeName,		"gameStats.pvpKills[" + gameModeName + "]", "#UNLOCK_MODE_PILOT_KILLS" )
+		AddPersistentStat( "game_stats", "times_kd_2_to_1_by_mode",				gameModeName,		"gameStats.timesKillDeathRatio2to1[" + gameModeName + "]", "#UNLOCK_MODE_KD_2_1" )
+		AddPersistentStat( "game_stats", "times_kd_2_to_1_pvp_by_mode",			gameModeName,		"gameStats.timesKillDeathRatio2to1_pvp[" + gameModeName + "]", "#UNLOCK_MODE_PILOT_KD_2_1" )
+	}
 
 	AddPersistentStat( "game_stats", "mvp_total", 							"",	 	"gameStats.mvp_total", "#UNLOCK_GAME_MVP" )
 	AddPersistentStat( "game_stats", "game_completed_total",				"",		"gameStats.gamesCompletedTotal", "#UNLOCK_GAME_COMPLETED" )
 	AddPersistentStat( "game_stats", "game_won_total",						"",		"gameStats.gamesWonTotal", "#UNLOCK_GAME_WON" )
-
-	AddPersistentStat( "game_stats", "pvp_kills_by_mode",					"",		"gameStats.pvpKills[%gamemode%]", "#" )
-	AddPersistentStat( "game_stats", "times_kd_2_to_1_by_mode",				"",		"gameStats.timesKillDeathRatio2to1[%gamemode%]", "#" )
-	AddPersistentStat( "game_stats", "times_kd_2_to_1_pvp_by_mode",			"",		"gameStats.timesKillDeathRatio2to1_pvp[%gamemode%]", "#" )
 
 	//##############################################
 	// 					TIME STATS
@@ -186,8 +193,18 @@ void function InitStatsTables()
 	AddPersistentStat( "kills_stats", "whileWallrunning", 			"",		"killStats.whileWallrunning", "#" )
 	AddPersistentStat( "kills_stats", "wallhangingPilots", 			"",		"killStats.wallhangingPilots", "#" )
 	AddPersistentStat( "kills_stats", "whileWallhanging", 			"",		"killStats.whileWallhanging", "#" )
+
 	AddPersistentStat( "kills_stats", "pilotExecution", 			"",		"killStats.pilotExecution", "#" )
 	AddPersistentStat( "kills_stats", "pilotExecutePilot", 			"",		"killStats.pilotExecutePilot", "#UNLOCK_KILLS_PILOT_EXECUTION" )
+
+	int pilotExecutionCount = PersistenceGetEnumCount( "pilotExecution" )
+	for ( int i = 0; i < pilotExecutionCount; i++ )
+	{
+		string executionRef = PersistenceGetEnumItemNameForIndex( "pilotExecution", i )
+		if ( executionRef != "" )
+			AddPersistentStat( "kills_stats", "pilotExecutePilotUsing_" + executionRef, "",	"killStats.pilotExecutePilotByType[" + executionRef + "]", "#UNLOCK_KILLS_PILOT_EXECUTION_USING_TELEFRAG" ) // will need to modify string if other unlock refs are used
+	}
+
 	AddPersistentStat( "kills_stats", "pilotKickMelee", 			"",		"killStats.pilotKickMelee", "#" )
 	AddPersistentStat( "kills_stats", "pilotKickMeleePilot", 		"",		"killStats.pilotKickMeleePilot", "#" )
 	AddPersistentStat( "kills_stats", "titanMelee", 				"",		"killStats.titanMelee", "#" )

@@ -5,6 +5,9 @@ global function CLGoblinDropship_Init
 global function ServerCallback_CreateDropShipIntLighting
 global function CreateCallback_Dropship
 global function JetwakeFXChanged
+global function PlayGD_Goblin_Zipline_StrafeSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+global function PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+global function PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
 
 const FX_DLIGHT_RED 	= $"veh_interior_Dlight_red"
 const FX_DLIGHT_COCKPIT = $"veh_interior_Dlight_cockpit_offset"
@@ -67,4 +70,36 @@ function ServerCallback_CreateDropShipIntLighting( eHandle, team )
 void function CreateCallback_Dropship( entity ent )
 {
 	ent.SetGroundEffectTable( "dropship_dust" )
+
+	//HACK: Fix dropship sounds for MP AI Game modes when grunts get dropped off being too loud. Necessitated because of last minute use of SP anims in MP. Fix in a better way next game.
+	AddAnimEvent( ent, "PlayGD_Goblin_Zipline_StrafeSounds", PlayGD_Goblin_Zipline_StrafeSounds )
+	AddAnimEvent( ent, "PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds", PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds )
+	AddAnimEvent( ent, "PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds", PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds )
+}
+
+void function PlayGD_Goblin_Zipline_StrafeSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	#if SP
+		EmitSoundOnEntity( ship, "Beacon_Flying_2_ships" )
+	#elseif MP
+		EmitSoundOnEntity( ship, "Dropship_Flying_2_ships_Attrition" )
+	#endif
+}
+
+void function PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	#if SP
+		EmitSoundOnEntity( ship, "Timeshift_Scr_dropship_flyer_attack_vertical_successful" )
+	#elseif MP
+		EmitSoundOnEntity( ship, "Dropship_Flyer_Attack_Vertical_Successful_Attrition" )
+	#endif
+}
+
+void function PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	#if SP
+		EmitSoundOnEntity( ship, "Timeshift_Scr_Dropship_Warpout" )
+	#elseif MP
+		EmitSoundOnEntity( ship, "Dropship_Warpout_Attrition" )
+	#endif
 }

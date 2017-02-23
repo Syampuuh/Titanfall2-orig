@@ -1,13 +1,29 @@
+global function StartMatchmakingPlaylists
 
-global function ActivateQuickMatch
-
-void function ActivateQuickMatch( var button )
+void function StartMatchmakingPlaylists( string playlists )
 {
-	entity player = GetUIPlayer()
-	Assert( player != null )
+	bool hasValidPlaylists = false
+	string validPlaylists = ""
+	array< string > playlistsList = split( playlists, "," )
+	foreach ( string playlist in playlistsList )
+	{
+		if ( CanPlaylistFitMyParty( playlist ) )
+		{
+			if ( hasValidPlaylists )
+				validPlaylists += ","
 
-	string lastPlaylist = expect string( player.GetPersistentVar( "lastPlaylist" ) )
-	AdvanceMenu( GetMenu( "SearchMenu" ) )
-	printt( "Setting match_playlist to '" + lastPlaylist + "' due to ActivateQuickMatch call" )
-	StartMatchmaking( lastPlaylist )
+			validPlaylists += playlist
+			hasValidPlaylists = true
+		}
+	}
+
+	if ( !hasValidPlaylists )
+	{
+		printt( "Party is too large to auto-matchmake with playlists:", playlists )
+		string playlistMenuName = GetPlaylistMenuName()
+		AdvanceMenu( GetMenu( playlistMenuName ) )
+		return
+	}
+
+	StartMatchmaking( validPlaylists )
 }

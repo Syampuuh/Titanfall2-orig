@@ -48,6 +48,7 @@ global function ChargeBall_GetChargeTime
 global function PlayerUsedOffhand
 #if SERVER
 global function SetPlayerCooldowns
+global function ResetPlayerCooldowns
 global function StoreOffhandData
 #endif
 
@@ -898,7 +899,22 @@ bool function PlantSuperStickyGrenade( entity ent, vector pos, vector normal, en
 	return true
 }
 
+#if SERVER
+void function HandleDisappearingParent( entity ent, entity parentEnt )
+{
+	parentEnt.EndSignal( "OnDeath" )
+	ent.EndSignal( "OnDestroy" )
 
+	OnThreadEnd(
+	function() : ( ent )
+		{
+			ent.ClearParent()
+		}
+	)
+
+	parentEnt.WaitSignal( "StartPhaseShift" )
+}
+#else
 void function HandleDisappearingParent( entity ent, entity parentEnt )
 {
 	parentEnt.EndSignal( "OnDeath" )
@@ -908,6 +924,7 @@ void function HandleDisappearingParent( entity ent, entity parentEnt )
 
 	ent.ClearParent()
 }
+#endif
 
 bool function EntityShouldStick( entity stickyEnt, entity hitent )
 {
@@ -1246,7 +1263,6 @@ bool function WeaponIsSmartPistolVariant( entity weapon )
 function TrapDestroyOnRoundEnd( entity player, entity trapEnt )
 {
 	trapEnt.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnDestroy" )
 
 	svGlobal.levelEnt.WaitSignal( "ClearedPlayers" )
 
@@ -3584,6 +3600,52 @@ void function SetPlayerCooldowns( entity player )
 	}
 }
 
+void function ResetPlayerCooldowns( entity player )
+{
+	if ( player.IsTitan() )
+		return
+
+	array<int> offhandIndices = [ OFFHAND_LEFT, OFFHAND_RIGHT ]
+
+	foreach ( index in offhandIndices )
+	{
+		float lastUseTime = -99.0//player.p.lastPilotOffhandUseTime[ index ]
+		float lastChargeFrac = -1.0//player.p.lastPilotOffhandChargeFrac[ index ]
+		float lastClipFrac = 1.0//player.p.lastPilotClipFrac[ index ]
+
+		entity weapon = player.GetOffhandWeapon( index )
+		if ( !IsValid( weapon ) )
+			continue
+
+		string weaponClassName = weapon.GetWeaponClassName()
+
+		switch ( GetWeaponInfoFileKeyField_Global( weaponClassName, "cooldown_type" ) )
+		{
+			case "grapple":
+				// GetPlayerSettingsField isn't working for moddable fields? - Bug 129567
+				float powerRequired = 100.0 // GetPlayerSettingsField( "grapple_power_required" )
+				player.SetSuitGrapplePower( powerRequired )
+				break
+
+			case "ammo":
+			case "ammo_instant":
+			case "ammo_deployed":
+			case "ammo_timed":
+				int maxAmmo = weapon.GetWeaponPrimaryClipCountMax()
+				weapon.SetWeaponPrimaryClipCountAbsolute( maxAmmo )
+				break
+
+			case "chargeFrac":
+				weapon.SetWeaponChargeFraction( 1.0 )
+				break
+
+			default:
+				printt( weaponClassName + " needs to be updated to support cooldown_type setting" )
+				break
+		}
+	}
+}
+
 void function OnPlayerKilled( entity player, entity attacker, var damageInfo )
 {
 	StoreOffhandData( player )
@@ -3596,6 +3658,9 @@ void function StoreOffhandData( entity player, bool waitEndFrame = true )
 
 void function StoreOffhandDataThread( entity player, bool waitEndFrame )
 {
+	if ( !IsValid( player ) )
+		return
+
 	player.EndSignal( "OnDestroy" )
 
 	if ( waitEndFrame )

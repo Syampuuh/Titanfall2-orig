@@ -47,6 +47,11 @@ WeaponData
 
 	"bolt_gravity_enabled"							"1"
 
+    "grenade_arc_indicator_effect"					"P_grenade_arc_proto_first_orange"
+    "grenade_arc_impact_indicator_effect"			"grenade_arc_impact_proto_orange"
+    "grenade_arc_indicator_show_from_hip"			"0"
+	"grenade_arc_indicator_bounce_count"			"1"
+
 	MP_BASE
 	{
 	    "damage_near_distance"							"1500"		// 1500

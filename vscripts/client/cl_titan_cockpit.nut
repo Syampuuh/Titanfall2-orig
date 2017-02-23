@@ -80,6 +80,7 @@ function ClTitanCockpit_Init()
 	RegisterSignal( "Ejecting" )
 	RegisterSignal( "TitanEMP_Internal" )
 	RegisterSignal( "TitanUnDoomed" )
+	RegisterSignal( "MonitorPlayerEjectAnimBeingStuck" )
 
 	PrecacheParticleSystem( $"xo_cockpit_spark_01" )
 
@@ -779,7 +780,7 @@ void function PlayerPressed_Eject( entity player )
 string function RollRandomEjectString()
 {
 	const int COCKPIT_EJECT_COMMON_COUNT = 6
-	const int COCKPIT_EJECT_RARE_COUNT = 32
+	const int COCKPIT_EJECT_RARE_COUNT = 34
 	const float CHANCE_FOR_RARE = 0.15
 
 	float randForType = RandomFloat( 1.0 )
@@ -795,11 +796,10 @@ string function RollRandomEjectString()
 	return result
 }
 
-void function PlayerEjects( entity player, entity cockpit )
+void function PlayerEjects( entity player, entity cockpit ) //Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
 {
 	// prevent animation from playing if player is in the middle of execution
-	// but ejecting causes the player to be "BUSY" so make sure it goes through if he is ejecting
-	if ( player.ContextAction_IsActive() && !player.GetTitanSoul().IsEjecting() )
+	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() )
 		return
 
 	player.Signal( "Ejecting" )
@@ -817,16 +817,19 @@ void function PlayerEjects( entity player, entity cockpit )
 
 	local ejectAlarmSound
 	cockpit.s.ejectStartTime = Time()
+	string animationName
 	if ( GetNuclearPayload( player ) > 0 )
 	{
-		cockpit.Anim_NonScriptedPlay( "atpov_cockpit_eject_nuclear" )
+		animationName = "atpov_cockpit_eject_nuclear"
+		cockpit.Anim_NonScriptedPlay( animationName )
 		if ( IsValid( cockpit.e.body ) )
 			cockpit.e.body.Anim_NonScriptedPlay( "atpov_cockpit_eject_nuclear" )
 		ejectAlarmSound = TITAN_NUCLEAR_DEATH_ALARM
 	}
 	else
 	{
-		cockpit.Anim_NonScriptedPlay( "atpov_cockpit_eject" )
+		animationName = "atpov_cockpit_eject"
+		cockpit.Anim_NonScriptedPlay( animationName )
 		if ( IsValid( cockpit.e.body ) )
 			cockpit.e.body.Anim_NonScriptedPlay( "atpov_cockpit_eject" )
 
@@ -835,6 +838,39 @@ void function PlayerEjects( entity player, entity cockpit )
 
 	thread LightingUpdateAfterOpeningCockpit()
 	thread EjectAudioThink( player, ejectAlarmSound )
+
+	float animDuration = cockpit.GetSequenceDuration( animationName )
+
+	thread MonitorPlayerEjectAnimBeingStuck( player, animDuration )
+}
+
+void function MonitorPlayerEjectAnimBeingStuck( entity player, float duration )
+{
+	player.Signal( "MonitorPlayerEjectAnimBeingStuck" )
+	player.EndSignal( "MonitorPlayerEjectAnimBeingStuck" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "SettingsChanged" )
+
+
+	wait duration + 2.0 // 1s as a buffer
+
+	if ( player.IsTitan() )
+	{
+		entity cockpit = player.GetCockpit()
+		cockpit.Anim_NonScriptedPlay( "atpov_cockpit_hatch_close_idle" )
+		if ( IsValid( cockpit.e.body ) )
+			cockpit.e.body.Anim_NonScriptedPlay( "atpov_cockpit_hatch_close_idle" )
+
+		if ( file.cockpitRui != null )
+			RuiSetBool( file.cockpitRui, "isEjecting", false )
+
+		if ( file.cockpitLowerRui != null )
+		{
+			RuiSetBool( file.cockpitLowerRui, "isEjecting", false )
+			RuiSetString( file.cockpitLowerRui, "ejectPrompt", "" )
+		}
+	}
 }
 
 function ServerCallback_EjectConfirmed()

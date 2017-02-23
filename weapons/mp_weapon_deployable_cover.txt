@@ -49,6 +49,8 @@ WeaponData
 	"grenade_disc_throw"							"1"
 	"projectile_gravity_scale"						"3"
 
+	"projectile_visible_to_smart_ammo"				"0"
+
 	"critical_hit"									"0"
 
 	// Sounds

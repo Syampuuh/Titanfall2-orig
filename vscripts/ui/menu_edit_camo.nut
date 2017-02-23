@@ -7,6 +7,8 @@ struct
 	var menuTitle
 	GridMenuData gridData
 	var name
+	var leftShoulder
+	var rightShoulder
 
 	int itemsPerPage
 	array<ItemDisplayData> skinItemData
@@ -22,6 +24,10 @@ void function InitCamoSelectMenu()
 
 	file.menuTitle = Hud_GetChild( menu, "MenuTitle" )
 	file.name = Hud_GetChild( menu, "Name" )
+	var panel = Hud_GetChild( file.menu, "GridPanel" )
+	var pagerPanel = Hud_GetChild( panel, "PagerPanel" )
+	file.leftShoulder = Hud_GetChild( pagerPanel, "LeftShoulder" )
+	file.rightShoulder = Hud_GetChild( pagerPanel, "RightShoulder" )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnCamoSelectMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnCamoSelectMenu_Close )
@@ -37,6 +43,9 @@ const int NUM_GRID_PER_PAGE = NUM_GRID_ROWS * NUM_GRID_COLS
 
 void function InitCamoForRefs( array<ItemDisplayData> itemDisplayDataList )
 {
+	Hud_SetY( file.leftShoulder, GetContentScaleFactor( GetMenu( "MainMenu" ) )[1] * -30 )
+	Hud_SetY( file.rightShoulder, GetContentScaleFactor( GetMenu( "MainMenu" ) )[1] * -30 )
+
 	file.gridData.rows = NUM_GRID_ROWS
 	file.gridData.columns = NUM_GRID_COLS
 	file.gridData.numElements = itemDisplayDataList.len()

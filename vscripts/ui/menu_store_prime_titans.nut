@@ -157,6 +157,18 @@ void function OnPrimeButton_Activate( var button )
 	if ( !IsFullyConnected() )
 		return
 
+#if PC_PROG
+	if ( !Origin_IsOverlayAvailable() )
+	{
+		DialogData dialogData
+		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+		AddDialogButton( dialogData, "#OK" )
+
+		OpenDialog( dialogData )
+		return
+	}
+#endif
+
 	file.entitlementToBuy = expect int ( button.s.entitlementId )
 
 	if ( !LocalPlayerHasEntitlement( file.entitlementToBuy ) && !LocalPlayerHasEntitlement( ET_DELUXE_EDITION ) )
@@ -177,7 +189,7 @@ void function OnPrimeButton_Activate( var button )
 				Assert( false, "entitlement id not found " + file.entitlementToBuy )
 		}
 
-		dialogData.message = "#STORE_PRIME_TITAN_WARNING"
+		dialogData.message = "#STORE_PRIME_TITAN_WARNING_DLC2"
 		AddDialogButton( dialogData, "#BUY", Store_BuyPrimeTitan )
 		AddDialogButton( dialogData, "#CANCEL" )
 
@@ -191,8 +203,7 @@ void function OnPrimeButton_Activate( var button )
 
 void function Store_BuyPrimeTitan()
 {
-	PurchaseEntitlement( file.entitlementToBuy )
-	uiGlobal.updateCachedNewItems = true
+	StorePurchase( file.entitlementToBuy )
 }
 
 void function EntitlementsChanged_PrimeTitans()

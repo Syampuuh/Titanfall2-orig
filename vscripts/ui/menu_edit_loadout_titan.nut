@@ -101,10 +101,8 @@ void function OnOpenEditTitanLoadoutMenu()
 	UpdateTitanXP( file.xpPanel, uiGlobal.editingLoadoutIndex )
 	Hud_SetNew( file.camoSkinButton, ButtonShouldShowNew( eItemTypes.CAMO_SKIN_TITAN, "", loadout.titanClass ) || ButtonShouldShowNew( eItemTypes.TITAN_WARPAINT, "", loadout.titanClass ) )
 	Hud_SetNew( file.weaponCamoButton, ButtonShouldShowNew( eItemTypes.CAMO_SKIN, "", loadout.titanClass ) )
-	if ( IsTitanLoadoutPrime( loadout ) )
-		Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.PRIME_TITAN_NOSE_ART, "", loadout.primeTitanRef ) )
-	else
-		Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.TITAN_NOSE_ART, "", loadout.titanClass ) )
+
+	Hud_SetNew( file.noseArtButton, ButtonShouldShowNew( eItemTypes.TITAN_NOSE_ART, "", loadout.titanClass ) )
 
 	Hud_SetNew( file.primeTitanButton, ButtonShouldShowNew( eItemTypes.PRIME_TITAN, loadout.primeTitanRef, "" ) )
 
@@ -148,8 +146,16 @@ void function UpdateTitanCosmeticButtons()
 			skinRef = data.ref
 			break
 		}
-		Assert( skinRef != "" )
-		titanCamoImage = GetItemImage( skinRef )
+		//Assert( skinRef != "" )
+		if ( skinRef == "" ) //Invalid skin ref, reset skin and camo to 0. Doing here as opposed to SetPersistentLoadout() since we have to set 2 properties, camoIndex and skinIndex, and it's not easy to refactor SetPersistentLoadout() to handle that gracefully
+		{
+			ResetSkinAndCamoIndex( isLoadoutPrime )
+			titanCamoImage = $"rui/menu/common/appearance_button_swatch"
+		}
+		else
+		{
+			titanCamoImage = GetItemImage( skinRef )
+		}
 	}
 
 	RuiSetImage( Hud_GetRui( file.camoSkinButton ), "camoImage", titanCamoImage )
@@ -163,18 +169,8 @@ void function UpdateTitanCosmeticButtons()
 	}
 	else
 	{
-		array<ItemDisplayData> titanNoseArts
-		string titanRef
-		if ( isLoadoutPrime )
-		{
-			titanNoseArts = GetVisibleItemsOfType( eItemTypes.PRIME_TITAN_NOSE_ART, loadout.primeTitanRef )
-			titanRef = loadout.primeTitanRef
-		}
-		else
-		{
-		 	titanNoseArts = GetVisibleItemsOfType( eItemTypes.TITAN_NOSE_ART, loadout.titanClass )
-		 	titanRef = loadout.titanClass
-		}
+		string titanRef = loadout.titanClass // Nose arts are shared among prime/non prime Titan
+		array<ItemDisplayData> titanNoseArts = GetVisibleItemsOfType( eItemTypes.TITAN_NOSE_ART, titanRef )
 		string noseArt = ""
 		foreach ( data in titanNoseArts )
 		{
@@ -190,12 +186,6 @@ void function UpdateTitanCosmeticButtons()
 	}
 
 	RuiSetImage( Hud_GetRui( file.noseArtButton ), "camoImage", noseArtImage )
-
-	//Disable nosearts for PrimeTitans for now until we get a chance to make them work
-	Hud_SetLocked( file.noseArtButton, isLoadoutPrime )
-	if ( isLoadoutPrime )
-		buttonImage =  $"rui/menu/common/button_locked"
-
 	RuiSetImage( Hud_GetRui( file.noseArtButton ), "buttonImage", buttonImage )
 	asset primaryCamoImage = loadout.primaryCamoIndex > 0 ? CamoSkin_GetImage( CamoSkins_GetByIndex( loadout.primaryCamoIndex ) ) : $"rui/menu/common/appearance_button_swatch"
 	RuiSetImage( Hud_GetRui( file.weaponCamoButton ), "camoImage", primaryCamoImage )
@@ -242,6 +232,19 @@ void function UpdateTitanCosmeticButtons()
 	}
 }
 
+void function ResetSkinAndCamoIndex( bool isLoadoutPrime)
+{
+	entity player = GetUIPlayer()
+	string editingCamoProperty
+	if ( isLoadoutPrime )
+		editingCamoProperty= "primeCamoIndex"
+	else
+		editingCamoProperty = "camoIndex"
+	//printt( "editingLoadoutType: "  + uiGlobal.editingLoadoutType + ", editingLoadoutIndex: " + uiGlobal.editingLoadoutIndex + ", editingLoadoutProperty: " + uiGlobal.editingLoadoutProperty )
+	SetCachedLoadoutValue( player, uiGlobal.editingLoadoutType, uiGlobal.editingLoadoutIndex, editingCamoProperty, "0" )
+	SetCachedLoadoutValue( player, uiGlobal.editingLoadoutType, uiGlobal.editingLoadoutIndex, GetSkinPropertyName( editingCamoProperty ), "0" )
+}
+
 void function OnEditTitanCamoSkinButton_LoseFocus( var button )
 {
 	var rui = Hud_GetRui( file.descriptionBox )
@@ -257,7 +260,11 @@ void function OnEditTitanCamoSkinButton_Focus( var button )
 	switch ( Hud_GetHudName( button ) )
 	{
 		case "ButtonCamoSkin":
-			desc = "#ITEM_TYPE_CAMO_SKIN_TITAN_CHOICE"
+			TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+			if ( IsTitanLoadoutPrime( loadout ) )
+				desc = "#ITEM_TYPE_CAMO_SKIN_PRIME_TITAN_CHOICE"
+			else
+				desc = "#ITEM_TYPE_CAMO_SKIN_TITAN_CHOICE"
 		break
 		case "ButtonWeaponCamo":
 			desc = "#ITEM_TYPE_CAMO_SKIN_CHOICE"
@@ -275,10 +282,7 @@ void function OnEditTitanNoseArtButton_Focus( var button )
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 
-	if ( IsTitanLoadoutPrime( loadout ) )
-		desc = "ITEM_TYPE_DISABLED_FOR_PRIME_TITAN"
-	else
-		desc = "#ITEM_TYPE_TITAN_NOSE_ART_CHOICE"
+	desc = "#ITEM_TYPE_TITAN_NOSE_ART_CHOICE"
 
 	var rui = Hud_GetRui( file.descriptionBox )
 	RuiSetString( rui, "messageText", desc )
@@ -340,7 +344,7 @@ void function OnEditTitanNoseArtButton_Activate( var button )
 {
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 	if ( IsTitanLoadoutPrime( loadout ) )
-		return //uiGlobal.editingLoadoutProperty = "primeDecalIndex
+		uiGlobal.editingLoadoutProperty = "primeDecalIndex"
 	else
 		uiGlobal.editingLoadoutProperty = "decalIndex"
 	AdvanceMenu( GetMenu( "NoseArtSelectMenu" ) )
@@ -359,18 +363,8 @@ void function OnPrimeTitanButton_Activate( var button )
 	string primeTitanRef = GetPrimeTitanRefForTitanClass( loadout.titanClass )
 	if ( IsItemLocked( player, primeTitanRef ) )
 	{
-#if PC_PROG
-		if ( !Origin_IsOverlayAvailable() )
-		{
-			DialogData dialogData
-			dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
-			AddDialogButton( dialogData, "#OK" )
-
-			OpenDialog( dialogData )
-			return
-		}
-#endif
-		OpenStoreMenu( "StoreMenu_PrimeTitans" )
+		if ( IsLobby() ) //Stop players from accessing store outside of lobby
+			OpenStoreMenu( "StoreMenu_PrimeTitans" )
 
 		return
 	}
@@ -413,7 +407,7 @@ bool function ShouldCosmeticButtonShowNew( entity player, string parentRef, int 
 		if ( GetSubitemType( parentRef, subitem.ref ) != subitemType )
 			continue
 
-		if ( isPrimeTitan && ( subitem.itemType == eItemTypes.TITAN_WARPAINT || subitem.itemType == eItemTypes.TITAN_NOSE_ART ) )
+		if ( isPrimeTitan && subitem.itemType == eItemTypes.TITAN_WARPAINT )
 			continue
 
 		if ( IsItemNew( player, subitem.ref, parentRef ) )

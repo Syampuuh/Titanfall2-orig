@@ -32,6 +32,10 @@ global function IsPlayerDisembarking
 	global function Embark_DelayedFadeOut
 #endif
 
+#if DEV
+	global function SetEmbarkDebugPrint
+#endif
+
 const FAST_EMBARK = 1
 const SKIP_AHEAD_TIME = 2.0
 
@@ -44,6 +48,7 @@ const EMBARK_FADE_TIME = 0.3
 struct
 {
 	asset cockpitLightFX = $"xo_cockpit_dlight"
+	bool embarkDebugPrint = false
 } file
 
 function TitanEmbark_Init()
@@ -97,7 +102,7 @@ function TitanEmbark_Init()
 
 		AddClientCommandCallback( "TitanDisembark", ClientCommand_TitanDisembark ) //
 		AddClientCommandCallback( "TitanKneel", ClientCommand_TitanKneel ) //
-		AddClientCommandCallback( "TitanStand", ClientCommand_TitanStand ) //
+		//AddClientCommandCallback( "TitanStand", ClientCommand_TitanStand ) //
 		AddClientCommandCallback( "TitanNextMode", ClientCommand_TitanNextMode ) //
 
 		AddCallback_OnTitanBecomesPilot( TitanBecomesPilot_UpdateRodeoRiderHud )
@@ -574,7 +579,7 @@ bool function ClientCommand_TitanKneel( entity player, array<string> args )
 	return true
 }
 
-bool function ClientCommand_TitanStand( entity player, array<string> args )
+/*bool function ClientCommand_TitanStand( entity player, array<string> args )
 {
 	entity titan = player.GetPetTitan()
 	if ( !IsAlive( titan ) )
@@ -584,7 +589,7 @@ bool function ClientCommand_TitanStand( entity player, array<string> args )
 	titan.s.standQueued = true
 	titan.s.kneelQueued = false
 	return true
-}
+}*/
 
 bool function ClientCommand_TitanNextMode( entity player, array<string> args )
 {
@@ -786,8 +791,28 @@ function TitanEmbarkFailsafe( entity player, entity titan, entity groundEnt, vec
 	if ( GetCurrentPlaylistVarInt( "player_embark_in_solid_checks", 0 ) != 1 )
 		return
 
+	#if DEV
+		if ( file.embarkDebugPrint )
+		{
+			if ( IsValid( titan ) )
+				printt( "TitanEmbarkFailsafe, before PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + startOrigin )
+			else
+				printt( "TitanEmbarkFailsafe, before PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", null titan, safeStartPoint: " + startOrigin )
+		}
+	#endif
+
 	if ( !PutEntityInSafeSpot( player, titan, groundEnt, startOrigin, player.GetOrigin() ) )
 		player.SetOrigin( startOrigin )
+
+	#if DEV
+		if ( file.embarkDebugPrint )
+		{
+			if ( IsValid( titan ) )
+				printt( "TitanEmbarkFailsafe, after PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + startOrigin )
+			else
+				printt( "TitanEmbarkFailsafe, after PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", null titan, safeStartPoint: " + startOrigin )
+		}
+	#endif
 }
 
 function TitanEmbark_PlayerEmbarks( entity player, entity titan, table e )
@@ -915,7 +940,7 @@ function TitanEmbark_PlayerEmbarks( entity player, entity titan, table e )
 				DeleteAnimEvent( player, "phase_shift_stop" )
 			}
 
-			if ( IsAlive( titan ) )
+			if ( IsAlive( titan ) ) //Consider clearing titan.s.embarkingPlayer here?
 				titan.Die()
 		}
 	)
@@ -1408,6 +1433,12 @@ void function PlayerDisembarksTitanWithSequenceFuncs( entity player, FirstPerson
 		     TraceLineSimple( titanOrigin + Vector( 0, 0, 200 ), clampedPos + Vector( 0, 0, 0 ), titan ) == 1.0 ||
 		     TraceLineSimple( titanOrigin + Vector( 0, 0, 200 ), clampedPos + Vector( 0, 0, 128 ), titan ) == 1.0 )
 		{
+			#if DEV
+				if ( file.embarkDebugPrint )
+				{
+					printt( "PlayerDisembarksTitanWithSequenceFuncs, player origin: " + player.GetOrigin()+ ", titan origin: " + titan.GetOrigin() + ", clampedPos: " + clampedPos )
+				}
+			#endif
 			titan.SetOrigin( clampedPos )
 			titan.ForceCheckGroundEntity()
 		}
@@ -1577,8 +1608,20 @@ function DelayedSafePlayerLocation( entity player, entity titan, vector startOri
 		safeStartPoint = player.GetOrigin()
 	}
 
+	#if DEV
+		if ( file.embarkDebugPrint )
+			printt( "DelayedSafePlayerLocation, before PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + safeStartPoint )
+	#endif
+
+
+
 	if ( !PutEntityInSafeSpot( player, titan, null, safeStartPoint, player.GetOrigin() ) )
 		player.SetOrigin( safeStartPoint )
+
+	#if DEV
+		if ( file.embarkDebugPrint )
+			printt( "DelayedSafePlayerLocation, after PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + safeStartPoint )
+	#endif
 
 }
 
@@ -2104,3 +2147,10 @@ void function PilotBecomesTitan_UpdateRodeoRiderHud( entity playerTitan, entity 
 
 }
 #endif // SERVER
+
+#if DEV
+void function SetEmbarkDebugPrint( bool value )
+{
+	file.embarkDebugPrint = value
+}
+#endif

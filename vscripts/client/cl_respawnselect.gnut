@@ -215,6 +215,9 @@ void function PlayerPressed_RespawnPilot( entity player )
 
 void function PlayerPressed_RespawnTitan( entity player )
 {
+	if ( HudChat_HasAnyMessageModeStoppedRecently() )
+		return
+
 	player.ClientCommand( "CC_RespawnPlayer Titan" )
 }
 

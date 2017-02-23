@@ -301,8 +301,8 @@ SentryTurretPlacementInfo function GetDeployableTurretPlacementInfo( entity play
 	TraceResults fwdResults = TraceHull( eyePos + viewVec * min( DEPLOYABLE_TURRET_PLACEMENT_RANGE_MIN, maxRange ), eyePos + viewVec * maxRange, DEPLOYABLE_TURRET_MINS, <30, 30, 1>, player, TRACE_MASK_SOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 	TraceResults downResults = TraceHull( fwdResults.endPos, fwdResults.endPos - DEPLOYABLE_TURRET_PLACEMENT_TRACE_OFFSET, DEPLOYABLE_TURRET_MINS, DEPLOYABLE_TURRET_MAXS, player, TRACE_MASK_SOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 
-	bool success = !downResults.startSolid && downResults.fraction < 1.0
-	if ( downResults.startSolid && downResults.fraction < 1.0 )
+	bool success = !downResults.startSolid && downResults.fraction < 1.0 && downResults.hitEnt.IsWorld()
+	if ( downResults.startSolid && downResults.fraction < 1.0 && downResults.hitEnt.IsWorld() )
 	{
 		TraceResults upResults = TraceHull( downResults.endPos, downResults.endPos, DEPLOYABLE_TURRET_MINS, DEPLOYABLE_TURRET_MAXS, player, TRACE_MASK_SOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 		if ( !upResults.startSolid )

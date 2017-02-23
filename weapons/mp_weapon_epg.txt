@@ -23,7 +23,7 @@ WeaponData
 	"projectile_straight_time_max"					"1.45"
 	"projectile_straight_radius_min"				"0"
 	"projectile_straight_radius_max"				"0"
-	"projectile_launch_speed"						"1500"
+	"projectile_launch_speed"						"2000"
 	"projectile_gravity_scale"						"0.0001"
 
 	"OnClientAnimEvent"								"GlobalClientEventHandler"
@@ -110,14 +110,14 @@ WeaponData
 
 		"damage_near_value"   							"100"
 		"damage_far_value"								"100"
-		"damage_near_value_titanarmor"					"500"
-		"damage_far_value_titanarmor" 					"500"
+		"damage_near_value_titanarmor"					"700"
+		"damage_far_value_titanarmor" 					"700"
 		"damage_rodeo" 									"100"
 		"damage_near_distance"							"2000"
 		"damage_far_distance" 							"2500"
 
-		"explosion_damage"								"75"
-		"explosion_damage_heavy_armor"					"1300"
+		"explosion_damage"								"90"
+		"explosion_damage_heavy_armor"					"700"
 
 		"red_crosshair_range" 							"2000"
 
@@ -519,10 +519,10 @@ WeaponData
 
 			"damage_near_value"   							"120"
 			"damage_far_value"								"120"
-			"damage_near_value_titanarmor"					"700"
-			"damage_far_value_titanarmor" 					"700"
+			"damage_near_value_titanarmor"					"900"
+			"damage_far_value_titanarmor" 					"900"
 			"explosion_damage"								"90"
-			"explosion_damage_heavy_armor"					"1800"
+			"explosion_damage_heavy_armor"					"900"
 
 			//Effects
 			"projectile_trail_effect_0" 					"P_plasma_proj_LG_amp"

@@ -22,18 +22,8 @@ ItemDisplayData function GetNoseArtItem( TitanLoadoutDef loadout, string titanRe
 
 	array<ItemDisplayData> visibleElems
 
-	if ( IsTitanLoadoutPrime( loadout ) )
-		visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.PRIME_TITAN_NOSE_ART, titanRef )
-	else
-		visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_NOSE_ART, titanRef )
+	visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_NOSE_ART, titanRef )
 
-	return visibleElems[ elemNum ]
-}
-
-ItemDisplayData function GetPrimeNoseArtItem( string titanRef, int elemNum )
-{
-	InitializeNoseArtData()
-	array<ItemDisplayData> visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.PRIME_TITAN_NOSE_ART, titanRef )
 	return visibleElems[ elemNum ]
 }
 
@@ -59,15 +49,6 @@ void function InitializeNoseArtData()
 		{
 			string ref = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ref" ) )
 			string titanRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "titanRef" ) )
-
-			file.unsortedNoseArt[ titanRef ].append( ref )
-		}
-
-		var primeTitanNoseArtDataTable = GetDataTable( $"datatable/prime_titan_nose_art.rpak" )
-		for ( int row = 0; row < GetDatatableRowCount( primeTitanNoseArtDataTable ); row++ )
-		{
-			string ref = GetDataTableString( primeTitanNoseArtDataTable, row, GetDataTableColumnByName( primeTitanNoseArtDataTable, "ref" ) )
-			string titanRef = GetDataTableString( primeTitanNoseArtDataTable, row, GetDataTableColumnByName( primeTitanNoseArtDataTable, "titanRef" ) )
 
 			file.unsortedNoseArt[ titanRef ].append( ref )
 		}
@@ -118,13 +99,11 @@ void function OnNoseArtSelectMenu_Open()
 	Assert( uiGlobal.editingLoadoutProperty == "decalIndex" || uiGlobal.editingLoadoutProperty == "primeDecalIndex"  )
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	array<ItemDisplayData> visibleElems
-	if ( IsTitanLoadoutPrime( loadout ) )
-		visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.PRIME_TITAN_NOSE_ART, titanRef )
-	else
-		visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_NOSE_ART, titanRef )
+	visibleElems = GetVisibleItemsOfTypeWithoutEntitlements( GetUIPlayer(), eItemTypes.TITAN_NOSE_ART, titanRef )
 	file.gridData.numElements = visibleElems.len()
+	file.gridData.currentPage = 0
 	Grid_InitPage( file.menu, file.gridData )
 	Grid_MenuOpened( file.menu )
 
@@ -144,7 +123,7 @@ void function OnNoseArtSelectMenu_Close()
 		return
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	for ( int i = 0; i <file.gridData.numElements; i++ )
 	{
 		ItemDisplayData item = GetNoseArtItem( loadout, titanRef, i )
@@ -188,7 +167,7 @@ bool function NoseArtButton_Init( var button, int elemNum )
 		return false
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	ItemDisplayData item = GetNoseArtItem( loadout, titanRef, elemNum )
 
 	var rui = Hud_GetRui( button )
@@ -224,7 +203,7 @@ void function NoseArtButton_GetFocus( var button, int elemNum )
 	Assert( uiGlobal.editingLoadoutProperty == "decalIndex" || uiGlobal.editingLoadoutProperty == "primeDecalIndex"  )
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	ItemDisplayData item = GetNoseArtItem( loadout, titanRef, elemNum )
 	int decalIndex = NoseArtRefToIndex( titanRef, item.ref )
 
@@ -264,7 +243,7 @@ void function NoseArtButton_LoseFocus( var button, int elemNum )
 		return
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	ItemDisplayData item = GetNoseArtItem( loadout, titanRef, elemNum )
 
 	ClearNewStatus( button, item.ref, item.parentRef )
@@ -275,7 +254,7 @@ void function NoseArtButton_Activate( var button, int elemNum )
 	if ( Hud_IsLocked( button ) )
 	{
 		TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-		string titanRef = GetNoseArtTitanRef( loadout )
+		string titanRef = loadout.titanClass
 		ItemDisplayData item = GetNoseArtItem( loadout, titanRef, elemNum )
 		array<var> buttons = GetElementsByClassname( file.menu, "GridButtonClass" )
 		OpenBuyItemDialog( buttons, button, GetItemName( item.ref ), item.ref, item.parentRef )
@@ -288,7 +267,7 @@ void function NoseArtButton_Activate( var button, int elemNum )
 
 	entity player = GetUIPlayer()
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
-	string titanRef = GetNoseArtTitanRef( loadout )
+	string titanRef = loadout.titanClass
 	ItemDisplayData item = GetNoseArtItem( loadout, titanRef, elemNum )
 	int decalIndex = NoseArtRefToIndex( titanRef, item.ref )
 	SetCachedLoadoutValue( player, uiGlobal.editingLoadoutType, uiGlobal.editingLoadoutIndex, uiGlobal.editingLoadoutProperty, string( decalIndex ) )
@@ -302,14 +281,4 @@ void function NoseArtButton_Activate( var button, int elemNum )
 
 void function NoseArtButton_FadeButton( var elem, int fadeTarget, float fadeTime )
 {
-}
-
-string function GetNoseArtTitanRef( TitanLoadoutDef titanLoadout ) //Needed for prime titan stuff.
-{
-	if ( IsTitanLoadoutPrime( titanLoadout ) )
-		return titanLoadout.primeTitanRef
-	else
-		return titanLoadout.titanClass
-
-	unreachable
 }

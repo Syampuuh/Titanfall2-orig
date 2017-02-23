@@ -328,6 +328,22 @@ void function HACK_CookGrenade( entity weapon, entity weaponOwner )
 
 	weapon.ForceReleaseFromServer() // Will eventually result in Grenade_OnWeaponToss_() or equivalent function
 
+	// JFS: prevent grenade cook exploit in coliseum
+	if ( GameRules_GetGameMode() == COLISEUM )
+	{
+		#if SERVER
+		var impact_effect_table = weapon.GetWeaponInfoFileKeyField( "impact_effect_table" )
+		if ( impact_effect_table != null )
+		{
+			string fx = expect string( impact_effect_table )
+			PlayImpactFXTable( weaponOwner.EyePosition(), weaponOwner, fx )
+		}
+
+		int damageSource = weapon.GetDamageSourceID()
+		weaponOwner.Die( weaponOwner, weapon, { damageSourceId = damageSource } )
+		#endif
+	}
+
 	weaponOwner.Signal( "ThrowGrenade" ) // Only necessary to end HACK_DropGrenadeOnDeath
 }
 

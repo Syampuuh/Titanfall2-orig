@@ -25,6 +25,7 @@ struct
 	table< var, bool > playAgainButtonEventAttached,
 	table< var, bool > footerOptionsAttached,
 	table< var, bool > pageButtonEventAttached,
+	bool putPlayerInMatchmakingAfterEOG
 } file
 
 void function MenuEOG_Init()
@@ -40,6 +41,8 @@ void function MenuEOG_Init()
 
 	RegisterSignal( "CancelEOGThreadedNavigation" )
 	RegisterSignal( "EOGGlobalOpen" )
+
+	RegisterUIVarChangeCallback( "putPlayerInMatchmakingAfterDelay", PutPlayerInMatchmakingAfterDelay_Changed )
 }
 
 void function EOGClearProgressAndUnlocks()
@@ -333,8 +336,8 @@ void function EOGOpen( string lastPlaylistAbrv = "" )
 
 	if ( IsPostGameMenuValid() )
 	{
-		SetPutPlayerInMatchMakingWithDelayAfterPostGameMenu( GetTimeToRestartMatchMaking() > 0.0 )
-		CancelRestartingMatchmaking()
+		SetPutPlayerInMatchMakingWithDelayAfterPostGameMenu( file.putPlayerInMatchmakingAfterEOG )
+		file.putPlayerInMatchmakingAfterEOG = false
 		AdvanceMenu( GetMenu( "PostGameMenu" ) )
 	}
 }
@@ -672,3 +675,12 @@ void function EOGUpdateButton( var button, var page )
 	Hud_AddEventHandler( button, UIE_CLICK, handler )
 }
 #endif // #if PC_PROG
+
+
+function PutPlayerInMatchmakingAfterDelay_Changed() //Seems hacky: I can't change the value of  level.ui.putPlayerInMatchmakingAfterDelay from ui script, so use a file variable to proxy the value of level.ui.putPlayerInMatchmakingAfterDelay insted. Needs to use the UI var so server can set it
+{
+	if ( level.ui.putPlayerInMatchmakingAfterDelay )
+		file.putPlayerInMatchmakingAfterEOG = true
+	else
+		file.putPlayerInMatchmakingAfterEOG = false
+}

@@ -155,7 +155,7 @@ function SmartAmmo_LockedOntoWarningHUD_Update()
 			RuiSetBool( file.lockon_hud, "westLock", false )
 			RuiSetBool( file.lockon_hud, "eastLock", false )
 		}
-		else if ( StatusEffect_Get( player, eStatusEffect.sonar_detected ) && !player.IsCloaked( true ) )
+		else if ( (StatusEffect_Get( player, eStatusEffect.maphack_detected ) || StatusEffect_Get( player, eStatusEffect.sonar_detected )) && !player.IsCloaked( true ) )
 		{
 			if ( StatusEffect_Get( player, eStatusEffect.maphack_detected ) )
 				RuiSetString( file.lockon_hud, "lockMessage", "#MAPHACK_WARNING" )

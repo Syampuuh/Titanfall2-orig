@@ -116,6 +116,8 @@ void function OnFactionChoiceMenu_Open()
 	RefreshCreditsAvailable()
 
 	UI_SetPresentationType( ePresentationType.FACTIONS )
+
+	uiGlobal.updateCachedNewItems = false
 }
 
 void function OnFactionChoiceMenu_Close()

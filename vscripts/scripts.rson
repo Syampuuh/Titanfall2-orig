@@ -193,6 +193,7 @@ Scripts:
 	melee/sh_melee_synced_titan.gnut
 	melee/sh_melee_titan.gnut
 	mp/sh_revive.gnut
+	mp/sh_bleedout.gnut
 	mp/sh_smoke_sight.gnut
 	mp/sh_teams.gnut
 	sp/sh_mobility_ghost.gnut
@@ -233,6 +234,7 @@ Scripts:
 	weapons/mp_ability_holopilot_nova.nut
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_shifter.nut
+	weapons/mp_ability_shifter_super.nut
 	weapons/mp_ability_sonar.nut
 	weapons/mp_projectile_cluster_rocket.nut
 	weapons/mp_projectile_titanweapon_rocket_launcher.nut
@@ -377,10 +379,13 @@ Scripts:
     gamemodes/sh_riff_floor_is_lava.nut
     gamemodes/sh_gamemode_at.nut
     gamemodes/sh_gamemode_fw.nut
+    gamemodes/sh_gamemode_hunted.nut
+    gamemodes/sh_gamemode_don.nut
 	gamemodes/sh_gamemode_cp.nut
 	gamemodes/sh_gamemode_cp_dialogue.nut
 
 	gamemodes/sh_gamemode_ctf.nut
+	gamemodes/sh_gamemode_raid.nut
 	gamemodes/sh_gamemode_ctf_dialogue.nut
 	gamemodes/sh_gamemode_mfd.nut
 	gamemodes/sh_gamemode_mfd_dialogue.nut
@@ -395,6 +400,8 @@ Scripts:
 	gamemodes/sh_gamemode_bomb_dialogue.nut
 	gamemodes/sh_gamemode_ffa.nut
 	gamemodes/sh_gamemode_ffa_dialogue.nut
+	gamemodes/sh_gamemode_atcoop.nut
+
 	weapons/mp_ability_burncardweapon.nut
 	weapons/mp_ability_turretweapon.nut
 
@@ -421,7 +428,6 @@ Scripts:
 	mp/_utility_mp.gnut
 	_menu_callbacks.gnut
 	ai/_ai_turret.gnut
-	sentry_turrets/_sentry_turrets.gnut
 	_script_movers_light.gnut
 ]
 
@@ -482,6 +488,7 @@ Scripts:
 	mp/_music.gnut
 	mp/_pickups_glow.gnut
 	mp/_revive.gnut
+	mp/_bleedout.gnut
 	mp/_serverflags.nut
 	mp/_sniper_spectres.nut
 	mp/_spawn_functions.nut
@@ -594,6 +601,11 @@ Scripts:
 	gamemodes/_ai_frontline.gnut
 	gamemodes/_gamemode_at.nut
 	gamemodes/_gamemode_fw.nut
+	gamemodes/_gamemode_hunted.nut
+	gamemodes/_gamemode_don.nut
+	gamemodes/_gamemode_speedball.nut
+	gamemodes/_gamemode_raid.nut
+	gamemodes/_gamemode_atcoop.nut
 	burnmeter/_burnmeter.gnut
 	gamemodes/_gamemode_coliseum.nut
 	gamemodes/_gamemode_cp.nut
@@ -627,6 +639,7 @@ Scripts:
 	class/CClientScriptHudElement.nut
 	sh_scoreboard.gnut
 	sh_menu_models.gnut
+	sh_gamepad_utility.gnut
 ]
 
 When: "(CLIENT && MP) || UI"
@@ -683,6 +696,7 @@ Scripts:
 	client/cl_xp.gnut
 	client/cl_minimap.gnut
 	client/cl_titan_xp.gnut
+	client/cl_pilot_speedometer.gnut
 	lobby/cl_lobby.gnut
 	mp/cl_challenges.gnut
 
@@ -698,8 +712,13 @@ Scripts:
 	gamemodes/cl_gamemode_at.nut
 	gamemodes/cl_gamemode_fw.nut
 	gamemodes/cl_gamemode_cp.nut
-
+	gamemodes/cl_gamemode_hunted.nut
+	gamemodes/cl_gamemode_don.nut
+	gamemodes/cl_gamemode_speedball.nut
+	gamemodes/cl_gamemode_raid.nut
+    gamemodes/cl_gamemode_atcoop.nut
 	gamemodes/cl_gamemode_aitdm.nut
+	gamemodes/cl_gamemode_coliseum.nut
 	gamemodes/cl_gamemode_ctf.nut
 	gamemodes/cl_gamemode_mfd.nut
 	gamemodes/cl_gamemode_lts.nut
@@ -710,6 +729,8 @@ Scripts:
 
 	gamemodes/cl_riff_floor_is_lava.nut
 	gamemodes/cl_riff_floor_is_lava_dialogue.nut
+
+
 
 	mp/cl_classic_mp.gnut
 
@@ -742,6 +763,7 @@ Scripts:
 	client/cl_main_hud.nut
 	client/cl_material_proxies.gnut
 	client/cl_revive.gnut
+	client/cl_bleedout.gnut
 	client/cl_rumble.gnut
 	client/cl_screenfade.gnut
 	client/cl_titan_cockpit.nut
@@ -871,6 +893,7 @@ Scripts:
 	ui/menu_matchmaking_utility.nut
 	ui/menu_mode_select.nut
 	ui/menu_playlist.nut
+	ui/menu_playlist_mixtape.nut
 	ui/menu_single_player.nut
 	ui/menu_single_player_dev.nut
 	ui/menu_sp_loadout_titan.nut
@@ -878,6 +901,7 @@ Scripts:
 	ui/menu_sp_training.gnut
 	ui/menu_stats.nut
 	ui/menu_store.nut
+	ui/menu_store_bundles.nut
 	ui/menu_store_prime_titans.nut
 	ui/menu_store_customization.nut
 	ui/menu_store_customization_preview.nut

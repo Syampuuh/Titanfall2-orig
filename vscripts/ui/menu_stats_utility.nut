@@ -90,14 +90,14 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 			var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
 			Hud_Show( barColorGuideFrame )
 
-			local percent = GetPercent( frac, 1.0, 0, true )
+			string percent = GetPercent( frac, 1.0, 0, true )
 			var barName = Hud_GetChild( piePanel, "BarName" + index )
 			barName.SetColor( data.labelColor )
 
 			if ( data.timeBased )
-				Hud_SetText( barName, PieChartHoursToTimeString( data.entries[ index ].numValue, data.entries[ index ].displayName, string( percent ) ) )
+				Hud_SetText( barName, PieChartHoursToTimeString( data.entries[ index ].numValue, data.entries[ index ].displayName, percent ) )
 			else
-				Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", data.entries[ index ].displayName, string( percent ) )
+				Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", data.entries[ index ].displayName, percent )
 
 			int currentTextWidth = Hud_GetTextWidth( barName )
 			if ( currentTextWidth > largestTextWidth )
@@ -113,7 +113,7 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 		}
 
 		// Position the list
-		int xOffset = int( ( ContentScaledX( largestTextWidth ) / -2 ) + ContentScaledX( 18 ) )
+		int xOffset = int( ( largestTextWidth / -2 ) + ContentScaledX( 18 ) )
 		Hud_SetX( Hud_GetChild( piePanel, "BarName0" ), xOffset )
 	}
 	else
@@ -189,26 +189,25 @@ void function SetStatsLabelValueOnLabel( elem, textString )
 	}
 }
 
-function GetPercent( numerator, denominator, defaultVal, clamp = true )
+string function GetPercent( float val, float total, float defaultPercent, bool doClamp = true )
 {
-	local percent = defaultVal
-	if ( denominator > 0 )
+	float percent = defaultPercent
+	if ( total > 0 )
 	{
-		percent = numerator.tofloat() / denominator.tofloat()
+		percent = val / total
 		percent *= 100
-		percent += 0.5
-		percent = percent.tointeger()
 	}
 
-	if ( clamp )
-	{
-		if ( percent < 0 )
-			percent = 0
-		if ( percent > 100 )
-			percent = 100
-	}
+	if ( doClamp )
+		percent = clamp( percent, 0, 100 )
 
-	return percent
+	string formattedPercent
+	if ( int( percent * 10 ) % 10 == 0 )
+		formattedPercent = format( "%.0f", percent )
+	else
+		formattedPercent = format( "%.1f", percent )
+
+	return formattedPercent
 }
 
 //function GetChallengeCompleteData()

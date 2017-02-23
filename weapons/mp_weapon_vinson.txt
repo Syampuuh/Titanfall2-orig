@@ -109,14 +109,14 @@ WeaponData
 		"aimassist_adspull_weaponclass"					"precise"
 
 		"damage_near_value"   							"35"//35
-		"damage_far_value"								"25"//30
+		"damage_far_value"								"30"//30
 		"damage_near_value_titanarmor"					"100"
 		"damage_far_value_titanarmor" 					"80"
 		"damage_rodeo" 									"100"
 		"damage_near_distance"							"1500"
 		"damage_far_distance" 							"2000"
 
-   	 	"damage_very_far_value"							"15"
+   	 	"damage_very_far_value"							"20"
    		"damage_very_far_distance"						"3500"
 
 		"damage_headshot_scale"							"1.5"
@@ -546,7 +546,7 @@ WeaponData
 
 			"damage_near_value"   							"50"//35
 			"damage_far_value"								"35"//30
-   	 		"damage_very_far_value"							"30"
+   	 		"damage_very_far_value"							"25"
 			"damage_near_value_titanarmor"					"200"
 			"damage_far_value_titanarmor" 					"180"
 

@@ -2005,6 +2005,89 @@ int function CompareFW( entity a, entity b )
 	return 0
 }
 
+int function CompareHunter( entity a, entity b )
+{
+	// Capture Point sorting. Sort priority = assault + defense > pilot kills > titan kills > death
+
+	{
+		int aVal = a.GetPlayerGameStat( PGS_ASSAULT_SCORE )
+		int bVal = b.GetPlayerGameStat( PGS_ASSAULT_SCORE )
+
+		aVal += a.GetPlayerGameStat( PGS_DEFENSE_SCORE )
+		bVal += b.GetPlayerGameStat( PGS_DEFENSE_SCORE )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+	}
+
+	// 3) Pilot Kills
+	{
+		int aVal = a.GetPlayerGameStat( PGS_KILLS )
+		int bVal = b.GetPlayerGameStat( PGS_KILLS )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+	}
+
+	// 3) Titan Kills
+	{
+		int aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
+		int bVal = b.GetPlayerGameStat( PGS_TITAN_KILLS )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+	}
+
+	// 4) Deaths
+	{
+		int aVal = a.GetPlayerGameStat( PGS_DEATHS )
+		int bVal = b.GetPlayerGameStat( PGS_DEATHS )
+
+		if ( aVal < bVal )
+			return -1
+		else if ( aVal > bVal )
+			return 1
+	}
+
+	return 0
+}
+
+// Sorts by kills, deaths and then cash
+int function CompareATCOOP( entity a, entity b )
+{
+	int aVal = a.GetPlayerGameStat( PGS_KILLS )
+	int bVal = b.GetPlayerGameStat( PGS_KILLS )
+
+	if ( aVal < bVal )
+		return 1
+	else if ( aVal > bVal )
+		return -1
+
+	aVal = a.GetPlayerGameStat( PGS_DEATHS )
+	bVal = b.GetPlayerGameStat( PGS_DEATHS )
+
+	if ( aVal > bVal )
+		return 1
+	else if ( aVal < bVal )
+		return -1
+
+	aVal = a.GetPlayerGameStat( PGS_SCORE )
+	bVal = b.GetPlayerGameStat( PGS_SCORE )
+
+	if ( aVal < bVal )
+		return 1
+	else if ( aVal > bVal )
+		return -1
+
+	return 0
+}
+
 int function CompareTitanKills( entity a, entity b )
 {
 	int aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
@@ -2863,6 +2946,17 @@ int function GameTeams_GetNumLivingPlayers( int teamIndex = TEAM_ANY )
 	}
 
 	return noOfLivingPlayers
+}
+
+bool function GameTeams_TeamHasDeadPlayers( int team )
+{
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( !IsAlive( teamPlayer ) )
+			return true
+	}
+	return false
 }
 
 typedef EntitiesDidLoadCallbackType void functionref()

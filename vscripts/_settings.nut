@@ -218,6 +218,7 @@ global const POINTVALUE_MARKED_TARGET_KILLED 				= 200
 global const POINTVALUE_MARKED_ESCORT                      = 100
 global const POINTVALUE_MARKED_SURVIVAL                    = 200
 global const POINTVALUE_MARKED_OUTLASTED_ENEMY_MARKED      = 100
+global const POINTVALUE_MARKED_TARGET						= 0 //No score for getting marked
 
 //COOPERATIVE
 global const POINTVALUE_COOP_WAVE_MVP						= 100

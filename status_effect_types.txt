@@ -49,5 +49,7 @@
     smartCore
     damageAmpFXOnly
 
+    bleedoutDOF
+
 /////////////////////////////
 //}

@@ -13,7 +13,7 @@ global struct FactionLeaderDataStruct
 
 	//Needed for making faction leader spawn in classic_mp dropship
 	asset modelName
-	string dropshipAnimName
+	array<string> dropshipAnimList
 	asset propModelName
 	string propAttachment
 }
@@ -42,7 +42,6 @@ void function ShFactionDialogue_Init()
 		factionLeaderInfo.dialoguePrefix = GetDataTableString( factionLeaderDataTable, i, GetDataTableColumnByName( factionLeaderDataTable, FACTION_LEADERS_FACTION_DIALOGUE_PREFIX_COLUMN_NAME ) )
 		factionLeaderInfo.modelName = GetDataTableAsset( factionLeaderDataTable, i, GetDataTableColumnByName( factionLeaderDataTable, FACTION_LEADERS_MODEL_NAME_COLUMN_NAME ) )
 		PrecacheModel( factionLeaderInfo.modelName )
-		factionLeaderInfo.dropshipAnimName = GetDataTableString( factionLeaderDataTable, i, GetDataTableColumnByName( factionLeaderDataTable, FACTION_LEADERS_DROPSHIP_ANIM_NAME_COLUMN_NAME ) )
 
 		factionLeaderInfo.propModelName = GetDataTableAsset( factionLeaderDataTable, i, GetDataTableColumnByName( factionLeaderDataTable, FACTION_LEADERS_PROP_MODEL_NAME_COLUMN_NAME ) )
 		if ( factionLeaderInfo.propModelName != $"" )
@@ -50,6 +49,16 @@ void function ShFactionDialogue_Init()
 		factionLeaderInfo.propAttachment = GetDataTableString( factionLeaderDataTable, i, GetDataTableColumnByName( factionLeaderDataTable, FACTION_LEADERS_PROP_ATTACHMENT_COLUMN_NAME ) )
 
 		factionLeaderData[ persistenceRef ] <- factionLeaderInfo
+	}
+
+	var factionLeaderDropshipAnimsTable = GetDataTable( $"datatable/faction_leaders_dropship_anims.rpak" ) //Only lists the various dropship anims. Consider moving prop name/prop attachment etc to this table too. (Menu uses those props too, which is why we haven't moved it yet)
+	int dropshipTableNumRows = GetDatatableRowCount( factionLeaderDropshipAnimsTable )
+	for ( int i = 0; i < dropshipTableNumRows; i++ )
+	{
+		string persistenceRef = GetDataTableString( factionLeaderDropshipAnimsTable, i, GetDataTableColumnByName( factionLeaderDropshipAnimsTable, FACTION_LEADERS_PERSISTENCE_REF_COLUMN_NAME ) )
+		Assert( persistenceRef in  factionLeaderData )
+		string animName = GetDataTableString( factionLeaderDropshipAnimsTable, i, GetDataTableColumnByName( factionLeaderDropshipAnimsTable, FACTION_LEADERS_DROPSHIP_ANIM_NAME_COLUMN_NAME ) )
+		factionLeaderData[ persistenceRef ].dropshipAnimList.append( animName )
 	}
 
 	if ( IsLobby() ) //Don't need to register conversations in lobby

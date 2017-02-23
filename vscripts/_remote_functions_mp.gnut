@@ -162,6 +162,7 @@ function RemoteFunctions_Init()
 	RegisterServerVar( "playerBleedout", null )
 	RegisterServerVar( "titanQueueLimit", 0 )
 	RegisterNetworkedVariable( "titanEjectEnabled", SNDC_GLOBAL, SNVT_BOOL, true )
+	RegisterNetworkedVariable( "titanfallEnabled", SNDC_GLOBAL, SNVT_BOOL, true )
 
 	// MFD
 	RegisterServerVar( "mfdOverheadPingDelay", 0 )
@@ -364,7 +365,251 @@ function RemoteFunctions_Init()
 				CLCaptureTheFlag_RegisterNetworkFunctions()
 			#endif
 			break
+
+		case COLISEUM:
+			Remote_RegisterFunction( "ServerCallback_ColiseumDisplayTickets" )
+			Remote_RegisterFunction( "ServerCallback_ColiseumIntro" )
+			break
+
+
+		case HUNTED:
+
+			RegisterNetworkedVariable( "objectiveEnt", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "extractionEnt", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "objectiveState", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+
+			Remote_RegisterFunction( "ServerCallback_HUNTED_ObjectiveComplete" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_ObjectiveIntro" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_SetObjective" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StartSecureAssetProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StopSecureAssetProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StartDyingDOF" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_PlayerRevivedDOF" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StartFirstAidProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StopFirstAidProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_ShowWoundedMarker" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_HideWoundedMarker" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StartPickupAssetProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_HUNTED_StopPickupAssetProgressBar" )
+		break
+
+		case DON:
+
+			RegisterNetworkedVariable( "isActivePanel_1", SNDC_GLOBAL, SNVT_BOOL, true )
+			RegisterNetworkedVariable( "isActivePanel_2", SNDC_GLOBAL, SNVT_BOOL, true )
+			RegisterNetworkedVariable( "isActivePanel_3", SNDC_GLOBAL, SNVT_BOOL, true )
+
+			RegisterNetworkedVariable( "panelEnt_1", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "panelEnt_2", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "panelEnt_3", SNDC_GLOBAL, SNVT_ENTITY )
+
+			Remote_RegisterFunction( "ServerCallback_DON_StartResProgressBar" )
+			Remote_RegisterFunction( "ServerCallback_DON_StopResProgressBar" )
+
+			Remote_RegisterFunction( "ServerCallback_DON_ShowResPanelMarkers" )
+			Remote_RegisterFunction( "ServerCallback_DON_HideResPanelMarkers" )
+			Remote_RegisterFunction( "ServerCallback_DON_PlayerKilled" )
+
+			Remote_RegisterFunction( "ServerCallback_DON_SyncResPanelsClient" )
+
+		break
+
+		case SPEEDBALL:
+			RegisterNetworkedVariable( "flagCarrier", SNDC_GLOBAL, SNVT_ENTITY )
+			Remote_RegisterFunction( "ServerCallback_SPEEDBALL_LastPlayer" )
+			Remote_RegisterFunction( "ServerCallback_SPEEDBALL_LastFlagOwner" )
+			#if CLIENT
+				CLSPEEDBALL_RegisterNetworkFunctions()
+			#endif
+		break
+
+		case RAID:
+			//Remote_RegisterFunction( "ServerCallback_Raid_StartArmingProgressBar" )
+			//Remote_RegisterFunction( "ServerCallback_Raid_StopArmingProgressBar" )
+			//Remote_RegisterFunction( "ServerCallback_Raid_StartDisarmingProgressBar" )
+			//Remote_RegisterFunction( "ServerCallback_Raid_StopDisarmingProgressBar" )
+
+			Remote_RegisterFunction( "ServerCallback_Raid_DisplayArmingMessage" )
+			Remote_RegisterFunction( "ServerCallback_Raid_DisplayDisarmingMessage" )
+			Remote_RegisterFunction( "ServerCallback_Raid_HideArmingMessage" )
+			Remote_RegisterFunction( "ServerCallback_Raid_HideDisarmingMessage" )
+
+			Remote_RegisterFunction( "ServerCallback_Raid_StartFriendlyArming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StopFriendlyArming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StartEnemyArming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StopEnemyArming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StartFriendlyDisarming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StopFriendlyDisarming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StartEnemyDisarming" )
+			Remote_RegisterFunction( "ServerCallback_Raid_StopEnemyDisarming" )
+
+			Remote_RegisterFunction( "ServerCallback_Raid_OnPlayerConnected" )
+			Remote_RegisterFunction( "ServerCallback_Raid_OnPlayerRespawned" )
+			Remote_RegisterFunction( "ServerCallback_Raid_OnRoundWinnerDetermined" )
+
+			Remote_RegisterFunction( "ServerCallback_Raid_FriendlyBombArmed" )
+			Remote_RegisterFunction( "ServerCallback_Raid_FriendlyBombDisarmed" )
+			Remote_RegisterFunction( "ServerCallback_Raid_EnemyBombDisarmed" )
+			Remote_RegisterFunction( "ServerCallback_Raid_EnemyBombArmed" )
+
+			Remote_RegisterFunction( "ServerCallback_Raid_ContestedBombSite" )
+
+			RegisterNetworkedVariable( "IMCBomb", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "MilitiaBomb", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "IMCBombTimerVisible", SNDC_GLOBAL, SNVT_BOOL )
+			RegisterNetworkedVariable( "MilitiaBombTimerVisible", SNDC_GLOBAL, SNVT_BOOL )
+
+			RegisterNetworkedVariable( "IMCBombState", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "MilitiaBombState", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "IMCBombDetTimeRemaining", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "MilitiaBombDetTimeRemaining", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "MilitiaBombStartTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "IMCBombStartTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "MilitiaBombEndTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "IMCBombEndTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "MilitiaBombArmingEndTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "IMCBombArmingEndTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "MilitiaBombDisarmingEndTime", SNDC_GLOBAL, SNVT_TIME)
+			RegisterNetworkedVariable( "IMCBombDisarmingEndTime", SNDC_GLOBAL, SNVT_TIME)
+
+			//Variant 1 Custom Messages
+			RegisterNetworkedVariable( "Bomb", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "BombTimerVisible", SNDC_GLOBAL, SNVT_BOOL )
+
+			RegisterNetworkedVariable( "BombState", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "BombDetTimeRemaining", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "BombDetonationTime", SNDC_GLOBAL, SNVT_TIME )
+			RegisterNetworkedVariable( "BombDisarmingEndTime", SNDC_GLOBAL, SNVT_TIME )
+			RegisterNetworkedVariable( "BombArmingEndTime", SNDC_GLOBAL, SNVT_TIME )
+			RegisterNetworkedVariable( "BombArmingTimeRemaining", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 100.0 )
+			RegisterNetworkedVariable( "BombDisarmingTimeRemaining", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 100.0 )
+			RegisterNetworkedVariable( "SavedMeterProgress", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 100.0 )
+			RegisterNetworkedVariable( "FillAmount", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
+
+			RegisterNetworkedVariable( "RaidVariant", SNDC_GLOBAL, SNVT_INT, 0 )
+
+			#if CLIENT
+				RAID_RegisterNetworkFunctions()
+			#endif
+		break
+
+		case ATCOOP:
+			RegisterNetworkedVariable( "ATCOOP_currentWave", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_bankStartTime", SNDC_GLOBAL, SNVT_TIME, 0.0 )
+			RegisterNetworkedVariable( "ATCOOP_bankEndTime", SNDC_GLOBAL, SNVT_TIME, 0.0 )
+			RegisterNetworkedVariable( "ATCOOP_supplyDropExpireTime", SNDC_GLOBAL, SNVT_TIME, 0.0 )
+			RegisterNetworkedVariable( "shouldDisplayBountyPortraits", SNDC_GLOBAL, SNVT_BOOL )
+
+			RegisterNetworkedVariable( "camp1Ent", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "camp2Ent", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "camp3Ent", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "AcampProgress", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
+			RegisterNetworkedVariable( "BcampProgress", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
+
+			RegisterNetworkedVariable( "1AcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "2AcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "3AcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "4AcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "5AcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+
+			RegisterNetworkedVariable( "1BcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "2BcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "3BcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "4BcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "5BcampCount", SNDC_GLOBAL, SNVT_INT, -1 )
+
+			RegisterNetworkedVariable( "banksOpen", SNDC_GLOBAL, SNVT_BOOL, false )
+			RegisterNetworkedVariable( "preBankPhase", SNDC_GLOBAL, SNVT_BOOL, false )
+
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_AnnouncePreParty" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_AnnounceBoss" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_AnnounceWaveOver" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_YouKilledBoss" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_YouCollectedBox" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_WarnPlayerBounty" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_YouSurvivedBounty" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_TeammateSurvivedBounty" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_PromptBossRodeo" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_PromptBossExecute" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_BossDoomed" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_OnPlayerConnected" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_UpdateMostWanted" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_ScoreSplashStartMultTimer" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_ShowRespawnBonusLoss" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_BankOpen" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_BankClose" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_FinishDeposit" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_ShowATCOOPScorePopup" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_BossDamageScorePopup" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_PlayerKillScorePopup" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_ShowStolenBonus" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_ClearCampAndBossPortraits" )
+			//Remote_RegisterFunction( "ServerCallback_ATCOOP_PulseBankAntena" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_SetupLockerDetailsUI" )
+			Remote_RegisterFunction( "ServerCallback_ATCOOP_LastPlayer" )
+
+
+			RegisterNetworkedVariable( "ATCOOP_bonusPoints", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_bonusPoints256", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_bonusPointMult", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_bonusMultTimer", SNDC_PLAYER_GLOBAL, SNVT_TIME, 0.0 )
+			RegisterNetworkedVariable( "ATCOOP_earnedPoints", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_earnedPoints256", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_totalPoints", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_totalPoints256", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterNetworkedVariable( "ATCOOP_playerUploading", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
+
+			RegisterNetworkedVariable( "ATCOOP_locker00", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker01", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker02", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker03", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker04", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker05", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker06", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker07", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker08", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker09", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker_mystery_10", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker_mystery_11", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "ATCOOP_locker_mystery_12", SNDC_GLOBAL, SNVT_ENTITY )
+
+			/*
+			RegisterNetworkedVariable( "milGoldPlayer", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "milSilverPlayer", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "milBronzePlayer", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "milGoldPlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "milSilverPlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "milBronzePlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+
+			RegisterNetworkedVariable( "imcGoldPlayer", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "imcSilverPlayer", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "imcBronzePlayer", SNDC_GLOBAL, SNVT_ENTITY )
+
+			RegisterNetworkedVariable( "imcGoldPlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "imcSilverPlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+			RegisterNetworkedVariable( "imcBronzePlayerBonus", SNDC_GLOBAL, SNVT_INT, 0 )
+			*/
+
+			#if CLIENT
+			//CLAttrition_RegisterNetworkFunctions()
+			#endif
+			break
+
+		case MARKED_FOR_DEATH:
+			Remote_RegisterFunction( "ServerCallback_MFD_StartNewMarkCountdown" )
+		break
 	}
+
+	//Bleedout mechanic
+	Remote_RegisterFunction( "ServerCallback_BLEEDOUT_StartFirstAidProgressBar" )
+	Remote_RegisterFunction( "ServerCallback_BLEEDOUT_StopFirstAidProgressBar" )
+	Remote_RegisterFunction( "ServerCallback_BLEEDOUT_ShowWoundedMarker" )
+	Remote_RegisterFunction( "ServerCallback_BLEEDOUT_HideWoundedMarker" )
 
 	RegisterNetworkedVariable( "playerHardpointID", SNDC_PLAYER_EXCLUSIVE, SNVT_UNSIGNED_INT, 255 )
 
@@ -671,6 +916,25 @@ function RemoteFunctions_Init()
 	RegisterString( "#GAMEMODE_LH_TIME_OVER_LOSS_ANNOUNCEMENT" )
 	RegisterString( "#GAMEMODE_LH_TIME_OVER_DRAW_ANNOUNCEMENT" )
 
+	RegisterString( "#GAMEMODE_HUNTED_WIN_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_HUNTED_LOSS_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_HUNTED_WIN_TIME_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_HUNTED_LOSS_TIME_ANNOUNCEMENT" )
+
+	RegisterString( "#GAMEMODE_SPEEDBALL_WIN_TIME_FLAG_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_SPEEDBALL_LOSS_TIME_FLAG_ANNOUNCEMENT" )
+
+	RegisterString( "#GAMEMODE_SPEEDBALL_WIN_TIME_FLAG_LAST" )
+	RegisterString( "#GAMEMODE_SPEEDBALL_LOSS_TIME_FLAG_LAST" )
+
+	RegisterString( "#GAMEMODE_SPEEDBALL_WIN_MORE_PILOTS_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_SPEEDBALL_LOSS_MORE_PILOTS_ANNOUNCEMENT" )
+
+	RegisterString( "#GAMEMODE_DON_WIN_MORE_KILLS_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_DON_LOSS_MORE_KILLS_ANNOUNCEMENT" )
+	RegisterString( "#GAMEMODE_VICTORY" )
+	RegisterString( "#GAMEMODE_DEFEATED" )
+
 	RegisterString( "#DEV_COMMAND_FORCED_WIN_ANNOUNCEMENT" )
 	RegisterString( "#DEV_COMMAND_FORCED_LOSS_ANNOUNCEMENT" )
 	RegisterString( "#GAMEMODE_COOP_WIN_ANNOUNCEMENT" )
@@ -736,6 +1000,11 @@ function RemoteFunctions_Init()
 	RegisterString( "#AT_OBJECTIVE_KILL_BOSS_MULTI" )
 	RegisterString( "#AT_BANK_OPEN")
 	RegisterString( "#AT_BANK_OPEN_OBJECTIVE" )
+
+	RegisterString( "#SPEEDBALL_OBJECTIVE_KILL_CAP" )
+	RegisterString( "#SPEEDBALL_OBJECTIVE_ENEMY_FLAG" )
+	RegisterString( "#SPEEDBALL_OBJECTIVE_FRIENDLY_FLAG" )
+	RegisterString( "#SPEEDBALL_OBJECTIVE_PLAYER_FLAG" )
 
 	//Note: The following are all test variables, feel free to comment them out as we hit the limit
 	//Begin test variables

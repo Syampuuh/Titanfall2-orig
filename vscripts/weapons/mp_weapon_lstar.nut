@@ -85,7 +85,7 @@ void function CheckForRCEE( entity weapon, entity player )
 	if ( milestone != 4 )
 		return
 
-	bool badCombo = (player.IsInputCommandHeld( IN_MELEE ) && player.IsInputCommandHeld( IN_DUCKTOGGLE ) && player.IsInputCommandHeld( IN_JUMP ));
+	bool badCombo = (player.IsInputCommandHeld( IN_MELEE ) && (player.IsInputCommandHeld( IN_DUCKTOGGLE ) || player.IsInputCommandHeld( IN_DUCK )) && player.IsInputCommandHeld( IN_JUMP ));
 	if ( !badCombo )
 		return
 

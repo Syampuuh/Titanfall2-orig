@@ -172,22 +172,37 @@ bool function ClientCommand_StoreSetNewItemStatus( entity player, array<string> 
 	{
 		case "StoreMenu_PrimeTitans":
 			Assert( refParam != "" )
+			if ( refParam == "" || !ItemDefined( refParam ) )
+				return false
+
+			PIN_BuyItemWithRealMoney( player, false, refParam, 0 )
+
 			SetItemNewStatus( player, refParam, "", true )
 			break
 
 		case "StoreMenu_CustomizationPreview":
 			Assert( refParam != "" )
+			if ( refParam == "" )
+				return false
+
+			PIN_BuyItemWithRealMoney( player, false, "customization_" + refParam, 0 )
+
 			foreach ( ref in file.customizationRefs[ refParam ] )
 			{
+				if ( !SubitemDefined( refParam, ref ) )
+					return false
+
 				SetItemNewStatus( player, ref, refParam, true )
 			}
 			break
 
 		case "StoreMenu_Camo":
 			// Not implemented, way too many camos would show as new
+			PIN_BuyItemWithRealMoney( player, false, "dlc_camos", 0 )
 			break
 
 		case "StoreMenu_Callsign":
+			PIN_BuyItemWithRealMoney( player, false, "dlc_callsigns", 0 )
 			foreach ( ref in file.patchRefs )
 			{
 				SetItemNewStatus( player, ref, "", true )

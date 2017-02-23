@@ -79,7 +79,7 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
-		"explosion_inner_radius"						"80"
+		"explosion_inner_radius"						"150"
 		"explosionradius" 								"150" //"150"
 
 			// Behavior

@@ -8,6 +8,9 @@ struct
 	var autoSprintSetting
 	array<var> advanceControlsDisableItems
 	array<var> advanceControlsVisibleItems
+	array<var> advanceControlsOffVisibleItems
+	var gamepadLayoutLabel
+	var itemDescriptionBox
 } file
 
 void function InitControlsMenu()
@@ -20,7 +23,7 @@ void function InitControlsMenu()
 
 	var button
 
-	Hud_EnableKeyBindingIcons( Hud_GetChild( menu, "LblMenuItemDescription" ) )
+	file.itemDescriptionBox = Hud_GetChild( menu, "LblMenuItemDescription" )
 
 #if PC_PROG
 	button = Hud_GetChild( menu, "BtnMouseKeyboardBindings" )
@@ -37,9 +40,9 @@ void function InitControlsMenu()
 	SetupButton( button, "#BUTTON_STICK_LAYOUT", "#GAMEPAD_MENU_CONTROLS_DESC" )
 	AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "GamepadLayoutMenu" ) ) )
 
-	button = Hud_GetChild( menu, "BtnControllerResetToDefaults" )
-	SetupButton( button, "#RESET_CONTROLLER_TO_DEFAULT", "#RESET_CONTROLLER_TO_DEFAULT_DESC" )
-	AddButtonEventHandler( button, UIE_CLICK, Controller_ResetToDefaultsDialog )
+	//button = Hud_GetChild( menu, "BtnControllerResetToDefaults" )
+	//SetupButton( button, "#RESET_CONTROLLER_TO_DEFAULT", "#RESET_CONTROLLER_TO_DEFAULT_DESC" )
+	//AddButtonEventHandler( button, UIE_CLICK, Controller_ResetToDefaultsDialog )
 
 	//BtnControllerOpenAdvancedMenu
 	button = Hud_GetChild( menu, "BtnControllerOpenAdvancedMenu" )
@@ -67,14 +70,23 @@ void function InitControlsMenu()
 	file.advanceControlsDisableItems.append( button )
 
 	SetupButton( Hud_GetChild( menu, "SwchVibration" ), "#VIBRATION", "#GAMEPAD_MENU_VIBRATION_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwchHoldToCrouch" ), "#HOLDTOCROUCH", "#GAMEPAD_MENU_HOLDTOCROUCH_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwchToggleGamepadADS" ), "#GAMEPAD_TOGGLE_ADS", "#GAMEPAD_TOGGLE_ADS_DESC" )
+
 	file.autoSprintSetting = Hud_GetChild( menu, "SwchAutoSprint" )
 	SetupButton( file.autoSprintSetting, "#MENU_AUTOMATIC_SPRINT", "#OPTIONS_MENU_AUTOSPRINT_DESC" )
+
+	SetupButton( Hud_GetChild( menu, "SwchHoldToRodeo" ), "#MENU_HOLD_TO_RODEO", "#MENU_HOLD_TO_RODEO_DESC" )
 
 	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "SwchLookSensitivity_AdvLabel" ) )
 	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "SwchLookSensitivityADS_AdvLabel" ) )
 	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "SwchLookAiming_AdvLabel" ) )
 	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "SwchLookDeadzone_AdvLabel" ) )
-	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "LblAdvController" ) )
+	file.advanceControlsVisibleItems.append( Hud_GetChild( menu, "LblAdvControllerOn" ) )
+
+	file.advanceControlsOffVisibleItems.append( Hud_GetChild( menu, "LblAdvControllerOff" ) )
+
+	file.gamepadLayoutLabel = Hud_GetChild( menu, "LblGamepadLayout" )
 
 #if PC_PROG
 	AddEventHandlerToButtonClass( menu, "RuiFooterButtonClass", UIE_GET_FOCUS, FooterButton_Focused )
@@ -82,8 +94,10 @@ void function InitControlsMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+	AddMenuFooterOption( menu, BUTTON_BACK, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESET_CONTROLLER_TO_DEFAULT", Controller_ResetToDefaultsDialog )
+
 #if CONSOLE_PROG
-	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_REVIEW_TERMS", "#REVIEW_TERMS", OpenReviewTermsDialog, AreTermsAccepted ) // Console only, waiting on PC text
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#LS_BUTTON_REVIEW_TERMS", "#REVIEW_TERMS", OpenReviewTermsDialog, AreTermsAccepted ) // Console only, waiting on PC text
 #endif // CONSOLE_PROG
 #if DURANGO_PROG
 	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
@@ -109,6 +123,19 @@ void function SetStatesForCustomEnable()
 
 	foreach( var item in file.advanceControlsVisibleItems )
 		Hud_SetVisible( item, customGamepadIsEnabled )
+	foreach( var item in file.advanceControlsOffVisibleItems )
+		Hud_SetVisible( item, !customGamepadIsEnabled )
+}
+
+void function RefreshGamepadLayoutLabel()
+{
+	Hud_SetText( file.gamepadLayoutLabel, GetGamepadButtonLayoutName() )
+
+	int id = GetConVarInt( "gamepad_button_layout" )
+	if ( id == 0 )
+		Hud_SetColor( file.gamepadLayoutLabel, 255, 255, 255, 127 )
+	else
+		Hud_SetColor( file.gamepadLayoutLabel, 244, 213, 166, 255 )
 }
 
 void function OnOpenControlsMenu()
@@ -117,11 +144,19 @@ void function OnOpenControlsMenu()
 
 	Hud_SetEnabled( file.autoSprintSetting, !IsAutoSprintForced() )
 
+	RefreshGamepadLayoutLabel()
+
 	SetStatesForCustomEnable()
 }
 
 void function OnCloseControlsMenu()
 {
+	if ( IsConnected() )
+	{
+		bool holdToRodeoIsEnabled = GetConVarBool( "cl_hold_to_rodeo_enable" )
+		ClientCommand( "HoldToRodeo " + (holdToRodeoIsEnabled ? 1 : 0) )
+	}
+
 	SavePlayerSettings()
 }
 
@@ -135,8 +170,8 @@ var function SetupButton( var button, string buttonText, string description )
 
 void function Button_Focused( var button )
 {
-	string description = file.buttonDescriptions[ button ]
-	SetElementsTextByClassname( file.menu, "MenuItemDescriptionClass", description )
+	string description = file.buttonDescriptions[button]
+	RuiSetString( Hud_GetRui( file.itemDescriptionBox ), "description", description )
 }
 
 void function Controller_ResetToDefaultsDialog( var button )
@@ -147,32 +182,52 @@ void function Controller_ResetToDefaultsDialog( var button )
 	AddDialogButton( dialogData, "#RESTORE", Controller_ResetToDefaults )
 	AddDialogButton( dialogData, "#CANCEL" )
 	OpenDialog( dialogData )
+
+	EmitUISound( "menu_accept" )
 }
 
 void function Controller_ResetToDefaults()
 {
-	SetConVarInt( "gamepad_aim_speed", 2 )
-	SetConVarInt( "gamepad_aim_speed_ads", -1 )
-	SetConVarInt( "joy_inverty", 0 )
-	SetConVarInt( "gamepad_look_curve", 0 )
-	SetConVarInt( "gamepad_deadzone_index_look", 1 )
-	SetConVarInt( "gamepad_deadzone_index_move", 1 )
-	SetConVarInt( "joy_rumble", 1 )
+	SetConVarToDefault( "autosprint_type" )
+	SetConVarToDefault( "cl_hold_to_rodeo_enable" )
 
-	SetConVarInt( "gamepad_button_layout", 0 )
-	SetConVarInt( "gamepad_buttons_are_southpaw", 0 )
-	SetConVarInt( "gamepad_stick_layout", 0 )
+	SetConVarToDefault( "gamepad_togglecrouch_hold" )
+	SetConVarToDefault( "gamepad_toggle_ads" )
+	SetConVarToDefault( "gamepad_aim_speed" )
+	SetConVarToDefault( "gamepad_aim_speed_ads" )
+	SetConVarToDefault( "joy_inverty" )
+	SetConVarToDefault( "gamepad_look_curve" )
+	SetConVarToDefault( "gamepad_deadzone_index_look" )
+	SetConVarToDefault( "gamepad_deadzone_index_move" )
+	SetConVarToDefault( "joy_rumble" )
 
-	SetConVarInt( "gamepad_custom_enabled", 0 )
+	SetConVarToDefault( "gamepad_button_layout" )
+	SetConVarToDefault( "gamepad_buttons_are_southpaw" )
+	SetConVarToDefault( "gamepad_stick_layout" )
+
+	SetConVarToDefault( "gamepad_custom_pilot" )
+	SetConVarToDefault( "gamepad_custom_titan" )
+
+	SetConVarToDefault( "gamepad_custom_enabled" )
 	SetStatesForCustomEnable()
 
 	ExecConfig( "gamepad_stick_layout_default.cfg" )
 	ExecConfig( "gamepad_button_layout_default.cfg" )
+
+#if PC_PROG
+	SetConVarToDefault( "mouse_sensitivity" )
+	SetConVarToDefault( "mouse_sensitivity_zoomed" )
+	SetConVarToDefault( "m_acceleration" )
+	SetConVarToDefault( "m_invert_pitch" )
+#endif //PC_PROG
+
+	RefreshGamepadLayoutLabel()
+	EmitUISound( "menu_advocategift_open" )
 }
 
 #if PC_PROG
 void function FooterButton_Focused( var button )
 {
-	SetElementsTextByClassname( file.menu, "MenuItemDescriptionClass", "" )
+	RuiSetString( Hud_GetRui( file.itemDescriptionBox ), "description", "" )
 }
 #endif //PC_PROG

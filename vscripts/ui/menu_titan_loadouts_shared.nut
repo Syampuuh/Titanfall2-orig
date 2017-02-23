@@ -310,6 +310,29 @@ string function GetTitanButtonBind( string ability )
 			return "+dodge"
 		case "+ability 7":
 			return "+offhand2"
+		case "+ability 8":
+			return "+offhand0"
+		case "+ability 9":
+			return "+toggle_duck"
+
+		case "+ability 10":
+		case "+ability 11":
+		case "+ability 12":
+		case "+ability 13":
+		case "+ability 14":
+		case "+ability 15":
+		case "+ability 16":
+		case "+ability 17":
+		case "+ability 18":
+		case "+ability 19":
+			{
+				int abilityIndex = int( ability.slice( 9 ) )
+				int buttonIndex = (abilityIndex - 10)
+
+				string baseBind = GetCustomBindCommandForButtonIndexTitan( buttonIndex )
+				string result = ("+" + baseBind)
+				return result
+			}
 	}
 
 	return ability

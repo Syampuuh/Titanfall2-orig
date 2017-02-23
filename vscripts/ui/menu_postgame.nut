@@ -10,6 +10,7 @@ struct
 {
 	var menu
 	bool putPlayerInMatchMakingWithDelayAfterPostGameMenu = false
+	bool wasPartyMember = false //HACK Awkward, needed to keep track of whether we should cancel out of putting player in matchmaking after delay when closing post game menu. Remove when we get code notification about party being broken up
 } file
 
 void function InitPostGameMenu()
@@ -54,6 +55,8 @@ void function OnOpenPostGameMenu()
 			AddTab( file.menu, panel, GetPanelTabTitle( panel ) )
 	}
 
+	file.wasPartyMember = AmIPartyMember()
+
 	ActivateTab( file.menu, 0 )
 	RefreshCreditsAvailable()
 }
@@ -64,9 +67,16 @@ void function OnClosePostGameMenu()
 
 	if ( !IsPrivateMatch() && file.putPlayerInMatchMakingWithDelayAfterPostGameMenu )
 	{
-		SetPutPlayerInMatchmakingAfterDelay( true )
+		if ( PartyStatusUnchangedDuringPostGameMenu() )
+			SetPutPlayerInMatchmakingAfterDelay( true )
+
 		SetPutPlayerInMatchMakingWithDelayAfterPostGameMenu( false )
 	}
+}
+
+bool function PartyStatusUnchangedDuringPostGameMenu()
+{
+	return file.wasPartyMember == AmIPartyMember()
 }
 
 bool function IsPostGameMenuValid()

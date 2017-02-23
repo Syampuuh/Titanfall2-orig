@@ -8,6 +8,7 @@ struct
 	var menu
 	var buyButton
 	GridMenuData gridData
+	bool hasEntitlement
 	array<CamoRef> camoRefs
 } file
 
@@ -39,6 +40,8 @@ void function OnStoreMenuCamo_NavigateBack()
 void function OnOpenStoreMenuCamo()
 {
 	UI_SetPresentationType( ePresentationType.STORE_CAMO_PACKS )
+
+	file.hasEntitlement = LocalPlayerHasEntitlement( ET_DLC1_CAMO )
 
 	file.gridData.rows = 4
 	file.gridData.columns = 5
@@ -104,10 +107,21 @@ void function StoreCamoButton_GetFocus( var button, int elemNum )
 
 void function OnBuyButton_Activate( var button )
 {
+#if PC_PROG
+	if ( !Origin_IsOverlayAvailable() )
+	{
+		DialogData dialogData
+		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+		AddDialogButton( dialogData, "#OK" )
+
+		OpenDialog( dialogData )
+		return
+	}
+#endif
+
 	if ( !LocalPlayerHasEntitlement( ET_DLC1_CAMO ) )
 	{
-		PurchaseEntitlement( ET_DLC1_CAMO )
-		uiGlobal.updateCachedNewItems = true
+		StorePurchase( ET_DLC1_CAMO )
 	}
 	else
 	{
@@ -122,7 +136,14 @@ void function EntitlementsChanged_Camo()
 
 void function RefreshEntitlements()
 {
+	bool hasEntitlement = LocalPlayerHasEntitlement( ET_DLC1_CAMO )
+
 	var rui = Hud_GetRui( file.buyButton )
 	RuiSetString( rui, "price", GetEntitlementPrices( [ ET_DLC1_CAMO ] )[ 0 ] )
-	RuiSetBool( rui, "isOwned", LocalPlayerHasEntitlement( ET_DLC1_CAMO ) )
+	RuiSetBool( rui, "isOwned", hasEntitlement )
+
+	if ( !file.hasEntitlement && hasEntitlement )
+	{
+		ClientCommand( "StoreSetNewItemStatus StoreMenu_Camo" )
+	}
 }

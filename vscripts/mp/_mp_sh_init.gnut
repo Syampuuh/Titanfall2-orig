@@ -37,6 +37,7 @@ void function Shared_Lobby_Init()
 
 	#if SERVER
 		Server_Lobby_Init()
+		ShCamoSkin_Init() //mainly for loadout validation for camos
 	#elseif CLIENT
 		Client_Lobby_Init()
 	#endif
@@ -155,7 +156,6 @@ void function Server_MP_Init()
 	PainDeathSounds_Init()
 	Store_Init()
 
-	Sentry_Turrets_Init()
 	Harvester_GlobalInit()
 	FW_Harvester_GlobalInit()
 	Evac_Init()
@@ -364,7 +364,7 @@ void function Client_MP_Init()
 	CL_ToneHUD_Init()
 	ClTitanCockpitSounds_Init()
 	ClGruntChatter_MP_Init()
-
+	//ClPilotSpeedometer_Init()
 
 	if ( !IsLobby() && GetCurrentPlaylistVarInt( "riff_floorislava", eFloorIsLava.Default ) )
 		ClRiffFloorIsLava_Init()

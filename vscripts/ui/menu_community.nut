@@ -450,9 +450,7 @@ void function OnActualSendCommunityMessageButton_Activate( var button )
 	AddDialogButton( dialogData, "#YES", OnActualSendCommunityMessageButton_Confirm )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1118,6 +1116,7 @@ void function Community_CommunityUpdated()
 
 	string membershipLevel = GetCurrentCommunityMembershipLevel()
 
+	// printt( "setting up community ui - you are " + membershipLevel + " of this community" );
 	SetButtonRuiText( file.sendMessageButton, Localize( "#COMMUNITY_MESSAGE_SENDMESSAGE", GetCurrentCommunityName() ) )
 	bool owner = membershipLevel == "owner"
 	bool admin = owner || membershipLevel == "admin"
@@ -1134,16 +1133,19 @@ void function Community_CommunityUpdated()
 	}
 
 	Hud_SetEnabled( file.editButton, owner )
-	Hud_SetEnabled( file.sendButton, owner )
 
 	if ( owner )
-	{
 		Hud_Show( file.editButton )
+	else
+		Hud_Hide( file.editButton )
+
+	if ( admin )
+	{
 		Hud_Show( file.sendButton )
+		Hud_Show( file.sendMessageButton )
 	}
 	else
 	{
-		Hud_Hide( file.editButton )
 		Hud_Hide( file.sendButton )
 	}
 
@@ -1257,9 +1259,7 @@ void function LeaveCommunityButton_Activate( var button )
 	AddDialogButton( dialogData, "#YES", LeaveCommunityDialog )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1286,9 +1286,7 @@ void function LeaveCurrentCommunityButton_Activate( var button )
 	AddDialogButton( dialogData, "#YES", LeaveCurrentCommunityDialog )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1572,9 +1570,7 @@ void function SetActiveCommunity_Thread( int communityId )
 	AddDialogButton( dialogData, "#YES", MyCommunities_SetActive )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1752,9 +1748,7 @@ void function AskToJoinCommunity_Thread( int communityId )
 
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1814,9 +1808,7 @@ void function JoinCommunityThread( int communityId )
 	//AddDialogButton( dialogData, "#OK", CloseActiveMenu() )
 	AddDialogButton( dialogData, "#OK" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -1831,7 +1823,7 @@ void function BrowseCommunities_ReportAbuse_Final()
 			return
 	}
 	file.reportedCommunityIds.append( file.reportAbuseCommunityId )
-	ReportCommunity( file.reportAbuseCommunityId )
+	ReportCommunity( file.reportAbuseCommunityId, 0 )
 }
 
 void function ReportAbuse_Thread( int communityId )
@@ -1858,9 +1850,7 @@ void function ReportAbuse_Thread( int communityId )
 	AddDialogButton( dialogData, "#YES", BrowseCommunities_ReportAbuse_Final )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -2395,9 +2385,7 @@ void function OnEditCommunityMenu_Close()
 			AddDialogButton( dialogData, "#YES", LeaveEditCommunity )
 			AddDialogButton( dialogData, "#NO" )
 
-			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-			AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+			dialogData.noChoiceWithNavigateBack = true
 			OpenDialog( dialogData )
 		}
 		else
@@ -2636,9 +2624,7 @@ void function OCommunitySendMsg_NavigateBack()
 	AddDialogButton( dialogData, "#YES", LeaveEditCommunity )
 	AddDialogButton( dialogData, "#NO" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
-
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 

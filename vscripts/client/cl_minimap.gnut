@@ -210,6 +210,11 @@ void function DumpMinimapHandles()
 
 void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
 {
+	foreach ( callbackFunc in clGlobal.onMinimapEntSpawnedCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
 	if ( ent == GetLocalViewPlayer() )
 		return
 
@@ -429,7 +434,10 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 {
 	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
 	if ( !IsFFAGame() ) //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	{
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
+		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )
+	}
 }
 
 void function MinimapPackage_NPCTitanInit( entity ent, var rui )

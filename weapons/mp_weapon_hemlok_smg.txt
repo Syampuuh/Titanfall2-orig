@@ -108,13 +108,13 @@ WeaponData
 
 		"aimassist_adspull_weaponclass"					"broad"
 
-		"damage_near_value"   							"32"
-		"damage_far_value"								"22"
+		"damage_near_value"   							"23"
+		"damage_far_value"								"18"
 		"damage_near_value_titanarmor"					"90"
 		"damage_far_value_titanarmor" 					"60"
 		"damage_rodeo" 									"110"
 
-   	 	"damage_very_far_value"							"17"
+   	 	"damage_very_far_value"							"14"
    		"damage_very_far_distance"						"3000"
 
 		"damage_headshot_scale"							"1.5"
@@ -563,12 +563,12 @@ WeaponData
 
 			"is_burn_mod"								"1"
 
-			"damage_near_value"   							"35"
-			"damage_far_value"								"35"
+			"damage_near_value"   							"25"
+			"damage_far_value"								"25"
 			"damage_near_value_titanarmor"					"190"
 			"damage_far_value_titanarmor" 					"160"
 
-   		 	"damage_very_far_value"							"30"
+   		 	"damage_very_far_value"							"20"
 		}
 
 		sp_s2s_settings_npc

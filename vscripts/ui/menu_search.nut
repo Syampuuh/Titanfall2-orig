@@ -1,6 +1,9 @@
 global function InitSearchMenu
 global function Search_UpdateNetworksMoreButton
 global function Search_UpdateInboxButtons
+global function IsWaitingBeforeMatchMaking
+global function LocalPlayerIsMixtapeSearching
+global function HandleMixtapeSearchCancel
 
 struct {
 	var chatroomMenu
@@ -22,6 +25,7 @@ struct {
 	var networksHeader
 	var browseNetworkButton
 	var settingsHeader
+	var storeHeader
 	var faqButton
 
 	var inboxButton
@@ -42,6 +46,7 @@ void function InitSearchMenu()
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_BUTTON_POSTGAME_REPORT", "#POSTGAME_REPORT", OpenPostGameMenu, IsPostGameMenuValid )
 	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_SKIP_WAIT_BEFORE_MATCHMAKING", "#SKIP_WAIT_BEFORE_MATCHMAKING", SkipMatchMakingWait, IsWaitingBeforeMatchMaking )
+	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_SKIP", "#SKIP", Mixtape_SearchSkip, Mixtape_ShouldShowSearchSkipPrompt )
 	AddMenuFooterOption( menu, BUTTON_TRIGGER_RIGHT, "#R_TRIGGER_CHAT", "", null, IsVoiceChatPushToTalk )
 
 	InitChatroom( menu )
@@ -59,6 +64,39 @@ void function InitSearchMenu()
 
 }
 
+void function Mixtape_SearchSkip( var button )
+{
+	printt( "Mixtape_SearchSkip()" )
+	EmitUISound( "Menu.Accept" )
+	ClientCommand( "MatchmakingSkipToNext" )
+}
+
+bool function LocalPlayerIsMixtapeSearching()
+{
+	if ( !IsFullyConnected() )
+		return false
+
+	if ( !AreWeMatchmaking() )
+		return false
+
+	string matchPlaylistVal = GetConVarString( "match_playlist" )
+	array<string> playlists = split( matchPlaylistVal, "," )
+	if ( playlists.len() <= 1 )
+		return false
+
+	if ( AmIPartyMember() )
+		return false
+
+	return true
+}
+
+void function HandleMixtapeSearchCancel()
+{
+	if ( !LocalPlayerIsMixtapeSearching() )
+		return
+
+	ClientCommand( "MatchmakingAdvanceShuffleIndex" )
+}
 
 void function OnSearchMenu_Open()
 {
@@ -82,27 +120,61 @@ void function OnSearchMenu_Open()
 		{
 			WaitFrame()
 		}
+		if ( !IsPersistenceAvailable() )
+			return
 
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+		//bool emotesAreEnabled = EmotesEnabled()
+		// "Customize"
+		{
+			bool anyNewPilotItems = HasAnyNewPilotItems( player )
+			bool anyNewTitanItems = HasAnyNewTitanItems( player )
+			bool anyNewBoosts = HasAnyNewBoosts( player )
+			bool anyNewCommsIcons = false // emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
+			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
 
-		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player ) || !hasSeenStore )
-		ComboButton_SetNew( file.pilotButton, HasAnyNewPilotItems( player ) )
-		ComboButton_SetNew( file.titanButton, HasAnyNewTitanItems( player ) )
-		ComboButton_SetNew( file.boostsButton, HasAnyNewBoosts( player ) )
-		ComboButton_SetNew( file.storeButton, !hasSeenStore )
+			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
+			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
+			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
+			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
+		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 
-//		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
-//		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+			/*
+			if ( !emotesAreEnabled )
+			{
+				Hud_Hide( file.dpadCommsButton )
+				ComboButtons_ResetColumnFocus( file.lobbyComboStruct )
+			}
+			else
+			{
+				Hud_Show( file.dpadCommsButton )
+			}
+			*/
+		}
 
-		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ) || HasAnyNewFactions( player ))
-		ComboButton_SetNew( file.bannerButton, HasAnyNewCallsignBanners( player ) )
-		ComboButton_SetNew( file.patchButton, HasAnyNewCallsignPatches( player ) )
-		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+		// "Store"
+		{
+			bool storeIsNew = DLCStoreShouldBeMarkedAsNew()
+			RuiSetBool( Hud_GetRui( file.storeHeader ), "isNew", storeIsNew )
+			ComboButton_SetNew( file.storeButton, storeIsNew )
+		}
 
-		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes()
+		// "Callsign"
+		{
+			bool anyNewBanners = HasAnyNewCallsignBanners( player )
+			bool anyNewPatches = HasAnyNewCallsignPatches( player )
+			bool anyNewFactions = HasAnyNewFactions( player )
+			bool anyNewCallsignHeader = (anyNewBanners || anyNewPatches || anyNewFactions)
+
+			RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", anyNewCallsignHeader )
+			ComboButton_SetNew( file.bannerButton, anyNewBanners )
+			ComboButton_SetNew( file.patchButton, anyNewPatches )
+			ComboButton_SetNew( file.factionButton, anyNewFactions )
+		}
+
+		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
 		RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
 		ComboButton_SetNew( file.faqButton, faqIsNew )
 
@@ -189,8 +261,8 @@ void function CreateButtons( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
-	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
-	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
+//	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
+//	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
 //	file.armoryButton = armoryButton
 //	Hud_AddEventHandler( armoryButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ArmoryMenu" ) ) )
@@ -228,6 +300,11 @@ void function CreateButtons( var menu )
 	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
 	file.browseNetworkButton = browseButton
 
+	headerIndex++
+	buttonIndex = 0
+	file.storeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_STORE" )
+	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BROWSE" )
+	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 
 	headerIndex++
 	buttonIndex = 0
@@ -248,6 +325,7 @@ void function CreateButtons( var menu )
 	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
 	Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
+	comboStruct.navUpButtonDisabled = true
 	comboStruct.navDownButton = file.chatroomMenu_chatroomWidget
 
 	ComboButtons_Finalize( comboStruct )
@@ -263,6 +341,9 @@ void function SkipMatchMakingWait( var button )
 bool function IsWaitingBeforeMatchMaking()
 {
 	if ( IsOpenInviteVisible() )
+		return false
+
+	if ( AmIPartyMember() )
 		return false
 
 	return GetTimeToRestartMatchMaking() > 0.0

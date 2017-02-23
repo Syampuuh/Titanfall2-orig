@@ -8,6 +8,13 @@ global function MFDChanged
 
 global function MarkedForDeathHudThink
 
+global function ServerCallback_MFD_StartNewMarkCountdown
+
+struct
+{
+	var friendlyMarkRui
+	var enemyMarkRui
+} file
 
 void function ClGamemodeMfd_Init()
 {
@@ -23,6 +30,9 @@ void function ClGamemodeMfd_Init()
 	RegisterSignal( "MFDChanged" )
 	RegisterSignal( "TargetUnmarked"  )
 	RegisterSignal( "PingEnemyFlag" )
+
+	file.friendlyMarkRui = CreateCockpitRui( $"ui/mfd_target_marker.rpak", 200 )
+	file.enemyMarkRui = CreateCockpitRui( $"ui/mfd_target_marker.rpak", 200 )
 
 	AddPlayerFunc( MarkedForDeath_AddPlayer )
 
@@ -90,6 +100,22 @@ function MFDChanged()
 			AnnouncementFromClass( player, announcement )
 		}
 	}
+	else if ( player == pendingFriendlyMarked )
+	{
+		if ( !IsWatchingReplay() )
+		{
+			entity cockpit = player.GetCockpit()
+
+			if ( !cockpit )
+				return
+
+			AnnouncementData announcement = Announcement_Create( "#MARKED_FOR_DEATH_YOU_ARE_THE_NEXT_TARGET" )
+			Announcement_SetPurge( announcement, true )
+			Announcement_SetDuration( announcement, 4.5 )
+			//Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+			AnnouncementFromClass( player, announcement )
+		}
+	}
 	else
 	{
 		if ( !IsWatchingReplay() )
@@ -103,43 +129,125 @@ function MFDChanged()
 	{
 		if ( friendlyMarked != player )
 		{
+			var rui = file.friendlyMarkRui
+			RuiSetBool( rui, "isVisible", true )
+			RuiTrackFloat3( rui, "pos", friendlyMarked, RUI_TRACK_OVERHEAD_FOLLOW )
+			RuiTrackInt( rui, "teamRelation", friendlyMarked, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+			RuiSetBool( rui, "playerIsMarked", friendlyMarked.IsPlayer() && GetLocalViewPlayer() == friendlyMarked )
+			RuiSetBool( rui, "isMarked", friendlyMarked.IsPlayer() )
+
+			rui = ClGameState_GetRui()
+			RuiSetString( rui, "friendlyMarkName", Localize( "#MARKED_FOR_DEATH_GUARD_PLAYER_HUD", GetMarkedName( friendlyMarked ) ) )
+			RuiSetBool( rui, "isFriendlyMarked", true )
+			/*
 			player.hudElems.FriendlyFlagIcon.Show()
 			player.hudElems.FriendlyFlagLabel.Show()
 			player.hudElems.FriendlyFlagLabel.SetText( "#MARKED_FOR_DEATH_GUARD_PLAYER", GetMarkedName( friendlyMarked ) )
 			player.hudElems.FriendlyFlagIcon.SetImage( $"vgui/HUD/mfd_friendly" )
 			player.hudElems.FriendlyFlagIcon.SetEntityOverhead( friendlyMarked, Vector( 0, 0, 0 ), 0.5, 1.25 )
+			*/
 		}
 		else
 		{
+			var rui = file.friendlyMarkRui
+			RuiSetBool( rui, "isVisible", false )
+			//RuiTrackFloat3( rui, "pos", friendlyMarked, RUI_TRACK_OVERHEAD_FOLLOW )
+			//RuiTrackInt( rui, "teamRelation", friendlyMarked, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+			//RuiSetBool( rui, "playerIsMarked", friendlyMarked.IsPlayer() && GetLocalViewPlayer() == friendlyMarked )
+			//RuiSetBool( rui, "isMarked", friendlyMarked.IsPlayer() )
+
+			rui = ClGameState_GetRui()
+			RuiSetString( rui, "friendlyMarkName", Localize( "#MARKED_FOR_DEATH_SURVIVE_PLAYER_HUD", GetMarkedName( friendlyMarked ) ) )
+			RuiSetBool( rui, "isFriendlyMarked", true )
+
+			ClGameState_SetInfoStatusText( Localize( "#MARKED_FOR_DEATH_YOU_ARE_MARKED_ANNOUNCEMENT" ) )
+			/*
 			player.hudElems.FriendlyFlagIcon.Hide()
 			player.hudElems.FriendlyFlagLabel.Hide()
+			*/
 		}
 	}
 	else if ( IsAlive( pendingFriendlyMarked ) )
 	{
 		if ( pendingFriendlyMarked != player )
 		{
+			var rui = file.friendlyMarkRui
+			RuiSetBool( rui, "isVisible", true )
+			RuiTrackFloat3( rui, "pos", pendingFriendlyMarked, RUI_TRACK_OVERHEAD_FOLLOW )
+			RuiTrackInt( rui, "teamRelation", pendingFriendlyMarked, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+			RuiSetBool( rui, "playerIsMarked", pendingFriendlyMarked.IsPlayer() && GetLocalViewPlayer() == pendingFriendlyMarked )
+			RuiSetBool( rui, "isMarked", pendingFriendlyMarked.IsPlayer() )
+
+			rui = ClGameState_GetRui()
+			RuiSetString( rui, "friendlyMarkName", Localize( "#MARKED_FOR_DEATH_GUARD_PLAYER_HUD", GetMarkedName( pendingFriendlyMarked ) ) )
+			RuiSetBool( rui, "isFriendlyMarked", true )
+
+			/*
 			player.hudElems.FriendlyFlagIcon.Show()
 			player.hudElems.FriendlyFlagLabel.Show()
 			player.hudElems.FriendlyFlagLabel.SetText( "#MARKED_FOR_DEATH_GUARD_PLAYER", GetMarkedName( pendingFriendlyMarked ) )
 			player.hudElems.FriendlyFlagIcon.SetImage( $"vgui/HUD/mfd_pre_friendly" )
 			player.hudElems.FriendlyFlagIcon.SetEntityOverhead( pendingFriendlyMarked, Vector( 0, 0, 0 ), 0.5, 1.25 )
+			*/
 		}
 		else
 		{
+			var rui = file.friendlyMarkRui
+			RuiSetBool( rui, "isVisible", false )
+			//RuiTrackFloat3( rui, "pos", pendingFriendlyMarked, RUI_TRACK_OVERHEAD_FOLLOW )
+			//RuiTrackInt( rui, "teamRelation", pendingFriendlyMarked, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+			//RuiSetBool( rui, "playerIsMarked", pendingFriendlyMarked.IsPlayer() && GetLocalViewPlayer() == pendingFriendlyMarked )
+			//RuiSetBool( rui, "isMarked", pendingFriendlyMarked.IsPlayer() )
+
+			rui = ClGameState_GetRui()
+			RuiSetString( rui, "friendlyMarkName", Localize( "#MARKED_FOR_DEATH_SURVIVE_PLAYER_HUD", GetMarkedName( pendingFriendlyMarked ) ) )
+			RuiSetBool( rui, "isFriendlyMarked", true )
+
+			ClGameState_SetInfoStatusText( Localize( "#MARKED_FOR_DEATH_YOU_ARE_THE_NEXT_TARGET" ) )
+			/*
 			player.hudElems.FriendlyFlagIcon.Hide()
 			player.hudElems.FriendlyFlagLabel.Hide()
+			*/
 		}
 	}
 	else
 	{
 		player.Signal( "TargetUnmarked" )
+
+		var rui = file.friendlyMarkRui
+		RuiSetBool( rui, "isVisible", false )
+
+		rui = ClGameState_GetRui()
+		RuiSetString( rui, "friendlyMarkName", "" )
+		RuiSetBool( rui, "isFriendlyMarked", false )
+
+		ClGameState_SetInfoStatusText( "" )
+		/*
 		player.hudElems.FriendlyFlagIcon.Hide()
 		player.hudElems.FriendlyFlagLabel.Hide()
+		*/
 	}
 
 	if ( IsAlive( enemyMarked ) )
 	{
+		var rui = file.enemyMarkRui
+		RuiSetBool( rui, "isVisible", true )
+		RuiTrackFloat3( rui, "pos", enemyMarked, RUI_TRACK_OVERHEAD_FOLLOW )
+		RuiTrackInt( rui, "teamRelation", enemyMarked, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+		RuiSetBool( rui, "playerIsMarked", enemyMarked.IsPlayer() && GetLocalViewPlayer() == enemyMarked )
+		RuiSetBool( rui, "isMarked", enemyMarked.IsPlayer() )
+
+		rui = ClGameState_GetRui()
+		RuiSetString( rui, "enemyMarkName", Localize( "#MARKED_FOR_DEATH_KILL_PLAYER_HUD", GetMarkedName( enemyMarked ) ) )
+		RuiSetBool( rui, "isEnemyMarked", true )
+
+		if ( player != friendlyMarked && player != pendingFriendlyMarked )
+		{
+			ClGameState_SetInfoStatusText( Localize( "#MARKED_FOR_DEATH_KILL_MARK_OBJECTIVE" ) )
+		}
+
+
+		/*
 		player.hudElems.EnemyFlagIcon.Show()
 		if ( level.overheadIconShouldPing )
 		{
@@ -153,10 +261,19 @@ function MFDChanged()
 		player.hudElems.EnemyFlagIcon.SetEntityOverhead( enemyMarked, Vector( 0, 0, 0 ), 0.5, 1.25 )
 		if ( level.overheadIconShouldPing )
 			thread PingEnemyFlag( player, enemyMarked )
+		*/
 	}
 	else
 	{
 		player.Signal( "TargetUnmarked" )
+
+		var rui = file.enemyMarkRui
+		RuiSetBool( rui, "isVisible", false )
+
+		rui = ClGameState_GetRui()
+		RuiSetString( rui, "enemyMarkName", "" )
+		RuiSetBool( rui, "isEnemyMarked", false )
+		/*
 		player.hudElems.EnemyFlagIcon.Hide()
 		if ( level.overheadIconShouldPing )
 		{
@@ -164,6 +281,7 @@ function MFDChanged()
 			player.hudElems.EnemyFlagPing2Icon.Hide()
 		}
 		player.hudElems.EnemyFlagLabel.Hide()
+		*/
 	}
 
 	if ( !GamePlaying() )
@@ -172,57 +290,6 @@ function MFDChanged()
 	//UpdateMFDVGUI regardless
 	UpdateMFDVGUI()
 }
-
-function PingEnemyFlag( player, enemyMarked )
-{
-	expect entity( player )
-	expect entity( enemyMarked )
-
-	enemyMarked.EndSignal( "OnDeath" )
-	enemyMarked.EndSignal( "OnDestroy" )
-	player.EndSignal( "TargetUnmarked" )
-
-	player.Signal( "PingEnemyFlag" )
-	player.EndSignal( "PingEnemyFlag" )
-
-	const MFD_DISPLAY_FRACS = 5.0
-	local delayFrac = level.nv.mfdOverheadPingDelay / MFD_DISPLAY_FRACS
-
-	while ( IsAlive( enemyMarked ) )
-	{
-		local centerPoint = enemyMarked.GetWorldSpaceCenter()
-		local origin = enemyMarked.GetOrigin()
-
-		player.hudElems.EnemyFlagIcon.SetAlpha( 255 )
-		if ( level.overheadIconShouldPing )
-		{
-			player.hudElems.EnemyFlagPingIcon.SetAlpha( 255 )
-			player.hudElems.EnemyFlagPingIcon.SetScale( 0.5, 0.5 )
-			player.hudElems.EnemyFlagPingIcon.ScaleOverTime( 1.45, 1.45, delayFrac, INTERPOLATOR_DEACCEL )
-			player.hudElems.EnemyFlagPingIcon.SetColor( 255, 229, 215, 190 )
-			player.hudElems.EnemyFlagPingIcon.ColorOverTime( 255, 177, 134, 0, delayFrac, INTERPOLATOR_ACCEL )
-		}
-		player.hudElems.EnemyFlagLabel.SetAlpha( 255 )
-
-		wait delayFrac * 0.25
-
-		if ( level.overheadIconShouldPing )
-		{
-			player.hudElems.EnemyFlagPing2Icon.SetAlpha( 175 )
-			player.hudElems.EnemyFlagPing2Icon.SetScale( 0.5, 0.5 )
-			player.hudElems.EnemyFlagPing2Icon.ScaleOverTime( 1.15, 1.15, delayFrac, INTERPOLATOR_DEACCEL )
-			player.hudElems.EnemyFlagPing2Icon.SetColor( 255, 229, 215, 190 )
-			player.hudElems.EnemyFlagPing2Icon.ColorOverTime( 255, 177, 134, 0, delayFrac, INTERPOLATOR_ACCEL )
-		}
-
-		wait delayFrac * 0.75
-
-		player.hudElems.EnemyFlagIcon.FadeOverTime( 0, delayFrac, INTERPOLATOR_DEACCEL )
-		player.hudElems.EnemyFlagLabel.FadeOverTime( 0, delayFrac, INTERPOLATOR_DEACCEL )
-		wait delayFrac * (MFD_DISPLAY_FRACS - delayFrac)
-	}
-}
-
 
 function UpdateMFDVGUI()
 {
@@ -234,37 +301,8 @@ void function MarkedForDeath_AddPlayer( entity player )
 	if ( IsMenuLevel() )
 		return
 
-	player.InitHudElem( "FriendlyFlagIcon" )
-	player.InitHudElem( "EnemyFlagIcon" )
-	player.InitHudElem( "EnemyFlagPingIcon" )
-	player.InitHudElem( "EnemyFlagPing2Icon" )
-
-	player.InitHudElem( "FriendlyFlagLabel" )
-	player.InitHudElem( "EnemyFlagLabel" )
-
-	player.hudElems.FriendlyFlagIcon.SetClampToScreen( CLAMP_RECT )
-	player.hudElems.FriendlyFlagIcon.SetClampBounds( CL_HIGHLIGHT_ICON_X, CL_HIGHLIGHT_ICON_Y )
-
-	player.hudElems.EnemyFlagIcon.SetClampToScreen( CLAMP_RECT )
-	player.hudElems.EnemyFlagIcon.SetClampBounds( CL_HIGHLIGHT_ICON_X, CL_HIGHLIGHT_ICON_Y )
-
-	if ( level.overheadIconShouldPing )
-	{
-		player.hudElems.EnemyFlagPingIcon.SetClampToScreen( CLAMP_RECT )
-		player.hudElems.EnemyFlagPingIcon.SetClampBounds( CL_HIGHLIGHT_ICON_X, CL_HIGHLIGHT_ICON_Y )
-	}
-
-	player.hudElems.EnemyFlagPing2Icon.SetClampToScreen( CLAMP_RECT )
-	player.hudElems.EnemyFlagPing2Icon.SetClampBounds( CL_HIGHLIGHT_ICON_X, CL_HIGHLIGHT_ICON_Y )
-
-	player.hudElems.FriendlyFlagLabel.SetClampToScreen( CLAMP_RECT )
-	player.hudElems.FriendlyFlagLabel.SetClampBounds( CL_HIGHLIGHT_LABEL_X, CL_HIGHLIGHT_LABEL_Y )
-
-	player.hudElems.EnemyFlagLabel.SetClampToScreen( CLAMP_RECT )
-	player.hudElems.EnemyFlagLabel.SetClampBounds( CL_HIGHLIGHT_LABEL_X, CL_HIGHLIGHT_LABEL_Y )
-
-	player.hudElems.FriendlyFlagLabel.SetText( "#GAMEMODE_FLAG_GUARD" )
-	player.hudElems.EnemyFlagLabel.SetText( "#GAMEMODE_FLAG_ATTACK" )
+//	file.friendlyMarkRui = CreateCockpitRui( $"ui/mfd_target_marker.rpak", 200 )
+//	file.enemyMarkRui = CreateCockpitRui( $"ui/mfd_target_marker.rpak", 200 )
 
 	thread MFDChanged()
 }
@@ -360,4 +398,33 @@ function DelayPlayingUnmarkedEffect( entity player )
 string function GetMarkedName( entity marked )
 {
 	return marked.IsNPC() ? "Titan(" + marked.GetBossPlayerName() + ")" : marked.GetPlayerName()
+}
+
+void function ServerCallback_MFD_StartNewMarkCountdown( float endTime )
+{
+	thread ServerCallback_MFD_StartNewMarkCountdown_Internal( endTime )
+}
+
+void function ServerCallback_MFD_StartNewMarkCountdown_Internal( float endTime )
+{
+	entity player = GetLocalViewPlayer()
+	player.Signal( "TargetUnmarked" )
+	clGlobal.levelEnt.EndSignal( "MFDChanged" )
+
+	int team = player.GetTeam()
+	entity pendingFriendlyMarked = GetPendingMarked( team )
+
+	while ( Time() <= endTime )
+	{
+		if ( pendingFriendlyMarked == player )
+		{
+			ClGameState_SetInfoStatusText( Localize( "#MARKED_FOR_DEATH_YOU_WILL_BE_MARKED_NEXT", floor( endTime - Time() ) ) )
+		}
+		else
+		{
+			ClGameState_SetInfoStatusText( Localize( "#MARKED_FOR_DEATH_COUNTDOWN_TO_NEXT_MARKED", floor( endTime - Time() ) ) )
+		}
+
+		WaitFrame()
+	}
 }

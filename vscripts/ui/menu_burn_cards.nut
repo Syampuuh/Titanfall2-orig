@@ -146,6 +146,8 @@ void function OnOpenBurnCardMenu()
 
 	UI_SetPresentationType( ePresentationType.BOOSTS )
 	RefreshCreditsAvailable()
+
+	uiGlobal.updateCachedNewItems = false
 }
 
 void function OnCloseBurnCardMenu()

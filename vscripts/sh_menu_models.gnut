@@ -23,6 +23,7 @@
 		entity mover
 		entity body
 		entity weapon
+		entity prop
 		string attachName
 		string bodyAnim
 		float rotationDelta
@@ -224,17 +225,18 @@
 		// Outro anims should work the same
 
 		SetPresentationData( ePresentationType.INACTIVE, 			null,				false, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 1.0,  1.0,  0.0,   "main_idle",				"background_idle",	UpdateBothModels )
-		SetPresentationData( ePresentationType.DEFAULT, 			null,				true, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
-		SetPresentationData( ePresentationType.STORE_CAMO_PACKS, 	null,				false, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 1000.0, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
-//		SetPresentationData( ePresentationType.SEARCH, 				null,				true, 360, "camera_menu_settings_idle", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 1.0,  1.0,  0.0,   "main_idle",				"background_idle",	UpdateBothModels ) // Animation change
-		SetPresentationData( ePresentationType.SEARCH, 				null,				true, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV + 10, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
-		SetPresentationData( ePresentationType.CALLSIGN, 			null,				false, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
-		SetPresentationData( ePresentationType.KNOWLEDGEBASE_MAIN, 	null,				false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV - 25, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 30.0, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "weapon_inspect_idle",				"background_idle",	UpdateBothModels )
-		SetPresentationData( ePresentationType.KNOWLEDGEBASE_SUB, 	null,				false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV - 28, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 30.0, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "weapon_inspect_idle",				"background_idle",	UpdateBothModels )
+		SetPresentationData( ePresentationType.DEFAULT, 			null,				true, 360, "camera_menu_main_idle_01", 			DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
+		SetPresentationData( ePresentationType.STORE_CAMO_PACKS, 	null,				false, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 1000.0, 		  					   0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
+		SetPresentationData( ePresentationType.STORE_FRONT, 		file.menuTitan,		false, 0, "camera_titan_menu_loadout_idle", 	DEFAULT_FOV - 30, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  DEFAULT_DOF_FAR_END, 			   1.0,  1.0,  200.0, "weapon_inspect_idle",	"nose_art_idle",		UpdateBothModels ) // Animation change
 
-		SetPresentationData( ePresentationType.PILOT, 				file.menuPilot,		false, 360, "camera_menu_loadout_idle_01", 	DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0,  "focused_idle",			"background_idle",	UpdateBothModels ) // Animation change
+		SetPresentationData( ePresentationType.SEARCH, 				null,				true, 360, "camera_menu_main_idle_01", 			DEFAULT_FOV + 10, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",			"background_idle",	UpdateBothModels ) // Show spawn models
+		SetPresentationData( ePresentationType.CALLSIGN, 			null,				false, 360, "camera_menu_main_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "main_idle",				"background_idle",	UpdateBothModels ) // Show spawn models
+		SetPresentationData( ePresentationType.KNOWLEDGEBASE_MAIN, 	null,				false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV - 25, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 30.0, 			  DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "weapon_inspect_idle",	"background_idle",	UpdateBothModels )
+		SetPresentationData( ePresentationType.KNOWLEDGEBASE_SUB, 	null,				false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV - 28, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 30.0, 			  DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0,  "weapon_inspect_idle",	"background_idle",	UpdateBothModels )
+
+		SetPresentationData( ePresentationType.PILOT, 				file.menuPilot,		false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0,  "focused_idle",			"background_idle",	UpdateBothModels ) // Animation change
 		SetPresentationData( ePresentationType.PILOT_LOADOUT_EDIT, 	file.menuPilot,		false, 360, "camera_menu_loadout_idle_01",		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0,  "focused_idle",			"background_idle", 	UpdateBothModels )
-		SetPresentationData( ePresentationType.PILOT_CHARACTER, 	file.menuPilot,		false, 360, "camera_menu_loadout_idle_01", 	DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0,  "focused_idle",			"background_idle",	UpdateBothModels ) // Animation change
+		SetPresentationData( ePresentationType.PILOT_CHARACTER, 	file.menuPilot,		false, 360, "camera_menu_loadout_idle_01", 		DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0,  "focused_idle",			"background_idle",	UpdateBothModels ) // Animation change
 		SetPresentationData( ePresentationType.PILOT_WEAPON,		file.menuPilot,		false, 360, "camera_menu_loadout_edit_idle_01", DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 40.0,  "weapon_inspect_idle",	"background_idle",	UpdateBothModels ) // Animation change
 
 		SetPresentationData( ePresentationType.TITAN, 				file.menuTitan,		false, 360, "camera_titan_menu_loadout_idle", 	DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 500.0, 				  1000.0, 			   1.0,  1.0,  200.0, "background_idle",		"focused_idle",		UpdateBothModels ) // Animation change
@@ -502,55 +504,63 @@
 
 		animType = "background_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]			<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]		<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]		<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]		<- "titan_medium_menu_main_idle_01_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]		<- "titan_medium_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]		<- "titan_medium_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]			<- "titan_heavy_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]	<- "titan_heavy_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]			<- "titan_heavy_menu_main_idle_01_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]			<- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_main_idle_01_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_main_idle_01_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_main_idle_01_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_main_idle_01"
 
 		animType = "focused_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]			<- "titan_light_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]		<- "titan_light_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]		<- "titan_light_menu_loadout_idle_NSTAR"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]		<- "titan_medium_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]		<- "titan_medium_menu_loadout_idle_ION"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]		<- "titan_medium_menu_loadout_idle_ION"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]			<- "titan_heavy_menu_loadout_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]	<- "titan_heavy_menu_loadout_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]			<- "titan_heavy_menu_loadout_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]			<- "titan_heavy_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_loadout_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_loadout_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_loadout_idle_ION"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_loadout_idle_ION"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_loadout_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_loadout_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_loadout_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_loadout_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_loadout_idle"
 
 		animType = "editing_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]			<- "titan_light_menu_loadout_idle_edit_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]		<- "titan_light_menu_loadout_idle_edit_RONIN"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]		<- "titan_light_menu_loadout_idle_edit_NSTAR"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]		<- "titan_medium_menu_loadout_idle_edit_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]		<- "titan_medium_menu_loadout_idle_edit_ION"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]		<- "titan_medium_menu_loadout_idle_edit_ION"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]			<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]	<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]			<- "titan_heavy_menu_loadout_idle_edit_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]			<- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_loadout_idle_edit_RONIN"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_loadout_idle_edit_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_loadout_idle_edit_ION"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_loadout_idle_edit_ION"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_loadout_idle_edit_LEGION"
 
 		animType = "nose_art_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]			<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]		<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]		<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]		<- "titan_medium_menu_noseart_idle_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]		<- "titan_medium_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]		<- "titan_medium_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]			<- "titan_heavy_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]	<- "titan_heavy_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]			<- "titan_heavy_menu_noseart_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]			<- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_noseart_idle_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_noseart_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_noseart_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_noseart_idle"
 	}
 
 	string function GetPilotAnimType()
@@ -859,6 +869,19 @@
 		file.menuBoost.body = modelEnt
 	}
 
+	entity function CreateAttachedModel( entity baseEnt, asset model, string attachName )
+	{
+		int attachIndex = baseEnt.LookupAttachment( attachName )
+		vector origin = baseEnt.GetAttachmentOrigin( attachIndex )
+		vector angles = baseEnt.GetAttachmentAngles( attachIndex )
+
+		entity propEnt = CreateClientSidePropDynamic( origin, angles, model )
+		propEnt.SetParent( baseEnt, attachName, false, 0.0 )
+		propEnt.MakeSafeForUIScriptHack()
+
+		return propEnt
+	}
+
 	void function CreateMenuFX( entity model )
 	{
 		int index = GetParticleSystemIndex( MENU_TEST_EFFECT )
@@ -1159,6 +1182,12 @@
 			file.menuTitan.weapon.SetCamo( -1 )
 			//printt( "Set titan weapon camo to:", -1 )
 		}
+
+		if ( IsValid( file.menuTitan.prop ) )
+			file.menuTitan.prop.Destroy()
+
+		if ( bodyModel == $"models/titans/light/titan_light_locust.mdl" || bodyModel == $"models/titans/light/titan_light_ronin_prime.mdl" )
+			file.menuTitan.prop = CreateAttachedModel( file.menuTitan.body, $"models/weapons/titan_sword/w_titan_sword.mdl", "SIDEARM_HOLSTER" )
 	}
 
 	void function SetEditingPilotLoadoutIndex( entity player, int loadoutIndex )
@@ -1870,6 +1899,7 @@
 			if ( uiGlobal.activePresentationType == ePresentationType.NO_MODELS || newPresentationType == ePresentationType.NO_MODELS ||
 				 uiGlobal.activePresentationType == ePresentationType.FACTIONS || newPresentationType == ePresentationType.FACTIONS ||
 				 uiGlobal.activePresentationType == ePresentationType.BOOSTS || newPresentationType == ePresentationType.BOOSTS ||
+				 uiGlobal.activePresentationType == ePresentationType.STORE_FRONT || newPresentationType == ePresentationType.STORE_FRONT ||
 				 uiGlobal.activePresentationType == ePresentationType.INACTIVE )
 			{
 				uiGlobal.interpolateCameraMoves = false

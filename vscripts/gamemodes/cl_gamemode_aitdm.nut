@@ -1,6 +1,7 @@
 global function ClGamemodeAITDM_Init
 global function CLAITDM_RegisterNetworkFunctions
 global function ServerCallback_AITDM_OnPlayerConnected
+global function DefconUpdated
 
 global function AITDM_NPCHumanSizedInit
 
@@ -14,6 +15,7 @@ void function ClGamemodeAITDM_Init()
 {
 	AddCallback_OnClientScriptInit( OverrideMinimapPackages )
 	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
+	AddCallback_LocalViewPlayerSpawned( OnLocalViewPlayerSpawned )
 }
 
 void function OverrideMinimapPackages( entity player )
@@ -22,6 +24,12 @@ void function OverrideMinimapPackages( entity player )
 	RegisterMinimapPackage( "npc_spectre", eMinimapObject_npc.AI_TDM_AI, $"ui/minimap_object.rpak", AITDM_NPCHumanSizedInit )
 	RegisterMinimapPackage( "npc_stalker", eMinimapObject_npc.AI_TDM_AI, $"ui/minimap_object.rpak", AITDM_NPCHumanSizedInit )
 	RegisterMinimapPackage( "npc_super_spectre", eMinimapObject_npc.AI_TDM_AI, $"ui/minimap_object.rpak", AITDM_NPCHumanSizedInit )
+}
+
+void function OnLocalViewPlayerSpawned( entity localPlayer )
+{
+	DefconUpdated( TEAM_IMC, GetGlobalNetInt("IMCdefcon"), false )
+	DefconUpdated( TEAM_MILITIA, GetGlobalNetInt("MILdefcon"), false )
 }
 
 void function AITDM_NPCHumanSizedInit( entity ent, var rui )

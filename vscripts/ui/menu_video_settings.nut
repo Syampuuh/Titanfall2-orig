@@ -40,24 +40,33 @@ void function InitVideoMenu()
 	AddButtonEventHandler( button, UIE_CHANGE, AdaptiveRes_Changed )
 	AddButtonEventHandler( Hud_GetChild( menu, "TextEntryAdaptiveRes" ), UIE_CHANGE, AdaptiveResText_Changed )
 
+	SetupButton( Hud_GetChild( menu, "SwchTextureDetail" ), "#TEXTURE_QUALITY", "#ADVANCED_VIDEO_MENU_TEXTURE_DETAIL_DESC" )
+	AddButtonEventHandler( Hud_GetChild( menu, "SwchTextureDetail" ), UIE_CHANGE, TextureStreamBudget_Changed )
+
+	SetupButton( Hud_GetChild( menu, "SwchAdaptiveSupersample" ), "#ADAPTIVE_SUPERSAMPLE", "#ADAPTIVE_SUPERSAMPLE_DESC" )
+
 	button = Hud_GetChild( menu, "SldFOV" )
 	SetupButton( Hud_GetChild( button, "BtnDropButton" ), "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC" )
 	AddButtonEventHandler( button, UIE_CHANGE, FOV_Changed )
 	AddButtonEventHandler( Hud_GetChild( menu, "TextEntrySldFOV" ), UIE_CHANGE, FOVTextEntry_Changed )
 
+	SetupButton( Hud_GetChild( Hud_GetChild( menu, "SldFilmGrain" ), "BtnDropButton" ), "#FILM_GRAIN", "#ADVANCED_VIDEO_MENU_FILM_GRAIN_DESC" )
+
 	SetupButton( Hud_GetChild( menu, "SwchResolution" ), "#RESOLUTION", "#ADVANCED_VIDEO_MENU_RESOLUTION_DESC" )
+	AddButtonEventHandler( Hud_GetChild( menu, "SwchResolution" ), UIE_CHANGE, ResolutionSelection_Changed )
+
 	SetupButton( Hud_GetChild( Hud_GetChild( menu, "SldBrightness" ), "BtnDropButton" ), "#BRIGHTNESS", "#ADVANCED_VIDEO_MENU_BRIGHTNESS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchColorBlindMode" ), "#COLORBLIND_MODE", "#OPTIONS_MENU_COLORBLIND_TYPE_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchSprintCameraSmoothing" ), "#SMOOTH_SPRINT_CAMERA", "#OPTIONS_MENU_SMOOTH_SPRINT_CAMERA" )
 	SetupButton( Hud_GetChild( menu, "SwchVSync" ), "#VSYNC", "#ADVANCED_VIDEO_MENU_VSYNC_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchAntialiasing" ), "#ANTIALIASING", "#ADVANCED_VIDEO_MENU_ANTIALIASING_DESC" )
-	SetupButton( Hud_GetChild( menu, "SwchTextureDetail" ), "#TEXTURE_QUALITY", "#ADVANCED_VIDEO_MENU_TEXTURE_DETAIL_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchFilteringMode" ), "#MENU_TEXTURE_FILTERING", "#ADVANCED_VIDEO_MENU_FILTERING_MODE_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchSunShadowDetail" ), "#MENU_SUN_SHADOW_DETAILS", "#ADVANCED_VIDEO_MENU_SUN_SHADOW_DETAIL_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchSpotShadowDetail" ), "#MENU_SPOT_SHADOW_DETAILS", "#ADVANCED_VIDEO_MENU_SPOT_SHADOW_DETAIL_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchDynamicSpotShadows" ), "#MENU_DYNAMIC_SPOT_SHADOWS", "#ADVANCED_VIDEO_MENU_DYNAMIC_SPOT_SHADOWS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchAmbientOcclusion" ), "#MENU_AMBIENT_OCCLUSION", "#ADVANCED_VIDEO_MENU_AMBIENT_OCCLUSION_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchModelDetail" ), "#MENU_MODEL_DETAIL", "#ADVANCED_VIDEO_MENU_MODEL_DETAIL_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwchModelFadeDist" ), "#DRAW_DIST", "#DRAW_DIST_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchEffectsDetail" ), "#MENU_EFFECT_DETAIL", "#ADVANCED_VIDEO_MENU_EFFECTS_DETAIL_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchImpactMarks" ), "#MENU_IMPACT_MARKS", "#ADVANCED_VIDEO_MENU_IMPACT_MARKS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwchRagdolls" ), "#MENU_RAGDOLLS", "#ADVANCED_VIDEO_MENU_RAGDOLLS_DESC" )
@@ -267,6 +276,11 @@ void function AdaptiveRes_Changed( var button )
 	VideoOptions_AdaptiveResChanged( file.menu )
 }
 
+void function ResolutionSelection_Changed( var button )
+{
+	VideoOptions_ResolutionSelectionChanged( file.menu )
+}
+
 void function AdaptiveResText_Changed( var button )
 {
 	VideoOptions_AdaptiveResTextChanged( file.menu )
@@ -280,6 +294,11 @@ void function FOV_Changed( var button )
 void function FOVTextEntry_Changed( var button )
 {
 	VideoOptions_FOVTextChanged( file.menu )
+}
+
+void function TextureStreamBudget_Changed( var button )
+{
+	VideoOptions_TextureStreamBudgetChanged( file.menu )
 }
 
 void function SetupButton( var button, string buttonText, string description )

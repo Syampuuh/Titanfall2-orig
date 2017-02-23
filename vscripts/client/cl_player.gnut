@@ -609,25 +609,15 @@ function ClientPlayerClassChanged( entity player, newClass )
 	switch ( newClass )
 	{
 		case "titan":
-			player.SetAbilityBinding( 1, "+offhand3", "-offhand3" )        // "+ability 1"
-			player.SetAbilityBinding( 2, "+exit", "-exit" )                // "+ability 2"
-			player.SetAbilityBinding( 3, "+dodge", "-dodge" )            // "+ability 3"
-			player.SetAbilityBinding( 4, "+offhand1", "-offhand1" )        // "+ability 4"
-			player.SetAbilityBinding( 5, "+dodge", "-dodge" )            // "+ability 5"
-			player.SetAbilityBinding( 6, "+offhand4", "-offhand4" )                    // "+ability 6"
-			player.SetAbilityBinding( 7, "+offhand2", "-offhand2" )    // "+ability 7"
+			SetStandardAbilityBindingsForTitan( player )
+			SetAbilityBinding( player, 6, "+offhand4", "-offhand4" )	// "+ability 6"
 
 			LinkButtonPair( -1, -1, -1 )
 			break
 
 		case level.pilotClass:
-			player.SetAbilityBinding( 1, "+scriptCommand2", "-scriptCommand2" )        // "+ability 1"
-			player.SetAbilityBinding( 2, "+exit", "-exit" )                            // "+ability 2"
-			player.SetAbilityBinding( 3, "+jump", "-jump" )                            // "+ability 3"
-			player.SetAbilityBinding( 4, "+jump", "-jump" )                            // "+ability 4"
-			player.SetAbilityBinding( 5, "+offhand1", "-offhand1" )                    // "+ability 5"
-			player.SetAbilityBinding( 6, "+offhand4", "-offhand4" )                    // "+ability 6"
-			player.SetAbilityBinding( 7, "+weaponcycle", "-weaponcycle" )            // "+ability 7"
+			SetStandardAbilityBindingsForPilot( player )
+			SetAbilityBinding( player, 6, "+offhand4", "-offhand4" )	// "+ability 6"
 
 			LinkButtonPair( IN_OFFHAND0, IN_OFFHAND1, IN_OFFHAND3 )
 
@@ -2387,6 +2377,13 @@ void function ServerCallback_GameModeAnnouncement()
 	entity player = GetLocalClientPlayer()
 	string gameMode = GameRules_GetGameMode()
 
+	if ( GameMode_GetCustomIntroAnnouncement( gameMode ) != null )
+	{
+		void functionref(entity) func = GameMode_GetCustomIntroAnnouncement( gameMode )
+		func(player)
+		return
+	}
+
 	int team = player.GetTeam()
 
 	local totalDuration = 0.0
@@ -2402,8 +2399,6 @@ void function ServerCallback_GameModeAnnouncement()
 	{
 		announcement = Announcement_Create( GAMETYPE_TEXT[gameMode] )
 		announcement.announcementStyle = ANNOUNCEMENT_STYLE_BIG
-		if ( gameMode == COLISEUM )
-			announcement.drawOverScreenFade = true //JFS: Coliseum wants announcement to be played earlier. Use this to not make it draw on PermanentCockpitHud
 
 		Announcement_SetIcon( announcement, GAMETYPE_ICON[gameMode] )
 		Announcement_SetSubText( announcement, GAMEDESC_CURRENT )

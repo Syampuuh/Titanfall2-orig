@@ -5,6 +5,8 @@ global function OnWeaponPrimaryAttack_titanweapon_40mm
 global function OnWeaponDeactivate_titanweapon_40mm
 global function OnProjectileCollision_titanweapon_sticky_40mm
 global function OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm
+global function OnWeaponStartZoomIn_titanweapon_sticky_40mm
+global function OnWeaponReadyToFire_titanweapon_sticky_40mm
 #if SERVER
 global function ApplyTrackerMark
 global function OnWeaponNpcPrimaryAttack_titanweapon_40mm
@@ -254,8 +256,20 @@ bool function OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm( entity weapo
 	int level = weapon.GetWeaponChargeLevel()
 	int ammo = weapon.GetWeaponPrimaryClipCount()
 
-	if ( ammo >= level )
+	if ( level > 1 && ammo >= level )
 		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
 
 	return true
+}
+
+void function OnWeaponStartZoomIn_titanweapon_sticky_40mm( entity weapon )
+{
+	if ( weapon.HasMod( "pas_tone_burst") && weapon.IsReadyToFire() )
+		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
+}
+
+void function OnWeaponReadyToFire_titanweapon_sticky_40mm( entity weapon )
+{
+	if ( weapon.HasMod( "pas_tone_burst") && weapon.IsWeaponInAds() && weapon.GetWeaponPrimaryClipCount() > 0 )
+		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
 }

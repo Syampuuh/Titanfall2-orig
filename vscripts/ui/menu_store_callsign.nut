@@ -41,6 +41,7 @@ void function InitStoreMenuCallsign()
 
 void function StoreSwitchFocus( var list )
 {
+	EmitUISound( "menu_focus" )
 	if ( Hud_GetHudName( GetFocus() ).find( "CallsignIcon" ) != null )
 	{
 		if ( file.callsignFocusElem == null )
@@ -169,10 +170,21 @@ void function StoreIconButton_GetFocus( var button )
 
 void function OnBuyButton_Activate( var button )
 {
+#if PC_PROG
+	if ( !Origin_IsOverlayAvailable() )
+	{
+		DialogData dialogData
+		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+		AddDialogButton( dialogData, "#OK" )
+
+		OpenDialog( dialogData )
+		return
+	}
+#endif
+
 	if ( !LocalPlayerHasEntitlement( ET_DLC1_CALLSIGN ) )
 	{
-		PurchaseEntitlement( ET_DLC1_CALLSIGN )
-		uiGlobal.updateCachedNewItems = true
+		StorePurchase( ET_DLC1_CALLSIGN )
 	}
 	else
 	{

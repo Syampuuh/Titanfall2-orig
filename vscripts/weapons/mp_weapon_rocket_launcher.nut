@@ -66,13 +66,13 @@ void function OnWeaponActivate_weapon_rocket_launcher( entity weapon )
 	if ( !hasGuidedMissiles )
 	{
 		SmartAmmo_SetAllowUnlockedFiring( weapon, !IsMultiplayer() )
-//		if ( IsSingleplayer() )
-//		{
-			SmartAmmo_SetMissileSpeed( weapon, 1000 )
+		if ( IsSingleplayer() )
+		{
+			SmartAmmo_SetMissileSpeed( weapon, 1750 )
 			SmartAmmo_SetMissileHomingSpeed( weapon, 70 )
 
 			if ( weapon.HasMod( "burn_mod_rocket_launcher" ) )
-				SmartAmmo_SetMissileSpeedLimit( weapon, 500 )
+				SmartAmmo_SetMissileSpeedLimit( weapon, 1250 )
 			else if ( weapon.HasMod( "sp_s2s_settings" ) )
 			{
 				SmartAmmo_SetMissileSpeedLimit( weapon, 9000 )
@@ -81,17 +81,17 @@ void function OnWeaponActivate_weapon_rocket_launcher( entity weapon )
 			}
 			else
 				SmartAmmo_SetMissileSpeedLimit( weapon, 900 )
-//		}
-//		else
-//		{
-//			SmartAmmo_SetMissileSpeed( weapon, 2400 )
-//			SmartAmmo_SetMissileHomingSpeed( weapon, 1200 )
-//
-//			if ( weapon.HasMod( "burn_mod_rocket_launcher" ) )
-//				SmartAmmo_SetMissileSpeedLimit( weapon, 2000 )
-//			else
-//				SmartAmmo_SetMissileSpeedLimit( weapon, 2800 )
-//		}
+		}
+		else
+		{
+			SmartAmmo_SetMissileSpeed( weapon, 1800 )
+			SmartAmmo_SetMissileHomingSpeed( weapon, 300 )
+
+			if ( weapon.HasMod( "burn_mod_rocket_launcher" ) )
+				SmartAmmo_SetMissileSpeedLimit( weapon, 1600 )
+			else
+				SmartAmmo_SetMissileSpeedLimit( weapon, 2000 )
+		}
 
 		SmartAmmo_SetMissileShouldDropKick( weapon, false )  // TODO set to true to see drop kick behavior issues
 		SmartAmmo_SetUnlockAfterBurst( weapon, true )

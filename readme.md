@@ -1,5 +1,19 @@
 # Latest Client Changes
 
+## 23 February 2016 - The Live Fire Patch
+
+*(includes server-sided changes made on 23 January)*
+
+### Content and Feature Additions:
+
+### Rebalancing:
+
+### Fixes:
+
+---
+
+# Older Changes
+
 ## 29 November 2016 - The Angel City Patch
 
 *(includes server-sided changes made on 4 November)*

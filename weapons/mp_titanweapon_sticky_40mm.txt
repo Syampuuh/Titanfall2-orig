@@ -24,8 +24,9 @@ WeaponData
 	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_titanweapon_40mm"
 	"OnProjectileCollision"							"OnProjectileCollision_titanweapon_sticky_40mm"
 	"OnWeaponChargeLevelIncreased"					"OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm"
-
-	"bolt_hitsize"									"4.0"
+	"OnWeaponStartZoomIn"							"OnWeaponStartZoomIn_titanweapon_sticky_40mm"
+	"OnWeaponReadyToFire"							"OnWeaponReadyToFire_titanweapon_sticky_40mm"
+	"bolt_hitsize"									"3.5"
 
 	// Damage - When Used by Players
 	"damage_type" 									"bullet"
@@ -41,8 +42,8 @@ WeaponData
 	{
 		"damage_near_value"   						"200"
 		"damage_far_value"							"200"
-		"damage_near_value_titanarmor"				"350"
-		"damage_far_value_titanarmor" 				"300"
+		"damage_near_value_titanarmor"				"330"
+		"damage_far_value_titanarmor" 				"330"
 		"npc_explosion_damage"						"<KEEP_DEFAULT>"
 		"explosion_damage"							"75"
 		"explosion_damage_heavy_armor"				"200"
@@ -503,7 +504,7 @@ WeaponData
 		pas_tone_burst
 		{
 			"charge_time" 									"2.0"
-			"charge_cooldown_time"							"0.5"
+			"charge_cooldown_time"							"0.0"
 			"charge_cooldown_delay"   						"0.0"
 			"charge_end_forces_fire"						"0"
 			"charge_require_input"							"0"

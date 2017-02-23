@@ -330,8 +330,8 @@ WeaponData
 
 		"aimassist_adspull_weaponclass"					"precise"
 
-		"damage_near_value"   							"20"
-		"damage_far_value"								"15"
+		"damage_near_value"   							"25"
+		"damage_far_value"								"18"
 		"damage_near_value_titanarmor"					"85"
 		"damage_far_value_titanarmor" 					"65"
 		"damage_rodeo" 									"100"
@@ -615,7 +615,7 @@ WeaponData
 		{
 			"is_burn_mod"						"1"
 
-			"damage_near_value"   							"25"
+			"damage_near_value"   							"35"
 			"damage_far_value"								"25"
 			"damage_near_value_titanarmor"					"185"
 			"damage_far_value_titanarmor" 					"165"

@@ -197,38 +197,80 @@ function MeleeSyncedHumanShared_Init()
 
 	if ( IsMultiplayer() )
 	{
-		// Phase Telefrag
-		#if SERVER
-		AnimEventData phase_shift_start
-		phase_shift_start.eventName = "phase_shift_start"
-		phase_shift_start.callback = PhaseEmbarkPhaseStart
+		{
+		  // Phase Telefrag
+		  #if SERVER
+		  AnimEventData phase_shift_start
+		  phase_shift_start.eventName = "phase_shift_start"
+		  phase_shift_start.callback = PhaseEmbarkPhaseStart
 
-		AnimEventData phase_shift_stop
-		phase_shift_stop.eventName = "phase_shift_stop"
-		phase_shift_stop.callback = PhaseEmbarkPhaseStop
+		  AnimEventData phase_shift_stop
+		  phase_shift_stop.eventName = "phase_shift_stop"
+		  phase_shift_stop.callback = PhaseEmbarkPhaseStop
 
-		AnimEventData phase_shift_explode
-		phase_shift_explode.eventName = "phase_shift_explode"
-		phase_shift_explode.callback = PhaseShiftExplodeSound
-		#endif
+		  AnimEventData phase_shift_explode
+		  phase_shift_explode.eventName = "phase_shift_explode"
+		  phase_shift_explode.callback = PhaseShiftExplodeSound
+		  #endif
 
-		SyncedMelee syncedMelee
-		syncedMelee.ref = "execution_telefrag"
-		syncedMelee.direction = < -1, 0, 0 >
-		syncedMelee.distance = HUMAN_EXECUTION_RANGE
-		syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_phaseshift"
-		syncedMelee.targetAnimation3p = "pt_mp_execution_victim_phaseshift"
-		#if SERVER
-		syncedMelee.attacker3pAnimEvents = [phase_shift_start,phase_shift_stop]
-		syncedMelee.target3pAnimEvents = [phase_shift_explode]
-		#endif
-		syncedMelee.thirdPersonCameraAttachment = "VDU"
-		syncedMelee.minDot = 0.2
-		syncedMelee.isAttackerRef = false
-		AddSyncedMelee( meleeChooser, syncedMelee )
-		#if SERVER
-			AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
-		#endif
+		  SyncedMelee syncedMelee
+		  syncedMelee.ref = "execution_telefrag"
+		  syncedMelee.direction = < -1, 0, 0 >
+		  syncedMelee.distance = HUMAN_EXECUTION_RANGE
+		  syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_phaseshift"
+		  syncedMelee.targetAnimation3p = "pt_mp_execution_victim_phaseshift"
+
+		  #if SERVER
+		  syncedMelee.attacker3pAnimEvents = [phase_shift_start,phase_shift_stop]
+		  syncedMelee.target3pAnimEvents = [phase_shift_explode]
+		  #endif
+		  syncedMelee.thirdPersonCameraAttachment = "VDU"
+		  syncedMelee.minDot = 0.2
+		  syncedMelee.isAttackerRef = false
+		  AddSyncedMelee( meleeChooser, syncedMelee )
+		  #if SERVER
+			  AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
+		  #endif
+		}
+
+	    {
+		    // Stim Execution
+		    SyncedMelee syncedMelee
+		    syncedMelee.ref = "execution_stim"
+		    syncedMelee.direction = < -1, 0, 0 >
+		    syncedMelee.distance = HUMAN_EXECUTION_RANGE
+		    syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_stim"
+		    syncedMelee.targetAnimation3p = "pt_mp_execution_victim_stim"
+		    syncedMelee.thirdPersonCameraAttachment = "VDU"
+		    syncedMelee.minDot = 0.2
+		    syncedMelee.isAttackerRef = false
+		    AddSyncedMelee( meleeChooser, syncedMelee )
+		    #if SERVER
+			    AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
+		    #endif
+	    }
+
+	    {
+	    	//Grapple Execution
+			AnimEventData headstabEvent
+			headstabEvent.eventName = "headstab_death"
+			headstabEvent.callback = AnimEvent_headstab_death
+
+			SyncedMelee syncedMelee
+			syncedMelee.ref = "execution_grapple"
+			syncedMelee.direction = < -1, 0, 0 >
+			syncedMelee.distance = HUMAN_EXECUTION_RANGE
+			syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_grapple"
+			syncedMelee.targetAnimation3p = "pt_mp_execution_victim_grapple"
+			syncedMelee.target3pAnimEvents = [headstabEvent]
+			syncedMelee.thirdPersonCameraAttachment = "VDU"
+			syncedMelee.minDot = 0.2
+		    syncedMelee.isAttackerRef = false
+			AddSyncedMelee( meleeChooser, syncedMelee )
+			#if SERVER
+				AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
+			#endif
+		}
 	}
 
 }

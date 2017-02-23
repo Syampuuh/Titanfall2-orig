@@ -4,6 +4,19 @@ global function GenerateFactionDialogueAlias
 global function PlayFactionDialogueOnLocalClientPlayer
 global function ServerCallback_SpawnFactionCommanderInDropship
 
+struct
+{
+	#if DEV
+		int factionLeaderAnimIndex = -1
+	#endif
+	bool stuff
+}
+file
+
+#if DEV
+	global function Dev_SetFactionLeaderAnimIndex
+#endif
+
 string function GenerateFactionDialogueAlias( entity player, string conversationSuffix  )
 {
 	string factionChoice = GetFactionChoice( player )
@@ -87,7 +100,38 @@ void function ServerCallback_SpawnFactionCommanderInDropship_threaded( int shipE
 		prop.SetParent( factionLeader, factionLeaderInfo.propAttachment )
 	}
 
-	thread PlayAnim( factionLeader, factionLeaderInfo.dropshipAnimName, dropShip, "ORIGIN" )
+	array<string> dropshipAnimList = factionLeaderInfo.dropshipAnimList
+	/*foreach( dropshipAnim in dropshipAnimList )
+	{
+		printt( "dropshipAnim: " + dropshipAnim )
+	}
+	*/
+
+	string dropshipAnim = dropshipAnimList.getrandom()
+	#if DEV
+		if ( file.factionLeaderAnimIndex > -1 )
+		{
+			int numberOfAnims = dropshipAnimList.len()
+			Assert( numberOfAnims > 0 )
+			if ( ( numberOfAnims - 1 ) >= file.factionLeaderAnimIndex )
+			{
+				dropshipAnim = dropshipAnimList[ file.factionLeaderAnimIndex ]
+				printt( "------------------" )
+				printt( "Selecting anim: " + dropshipAnim )
+				printt( "------------------" )
+			}
+			else
+			{
+				printt( "------------------" )
+				printt( "Tried to select anim number " + file.factionLeaderAnimIndex + " but only anims 0 - " + ( dropshipAnimList.len() - 1 ) + " available" )
+				printt( "------------------" )
+
+			}
+		}
+	#endif
+	//printt( "Picked anim: " + dropshipAnim )
+
+	thread PlayAnim( factionLeader, dropshipAnim, dropShip, "ORIGIN" )
 	factionLeader.Anim_SetStartTime( dropshipSpawnTime )
 	factionLeader.LerpSkyScale( 0.9, 0.1 )
 	SetTeam( factionLeader, localViewPlayer.GetTeam() )
@@ -108,3 +152,10 @@ void function ServerCallback_SpawnFactionCommanderInDropship_threaded( int shipE
 	WaitForever()
 	//printt( "animation name: " + factionLeaderInfo.dropshipAnimName + ", initialTime: " + initialTime + ", propAttachment: " + factionLeaderInfo.propAttachment )
 }
+
+#if DEV
+void function Dev_SetFactionLeaderAnimIndex( int value )
+{
+	file.factionLeaderAnimIndex = value
+}
+#endif

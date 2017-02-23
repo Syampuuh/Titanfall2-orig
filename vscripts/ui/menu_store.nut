@@ -1,6 +1,14 @@
 global function InitStoreMenu
 global function OpenStoreMenu
+global function InStoreMenu
+global function StorePurchase
 global function StoreMenuClosedThread
+
+struct
+{
+	array<var> storeMenus
+} file
+
 
 void function InitStoreMenu()
 {
@@ -34,6 +42,13 @@ void function InitStoreMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+
+	file.storeMenus.append( GetMenu( "StoreMenu" ) )
+	file.storeMenus.append( GetMenu( "StoreMenu_PrimeTitans" ) )
+	file.storeMenus.append( GetMenu( "StoreMenu_Customization" ) )
+	file.storeMenus.append( GetMenu( "StoreMenu_CustomizationPreview" ) )
+	file.storeMenus.append( GetMenu( "StoreMenu_Camo" ) )
+	file.storeMenus.append( GetMenu( "StoreMenu_Callsign" ) )
 }
 
 void function OpenStoreMenu( string menuName )
@@ -55,22 +70,29 @@ void function OpenStoreMenu( string menuName )
 	thread WaitForDLCStoreInitialization()
 }
 
+void function StorePurchase( int entitlementID )
+{
+#if PS4_PROG
+	OnCloseDLCStore()
+#endif
+	PurchaseEntitlement( entitlementID )
+	uiGlobal.updateCachedNewItems = true
+}
+
+bool function InStoreMenu()
+{
+	var activeMenu = GetActiveMenu()
+	return file.storeMenus.contains( activeMenu )
+}
+
 void function StoreMenuClosedThread()
 {
-	array<var> storeMenus
-
-	storeMenus.append( GetMenu( "StoreMenu" ) )
-	storeMenus.append( GetMenu( "StoreMenu_PrimeTitans" ) )
-	storeMenus.append( GetMenu( "StoreMenu_Customization" ) )
-	storeMenus.append( GetMenu( "StoreMenu_CustomizationPreview" ) )
-	storeMenus.append( GetMenu( "StoreMenu_Camo" ) )
-	storeMenus.append( GetMenu( "StoreMenu_Callsign" ) )
-	storeMenus.append( GetMenu( "Dialog" ) )
+	var dialogMenu = GetMenu( "Dialog" )
 
 	while ( true )
 	{
 		var activeMenu = GetActiveMenu()
-		if ( !storeMenus.contains( activeMenu ) )
+		if ( !file.storeMenus.contains( activeMenu ) && activeMenu != dialogMenu )
 			break
 		WaitSignal( uiGlobal.signalDummy, "ActiveMenuChanged" )
 	}
@@ -78,10 +100,23 @@ void function StoreMenuClosedThread()
 	OnCloseDLCStore()
 }
 
+int function RollRandomTitanModelForStorefront()
+{
+	int index = RandomInt( 2 )
+	switch( index )
+	{
+		case 0:
+			return 0
+		case 1:
+			return 1
+	}
+	return 0
+}
+
 void function OnOpenStoreMenu()
 {
-	UI_SetPresentationType( ePresentationType.TITAN )
-	RunMenuClientFunction( "UpdateTitanModel", 0 )
+	UI_SetPresentationType( ePresentationType.STORE_FRONT )
+	RunMenuClientFunction( "UpdateTitanModel", RollRandomTitanModelForStorefront(), (TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_PRIME) )
 
 	if ( !GetPersistentVar( "hasSeenStore" ) )
 		ClientCommand( "SetHasSeenStore" )

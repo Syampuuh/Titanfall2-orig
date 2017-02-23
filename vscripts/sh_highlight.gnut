@@ -110,6 +110,7 @@ enum eHighlightDrawFunc
 	LOS_LINE_ENTSONLYCONTENTSBLOCK	// only blocked by ents with CONTENTS_BLOCKLOS
 	BATTERY_THIEF
 	FW_FRIENDLY_TITAN
+	DON_PANEL
 	SPOT
 	PICKUP
 	SONAR_DETECTED
@@ -146,7 +147,6 @@ function Highlight_Init()
 	HighlightContext_SetRequiresTitan( highlight )
 	HighlightContext_SetAfterPostProcess( highlight, true )
 
-
 	highlight = RegisterHighlight( "fw_neutral" )
 	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR )
 	HighlightContext_SetRadius( highlight, 5 )
@@ -162,6 +162,32 @@ function Highlight_Init()
 	HighlightContext_SetParam( highlight, 0, HIGHLIGHT_COLOR_ENEMY )
 	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS )
 	HighlightContext_SetADSFade( highlight, false )
+
+	highlight = RegisterHighlight( "hunted_friendly" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR )
+	HighlightContext_SetRadius( highlight, 5 )
+	//HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_SONAR )
+	HighlightContext_SetParam( highlight, 0, HIGHLIGHT_COLOR_FRIENDLY )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000000.0 )
+
+	highlight = RegisterHighlight( "hunted_enemy" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR )
+	HighlightContext_SetRadius( highlight, 5 )
+	//HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_SONAR )
+	HighlightContext_SetParam( highlight, 0, HIGHLIGHT_COLOR_ENEMY )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000000.0 )
+
+	highlight = RegisterHighlight( "don_pannel" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR )
+	HighlightContext_SetRadius( highlight, 5 )
+	HighlightContext_SetParam( highlight, 0, HIGHLIGHT_COLOR_FRIENDLY )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.DON_PANEL )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetAfterPostProcess( highlight, true )
 
 	highlight = RegisterHighlight( "friendly_ai" )
 	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_SONAR )
@@ -959,6 +985,10 @@ void function ClHighlight_UpdateHighlightFlags( entity ent, int contextId )
 			thread ClHighlight_FWFriendlyTitans( ent, highlight )
 			break
 
+		case eHighlightDrawFunc.DON_PANEL:
+			thread CLHighlight_DONPanel( ent, highlight )
+			break
+
 		case eHighlightDrawFunc.SONAR_DETECTED:
 			ent.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
 			ent.Highlight_SetFadeInTime( 0.0 )
@@ -1116,6 +1146,42 @@ void function ClHighlight_FWFriendlyTitans( entity ent, HighlightContext highlig
 		}
 
 		if ( viewPlayer.GetTeam() != ent.GetTeam() )
+		{
+			HideEntityHighlight( ent, 0.1 )
+			continue
+		}
+
+		int contextId = ent.Highlight_GetCurrentContext()
+		ShowEntityHighlight( ent, 0.15 )
+	}
+}
+
+void function CLHighlight_DONPanel( entity ent, HighlightContext highlight )
+{
+	if ( ent == GetLocalViewPlayer() )
+		return
+
+	HideEntityHighlight( ent, 0.1 )
+
+	ent.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
+
+	entity viewPlayer = GetLocalViewPlayer()
+	ent.EndSignal( "OnDestroy" )
+	ent.EndSignal( "ContextChanged" )
+	viewPlayer.EndSignal( "OnDestroy" )
+
+	while ( true )
+	{
+
+		WaitFrame()
+
+		if ( !IsAlive( viewPlayer ) )
+		{
+			HideEntityHighlight( ent, 0.1 )
+			continue
+		}
+
+		if ( !GameTeams_TeamHasDeadPlayers( viewPlayer.GetTeam() ) )
 		{
 			HideEntityHighlight( ent, 0.1 )
 			continue

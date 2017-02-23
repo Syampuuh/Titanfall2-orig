@@ -28,7 +28,12 @@ void function CaptureTheFlagShared_Init()
 	ctfScoreLimits["mp_box"] <- 3
 	ctfScoreLimits["mp_crashsite3"] <- 3
 	ctfScoreLimits["mp_black_water_canal"] <- 3
-	ctfScoreLimits["mp_complex3"] <- 3
+	ctfScoreLimits["mp_lf_stacks"] <- 3
+	ctfScoreLimits["mp_lf_mout"] <- 3
+	ctfScoreLimits["mp_lf_Traffic"] <- 3
+	ctfScoreLimits["mp_lf_deck"] <- 3
+	ctfScoreLimits["mp_lf_uma"] <- 3
+	ctfScoreLimits["mp_lf_township"] <- 3
 	GameMode_SetMapSpecificScoreLimit( ctfScoreLimits, GAMETYPE )
 }
 

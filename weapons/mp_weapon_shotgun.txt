@@ -114,6 +114,18 @@ WeaponData
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
 		"damage_heavyarmor_nontitan_scale"				"0.35"
+
+		// Spread
+		"spread_stand_hip"								"6"
+		"spread_stand_hip_run"							"6"
+		"spread_stand_hip_sprint"                       "6"
+		"spread_crouch_hip"   							"6"
+		"spread_air_hip"  								"6"
+		"spread_stand_ads"								"6"
+		"spread_crouch_ads"   							"6"
+		"spread_air_ads"  								"6"
+		"spread_wallrunning"  							"6"
+		"spread_wallhanging"  							"6"
 	}
 
 	SP_BASE
@@ -150,6 +162,18 @@ WeaponData
 		"enable_highlight_networking_on_creation"		"1"
 
 		"damage_heavyarmor_nontitan_scale"				"1"
+
+		// Spread
+		"spread_stand_hip"								"7"
+		"spread_stand_hip_run"							"7"
+		"spread_stand_hip_sprint"                       "7"
+		"spread_crouch_hip"   							"7"
+		"spread_air_hip"  								"7"
+		"spread_stand_ads"								"7"
+		"spread_crouch_ads"   							"7"
+		"spread_air_ads"  								"7"
+		"spread_wallrunning"  							"7"
+		"spread_wallhanging"  							"7"
 	}
 
 	// NPC
@@ -210,17 +234,7 @@ WeaponData
 
 	"sprint_fractional_anims"						"0"
 
-	// Spread
-	"spread_stand_hip"								"7"
-	"spread_stand_hip_run"							"7"
-	"spread_stand_hip_sprint"                       "7"
-	"spread_crouch_hip"   							"7"
-	"spread_air_hip"  								"7"
-	"spread_stand_ads"								"7"
-	"spread_crouch_ads"   							"7"
-	"spread_air_ads"  								"7"
-	"spread_wallrunning"  							"7"
-	"spread_wallhanging"  							"7"
+
 
 	"ammo_suck_behavior"							"primary_weapons"
 
@@ -563,7 +577,7 @@ WeaponData
 			clipCount					weapon_stockpileClipCount
 		}
 	}
-	
+
 	"ui8_enable"		"0"
 	UiData8
 	{
@@ -574,7 +588,7 @@ WeaponData
 			proValue							proscreen_int0
 			proOwnedByPlayer			proscreen_owner_is_player
 		}
-	}	
+	}
 
 
 	active_crosshair_count				"1"

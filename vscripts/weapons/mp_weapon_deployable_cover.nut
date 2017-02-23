@@ -39,6 +39,10 @@ bool function OnWeaponAttemptOffhandSwitch_weapon_deployable_cover( entity weapo
 	if ( currAmmo < ammoReq )
 		return false
 
+	entity player = weapon.GetWeaponOwner()
+	if ( player.IsPhaseShifted() )
+		return false
+
 	return true
 }
 
@@ -63,7 +67,6 @@ var function OnWeaponTossReleaseAnimEvent_weapon_deployable_cover( entity weapon
 		if ( projectileSound != "" )
 			EmitSoundOnEntity( deployable, projectileSound )
 
-		thread TrapExplodeOnDamage( deployable, 25 )
 		weapon.w.lastProjectileFired = deployable
 		#endif
 

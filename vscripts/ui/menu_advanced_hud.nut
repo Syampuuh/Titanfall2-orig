@@ -5,6 +5,7 @@ struct
 {
 	var menu
 	table<var,string> buttonDescriptions
+	var itemDescriptionBox
 } file
 
 void function InitAdvancedHudMenu()
@@ -14,6 +15,8 @@ void function InitAdvancedHudMenu()
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenAdvancedHudMenu )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnCloseAdvancedHudMenu )
+
+	file.itemDescriptionBox = Hud_GetChild( menu, "LblMenuItemDescription" )
 
 	SetupButton( Hud_GetChild( menu, "SwitchShowButtonHints" ), 	"#HUD_SHOW_BUTTON_HINTS", 		"#HUD_SHOW_BUTTON_HINTS_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwitchShowCallsignEvents" ), 	"#HUD_SHOW_CALLSIGN_EVENTS",	"#HUD_SHOW_CALLSIGN_EVENTS_DESC" )
@@ -26,6 +29,10 @@ void function InitAdvancedHudMenu()
 	SetupButton( Hud_GetChild( menu, "SwitchDofEnable" ), 			"#HUD_SHOW_ADS_DOF",		 	"#HUD_SHOW_ADS_DOF_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwitchPilotDamageIndicators" ), 			"#HUD_PILOT_DAMAGE_INDICATOR_STYLE",		 	"#HUD_PILOT_DAMAGE_INDICATOR_STYLE_DESC" )
 	SetupButton( Hud_GetChild( menu, "SwitchTitanDamageIndicators" ), 			"#HUD_TITAN_DAMAGE_INDICATOR_STYLE",		 	"#HUD_TITAN_DAMAGE_INDICATOR_STYLE_DESC" )
+	SetupButton( Hud_GetChild( menu, "SwitchPartyColors" ), 		"#HUD_PARTY_COLORS_OPTION",		 	"#HUD_PARTY_COLORS_OPTION_DESC" )
+#if PC_PROG
+	SetupButton( Hud_GetChild( menu, "SwitchChatMessages" ), 		"#HUD_SHOW_CHAT_MESSAGES",		 	"#HUD_SHOW_CHAT_MESSAGES_DESC" )
+#endif //PC_PROG
 
 	//
 	//SetupButton( Hud_GetChild( menu, "SwchSpeakerConfig" ), "#SPEAKER_CONFIGURATION", "#OPTIONS_MENU_SPEAKER_CONFIG_DESC" )
@@ -43,6 +50,42 @@ void function InitAdvancedHudMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+	AddMenuFooterOption( menu, BUTTON_BACK, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESET_CONTROLLER_TO_DEFAULT", ResetToDefaultsDialog )
+}
+
+void function ResetToDefaultsDialog( var button )
+{
+	DialogData dialogData
+	dialogData.header = "#RESET_AVANCEDHUD_TO_DEFAULT_DIALOG"
+	dialogData.message = "#RESET_AVANCEDHUD_TO_DEFAULT_DIALOG_DESC"
+	AddDialogButton( dialogData, "#RESTORE", ResetSettingsToDefaults )
+	AddDialogButton( dialogData, "#CANCEL" )
+	OpenDialog( dialogData )
+
+	EmitUISound( "menu_accept" )
+}
+
+void function ResetSettingsToDefaults()
+{
+	SetConVarToDefault( "hud_setting_showButtonHints" )
+	SetConVarToDefault( "hud_setting_showTips" )
+	SetConVarToDefault( "hud_setting_showWeaponFlyouts" )
+	SetConVarToDefault( "hud_setting_adsDof" )
+
+	SetConVarToDefault( "hud_setting_showCallsigns" )
+	SetConVarToDefault( "hud_setting_showLevelUp" )
+	SetConVarToDefault( "hud_setting_showMedals" )
+	SetConVarToDefault( "hud_setting_showMeter" )
+	SetConVarToDefault( "hud_setting_showObituary" )
+	SetConVarToDefault( "damage_indicator_style_pilot" )
+	SetConVarToDefault( "damage_indicator_style_titan" )
+	SetConVarToDefault( "party_color_enabled" )
+
+#if PC_PROG
+	SetConVarToDefault( "hudchat_visibility" )
+#endif //PC_PROG
+
+	EmitUISound( "menu_advocategift_open" )
 }
 
 void function OnOpenAdvancedHudMenu()
@@ -75,10 +118,11 @@ void function SetupButton( var button, string buttonText, string description )
 void function Button_Focused( var button )
 {
 	string description = file.buttonDescriptions[ button ]
-	SetElementsTextByClassname( file.menu, "MenuItemDescriptionClass", description )
+	//SetElementsTextByClassname( file.menu, "MenuItemDescriptionClass", description )
+	RuiSetString( Hud_GetRui( file.itemDescriptionBox ), "description", description )
 }
 
-void function FooterButton_Focused( var button )
-{
-	SetElementsTextByClassname( file.menu, "MenuItemDescriptionClass", "" )
-}
+// void function FooterButton_Focused( var button )
+// {
+//	RuiSetString( Hud_GetRui( file.itemDescriptionBox ), "description", description )
+// }

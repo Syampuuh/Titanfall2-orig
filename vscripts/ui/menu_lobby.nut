@@ -31,6 +31,12 @@ global function InviteFriendsIfAllowed
 global function StartPrivateMatch
 global function SetPutPlayerInMatchmakingAfterDelay
 
+global function DLCStoreShouldBeMarkedAsNew
+
+global function SetNextAutoMatchmakingPlaylist
+global function GetNextAutoMatchmakingPlaylist
+global function Mixtape_ShouldShowSearchSkipPrompt
+
 struct
 {
 	struct {
@@ -87,6 +93,7 @@ struct
 	var statsButton
 	var networksHeader
 	var settingsHeader
+	var storeHeader
 	var browseNetworkButton
 	var faqButton
 
@@ -101,9 +108,14 @@ struct
 
 	float timeToRestartMatchMaking = 0
 
+	string nextAutoMatchmakingPlaylist
+
 	var callsignCard
 
 	bool putPlayerInMatchmakingAfterDelay = false
+	float matchmakingStartTime = 0.0
+	string lastMixtapeMatchmakingStatus
+	bool mixtapeSkipEnabled = true
 
 } file
 
@@ -250,8 +262,6 @@ void function InitLobbyMenu()
 
 	RegisterUIVarChangeCallback( "showGameSummary", ShowGameSummary_Changed )
 
-	RegisterUIVarChangeCallback( "putPlayerInMatchmakingAfterDelay", PutPlayerInMatchmakingAfterDelay_Changed )
-
 	file.searchIconElems = GetElementsByClassnameForMenus( "SearchIconClass", uiGlobal.allMenus )
 	file.searchTextElems = GetElementsByClassnameForMenus( "SearchTextClass", uiGlobal.allMenus )
 	file.matchStartCountdownElems = GetElementsByClassnameForMenus( "MatchStartCountdownClass", uiGlobal.allMenus )
@@ -309,6 +319,7 @@ void function InitLobbyMenu()
 	RegisterSignal( "BypassWaitBeforeRestartingMatchmaking" )
 	RegisterSignal( "PutPlayerInMatchmakingAfterDelay" )
 	RegisterSignal( "CancelRestartingMatchmaking" )
+	RegisterSignal( "LeaveParty" )
 }
 
 
@@ -353,8 +364,8 @@ void function SetupComboButtonTest( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
-	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
-	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
+	//file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
+	//Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
 //	file.armoryButton = armoryButton
 //	Hud_AddEventHandler( armoryButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ArmoryMenu" ) ) )
@@ -395,6 +406,11 @@ void function SetupComboButtonTest( var menu )
 	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
 	// file.networksMoreButton = networksMoreButton
 
+	headerIndex++
+	buttonIndex = 0
+	file.storeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_STORE" )
+	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BROWSE" )
+	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 
 	headerIndex++
 	buttonIndex = 0
@@ -411,13 +427,13 @@ void function SetupComboButtonTest( var menu )
 		var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
-
 	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
 	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
 	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
 	Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
-	comboStruct.navUpButton = file.chatroomMenu_chatroomWidget
+	//comboStruct.navUpButton = file.chatroomMenu_chatroomWidget
+	comboStruct.navUpButtonDisabled = true
 	comboStruct.navDownButton = file.genUpButton
 
 	ComboButtons_Finalize( comboStruct )
@@ -450,6 +466,7 @@ bool function CanSwitchTeams()
 void function LeaveParty()
 {
 	ClientCommand( "party_leave" )
+	Signal( uiGlobal.signalDummy, "LeaveParty" )
 }
 
 void function LeaveMatchAndParty()
@@ -469,7 +486,8 @@ void function DoRoomInvite( var button )
 	if ( GetPartySize() <= 1 )
 	{
 		SendOpenInvite( true )
-		void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( "PlaylistMenu" ) )
+		string playlistMenuName = GetPlaylistMenuName()
+		void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( playlistMenuName ) )
 		handlerFunc( button )
 	}
 	else
@@ -504,6 +522,14 @@ void function InviteFriendsIfAllowed( var button )
 		return
 	}
 */
+	#if PC_PROG
+		if ( !Origin_IsOverlayAvailable() )
+		{
+			PopUpOriginOverlayDisabledDialog()
+			return
+		}
+	#endif
+
 	thread CreatePartyAndInviteFriends()
 }
 
@@ -542,7 +568,7 @@ void function OnLobbyMenu_Open()
 	InitDLCStore()
 
 	thread UpdateCachedNewItems()
-	if ( file.putPlayerInMatchmakingAfterDelay ) //Start this off every time we come into the lobby. Will be cancelled by PostGameScreen if it runs
+	if ( file.putPlayerInMatchmakingAfterDelay )
 	{
 		AdvanceMenu( GetMenu( "SearchMenu" ) )
 		thread PutPlayerInMatchmakingAfterDelay()
@@ -568,31 +594,65 @@ void function OnLobbyMenu_Open()
 		if ( !IsValid( player ) )
 			return
 
-		while ( player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION )
+		while ( IsPersistenceAvailable() && (player.GetPersistentVarAsInt( "initializedVersion" ) < PERSISTENCE_INIT_VERSION) )
 		{
 			WaitFrame()
 		}
+		if ( !IsPersistenceAvailable() )
+			return
 
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+		//bool emotesAreEnabled = EmotesEnabled()
+		// "Customize"
+		{
+			bool anyNewPilotItems = HasAnyNewPilotItems( player )
+			bool anyNewTitanItems = HasAnyNewTitanItems( player )
+			bool anyNewBoosts = HasAnyNewBoosts( player )
+			bool anyNewCommsIcons = false // emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
+			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
 
-		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player ) || !hasSeenStore )
-		ComboButton_SetNew( file.pilotButton, HasAnyNewPilotItems( player ) )
-		ComboButton_SetNew( file.titanButton, HasAnyNewTitanItems( player ) )
-		ComboButton_SetNew( file.boostsButton, HasAnyNewBoosts( player ) )
-		ComboButton_SetNew( file.storeButton, !hasSeenStore )
+			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
+			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
+			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
+			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
+		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 
-//		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
+			/*
+			if ( !emotesAreEnabled )
+			{
+				Hud_Hide( file.dpadCommsButton )
+				ComboButtons_ResetColumnFocus( file.lobbyComboStruct )
+			}
+			else
+			{
+				Hud_Show( file.dpadCommsButton )
+			}
+			*/
+		}
 
+		// "Store"
+		{
+			bool storeIsNew = DLCStoreShouldBeMarkedAsNew()
+			RuiSetBool( Hud_GetRui( file.storeHeader ), "isNew", storeIsNew )
+			ComboButton_SetNew( file.storeButton, storeIsNew )
+		}
 
-		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ) || HasAnyNewFactions( player ))
-		ComboButton_SetNew( file.bannerButton, HasAnyNewCallsignBanners( player ) )
-		ComboButton_SetNew( file.patchButton, HasAnyNewCallsignPatches( player ) )
-		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+		// "Callsign"
+		{
+			bool anyNewBanners = HasAnyNewCallsignBanners( player )
+			bool anyNewPatches = HasAnyNewCallsignPatches( player )
+			bool anyNewFactions = HasAnyNewFactions( player )
+			bool anyNewCallsignHeader = (anyNewBanners || anyNewPatches || anyNewFactions)
 
-		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes()
+			RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", anyNewCallsignHeader )
+			ComboButton_SetNew( file.bannerButton, anyNewBanners )
+			ComboButton_SetNew( file.patchButton, anyNewPatches )
+			ComboButton_SetNew( file.factionButton, anyNewFactions )
+		}
+
+		bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
 		RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
 		ComboButton_SetNew( file.faqButton, faqIsNew )
 
@@ -602,16 +662,28 @@ void function OnLobbyMenu_Open()
 	}
 }
 
+bool function DLCStoreShouldBeMarkedAsNew()
+{
+	if ( !IsFullyConnected() )
+		return false
+	if ( !IsPersistenceAvailable() )
+		return false
+
+	bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+	bool result = (!hasSeenStore)
+	return result
+}
+
 void function LobbyMenuUpdate( var menu )
 {
 	EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
 
 	while ( GetTopNonDialogMenu() == menu )
 	{
-		bool canInviteFriends = CanInvite()
-		Hud_SetLocked( file.findGameButton, !IsPartyLeader() || InPendingOpenInvite() )
-		Hud_SetLocked( file.inviteFriendsButton, !canInviteFriends || InPendingOpenInvite() )
-		Hud_SetLocked( file.inviteRoomButton, IsOpenInviteVisible() || GetPartySize() > 1 || InPendingOpenInvite() )
+		bool inPendingOpenInvite = InPendingOpenInvite()
+		Hud_SetLocked( file.findGameButton, !IsPartyLeader() || inPendingOpenInvite )
+		Hud_SetLocked( file.inviteFriendsButton, inPendingOpenInvite )
+		Hud_SetLocked( file.inviteRoomButton, IsOpenInviteVisible() || GetPartySize() > 1 || inPendingOpenInvite )
 
 		bool canGenUp = false
 		if ( GetUIPlayer() )
@@ -624,25 +696,45 @@ void function LobbyMenuUpdate( var menu )
 	}
 }
 
+void function SetNextAutoMatchmakingPlaylist( string playlistName )
+{
+	file.nextAutoMatchmakingPlaylist = playlistName
+}
+
+string function GetNextAutoMatchmakingPlaylist()
+{
+	return file.nextAutoMatchmakingPlaylist
+}
 
 void function PutPlayerInMatchmakingAfterDelay()
 {
 	Signal( uiGlobal.signalDummy, "PutPlayerInMatchmakingAfterDelay" )
 	EndSignal( uiGlobal.signalDummy, "PutPlayerInMatchmakingAfterDelay" )
 	EndSignal( uiGlobal.signalDummy, "CancelRestartingMatchmaking" )
+	EndSignal( uiGlobal.signalDummy, "LeaveParty" )
 	EndSignal( uiGlobal.signalDummy, "OnCloseLobbyMenu" )
 	EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
 
-	Assert( !AreWeMatchmaking() )
+	if ( AreWeMatchmaking() ) //Party member, party leader is already searching
+		return
 
 	entity player = GetUIPlayer()
+	if ( !player )
+		return
+
+	string lastPlaylist = expect string( player.GetPersistentVar( "lastPlaylist" ) )
+
 	//Bump player out of match making if they were playing coliseum and are out of tickets.
-	if ( "coliseum" == expect string( player.GetPersistentVar( "lastPlaylist" ) ) && Player_GetColiseumTicketCount( GetLocalClientPlayer() ) <= 0 )
+	if ( ("coliseum" == lastPlaylist) && Player_GetColiseumTicketCount( GetLocalClientPlayer() ) <= 0 )
 	{
+		SetNextAutoMatchmakingPlaylist( "" )
 		return
 	}
 
-	waitthread WaitBeforeRestartingMatchmaking()
+	bool wasAPartyMemberThatIsNotLeader = AmIPartyMember()
+	waitthread WaitBeforeRestartingMatchmaking() //Still need to go into this function if isPartyMemberThatIsNotLeader to set up UI saying "Waiting on Party Leader"  correctly
+	if ( wasAPartyMemberThatIsNotLeader ) //Not actually party leader, so should never actually try to StartMatchmaking
+		return
 
 	if ( !Console_HasPermissionToPlayMultiplayer() )
 	{
@@ -650,18 +742,31 @@ void function PutPlayerInMatchmakingAfterDelay()
 		return
 	}
 
-	string  lastPlaylistAbrv = expect string( player.GetPersistentVar( "lastPlaylist" ) )
-	StartMatchmaking( lastPlaylistAbrv )
+	string playlistToSearch = lastPlaylist
+	string nextAutoPlaylist = GetNextAutoMatchmakingPlaylist()
+	if ( nextAutoPlaylist.len() > 0 )
+		playlistToSearch = nextAutoPlaylist
+
+	StartMatchmakingPlaylists( playlistToSearch )
 }
 
 void function WaitBeforeRestartingMatchmaking()
 {
 	Signal( uiGlobal.signalDummy, "BypassWaitBeforeRestartingMatchmaking" )
-	EndSignal( uiGlobal.signalDummy, "BypassWaitBeforeRestartingMatchmaking" ) //TODO: We want a button to bypass the wait. Once we create the button it should just signal this
+	EndSignal( uiGlobal.signalDummy, "BypassWaitBeforeRestartingMatchmaking" )
 
-	float timeToWait = GetCurrentPlaylistVarFloat( "wait_before_restarting_matchmaking_time", 30.0 )
+	float timeToWait
 
-	UpdateTimeToRestartMatchmaking( Time() + timeToWait )
+	bool isPartyMemberThatIsNotLeader = AmIPartyMember()
+
+	if ( isPartyMemberThatIsNotLeader )
+		timeToWait = 99999 //HACK, JFS
+	else
+		timeToWait = GetCurrentPlaylistVarFloat( "wait_before_restarting_matchmaking_time", 30.0 )
+
+	float timeToEnd = Time() + timeToWait
+
+	UpdateTimeToRestartMatchmaking( timeToEnd )
 
 	OnThreadEnd(
 	function() : (  )
@@ -670,9 +775,26 @@ void function WaitBeforeRestartingMatchmaking()
 			UpdateFooterOptions()
 		}
 	)
-	wait timeToWait
-}
 
+	if ( isPartyMemberThatIsNotLeader )
+	{
+		while( Time() < timeToEnd ) //Hack hack, JFS. No appropriate signals for StartMatchmaking() being called. Replace when code gives us notifications about it
+		{
+			if ( isPartyMemberThatIsNotLeader != ( AmIPartyMember() ) ) //Party Status changed. Party leader probably left?
+				break
+
+			if ( AreWeMatchmaking() ) //Need to break out if Party Leader brings us into matchmaking
+				break
+
+			WaitFrame()
+		}
+
+	}
+	else
+	{
+		wait timeToWait
+	}
+}
 
 function SCB_RefreshLobby()
 {
@@ -722,14 +844,6 @@ function ShowGameSummary_Changed()
 		uiGlobal.EOGOpenInLobby = true
 }
 
-function PutPlayerInMatchmakingAfterDelay_Changed() //Seems hacky: I can't change the value of  level.ui.putPlayerInMatchmakingAfterDelay from ui script, so use a file variable to proxy the value of level.ui.putPlayerInMatchmakingAfterDelay insted. Needs to use the UI var so server can set it
-{
-	if ( level.ui.putPlayerInMatchmakingAfterDelay )
-		file.putPlayerInMatchmakingAfterDelay = true
-	else
-		file.putPlayerInMatchmakingAfterDelay = false
-}
-
 function UpdateGameStartTimeCounter()
 {
 	if ( level.ui.gameStartTime == null )
@@ -766,6 +880,59 @@ function UpdateDebugStatus()
 	}
 }
 
+bool function MatchmakingStatusShouldShowAsActiveSearch( string matchmakingStatus )
+{
+	if ( matchmakingStatus == "#MATCHMAKING_QUEUED" )
+		return true
+	if ( matchmakingStatus == "#MATCHMAKING_ALLOCATING_SERVER" )
+		return true
+	if ( matchmakingStatus == "#MATCHMAKING_MATCH_CONNECTING" )
+		return true
+
+	return false
+}
+
+string function GetActiveSearchingPlaylist()
+{
+	if ( !IsConnected() )
+		return ""
+	if ( !AreWeMatchmaking() )
+		return ""
+
+	string matchmakingStatus = GetMyMatchmakingStatus()
+	if ( !MatchmakingStatusShouldShowAsActiveSearch( matchmakingStatus ) )
+		return ""
+
+	string param1 = GetMyMatchmakingStatusParam( 1 )
+	return param1
+}
+
+float function CalcMatchmakingWaitTime()
+{
+	float result = ((file.matchmakingStartTime > 0.01) ? (Time() - file.matchmakingStartTime) : 0.0)
+	return result
+}
+
+float function GetMixtapeWaitTimeForPlaylist( string playlistName )
+{
+	float maxWaitTime = float( GetPlaylistVarOrUseValue( playlistName, "mixtape_timeout", "0" ) )
+	return maxWaitTime
+}
+
+bool function Mixtape_ShouldShowSearchSkipPrompt()
+{
+	if ( !LocalPlayerIsMixtapeSearching() )
+		return false
+	if ( !MixtapeMatchmakingSkipButtonIsOn() )
+		return false
+	if ( file.lastMixtapeMatchmakingStatus != "#MATCHMAKING_QUEUED" )
+		return false
+	if ( !file.mixtapeSkipEnabled )
+		return false
+
+	return true
+}
+
 void function UpdateMatchmakingStatus()
 {
 	EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
@@ -780,7 +947,6 @@ void function UpdateMatchmakingStatus()
 			MatchmakingSetSearchText( "" )
 			MatchmakingSetCountdownTimer( 0.0, true )
 
-
 			MatchmakingSetSearchVisible( false )
 			MatchmakingSetCountdownVisible( false )
 		}
@@ -792,10 +958,74 @@ void function UpdateMatchmakingStatus()
 	var searchMenu = GetMenu( "SearchMenu" )
 	var postGameMenu = GetMenu( "PostGameMenu" )
 
+	string lastActiveSearchingPlaylist
+	file.matchmakingStartTime = 0.0
+	file.lastMixtapeMatchmakingStatus = ""
+
 	while ( true )
 	{
 		int lobbyType = GetLobbyTypeScript()
 		string matchmakingStatus = GetMyMatchmakingStatus()
+		int mmdf = GetMMDF()
+
+		//
+		{
+			string activeSearchingPlaylist = GetActiveSearchingPlaylist()
+			if ( lastActiveSearchingPlaylist != activeSearchingPlaylist )
+			{
+				if ( activeSearchingPlaylist.len() > 0 )
+				{
+					lastActiveSearchingPlaylist = activeSearchingPlaylist
+					file.matchmakingStartTime = Time()
+				}
+				else
+				{
+					lastActiveSearchingPlaylist = ""
+					file.matchmakingStartTime = 0.0
+				}
+			}
+
+			if ( LocalPlayerIsMixtapeSearching() )
+			{
+				if ( matchmakingStatus == "#MATCHMAKING_QUEUED" )
+				{
+					// Client auto-skip:
+					{
+						string playlistName = GetMyMatchmakingStatusParam( 1 )
+						float maxWaitTime = (playlistName.len() > 0) ? GetMixtapeWaitTimeForPlaylist( playlistName ) : 0.0
+						if ( maxWaitTime > 0.1)
+						{
+							float waitTime = CalcMatchmakingWaitTime()
+							if ( waitTime > maxWaitTime )
+							{
+								file.matchmakingStartTime = 0.0
+								LogMixtapeTimedOut( playlistName )
+								ClientCommand( "MatchmakingSkipToNext" )
+							}
+						}
+					}
+				}
+
+				// Telemetery on connect:
+				if ( (matchmakingStatus == "#MATCHMAKING_MATCH_CONNECTING") && (matchmakingStatus != file.lastMixtapeMatchmakingStatus) )
+				{
+					int mixtape_version = GetMixtapeMatchmakingVersion()
+
+					if ( IsMixtapeVersionNew() )
+						LogMixtapeHasNew( mixtape_version )
+
+					array<string> checkedOnPlaylists = GetMixtapeExternalCheckedOnPlaylists()
+					foreach( string thisPLName in checkedOnPlaylists)
+						LogMixtapeCheckOn( thisPLName, mixtape_version )
+				}
+
+				file.lastMixtapeMatchmakingStatus = matchmakingStatus
+			}
+			else
+			{
+				file.lastMixtapeMatchmakingStatus = ""
+			}
+		}
 
 		if ( level.ui.gameStartTime != null || lobbyType == eLobbyType.PRIVATE_MATCH )
 		{
@@ -809,7 +1039,14 @@ void function UpdateMatchmakingStatus()
 		}
 		else if ( GetTimeToRestartMatchMaking() > 0  )
 		{
-			MatchmakingSetSearchText( "#MATCHMAKING_WAIT_BEFORE_RESTARTING_MATCHMAKING" )
+			if ( AmIPartyMember() )
+				MatchmakingSetSearchText( "#MATCHMAKING_WAIT_ON_PARTY_LEADER_RESTARTING_MATCHMAKING" )
+			else
+				MatchmakingSetSearchText( "#MATCHMAKING_WAIT_BEFORE_RESTARTING_MATCHMAKING" )
+
+			var statusEl = Hud_GetChild( searchMenu, "MatchmakingStatusBig" )
+			RuiSetString( Hud_GetRui( statusEl ), "statusText", "" )
+			RuiSetInt( Hud_GetRui( statusEl ), "playlistCount", 0 )
 		}
 		else if ( level.ui.gameStartTime == null )
 		{
@@ -824,7 +1061,7 @@ void function UpdateMatchmakingStatus()
 				if ( uiGlobal.activeMenu == searchMenu )
 					CloseActiveMenu()
 
-				if( lobbyType == eLobbyType.MATCH )
+				if ( lobbyType == eLobbyType.MATCH )
 				{
 					//MatchmakingSetSearchText( "#MATCHMAKING_PLAYERS_CONNECTING" )
 					MatchmakingSetSearchText( "" )
@@ -835,7 +1072,10 @@ void function UpdateMatchmakingStatus()
 				ShowMatchmakingStatusIcons()
 
 				if ( !IsMenuInMenuStack( searchMenu ) && !IsMenuInMenuStack( postGameMenu ) )
+				{
+					CloseAllDialogs()
 					AdvanceMenu( searchMenu )
+				}
 
 				var statusEl = Hud_GetChild( searchMenu, "MatchmakingStatusBig" )
 				var titleEl = searchMenu.GetChild( "MenuTitle" )
@@ -844,27 +1084,74 @@ void function UpdateMatchmakingStatus()
 				string param3 = GetMyMatchmakingStatusParam( 3 )
 				string param4 = GetMyMatchmakingStatusParam( 4 )
 				string param5 = GetMyMatchmakingStatusParam( 5 )
-				string param6 = GetMyMatchmakingStatusParam( 6 )
+				string param6 = GetMyMatchmakingStatusParam( 6 )	// searching for mixtape playlists
 				if ( matchmakingStatus == "#MATCH_NOTHING" )
 				{
 					Hud_SetText( titleEl, "" )
 					Hud_Hide( statusEl )
 				}
-				else if ( matchmakingStatus == "#MATCHMAKING_QUEUED" ||
-						matchmakingStatus == "#MATCHMAKING_ALLOCATING_SERVER" ||
-						matchmakingStatus == "#MATCHMAKING_MATCH_CONNECTING" )
+				else if ( MatchmakingStatusShouldShowAsActiveSearch( matchmakingStatus ) )
 				{
 					string playlistName = param1
 					Hud_SetText( titleEl, "#MATCHMAKING_PLAYLIST", GetPlaylistVarOrUseValue( playlistName, "name", "#UNKNOWN_PLAYLIST_NAME" ) )
-					RuiSetString( Hud_GetRui( statusEl ), "statusText", Localize( "#MATCHMAKING_PLAYLIST", Localize( GetPlaylistVarOrUseValue( playlistName, "name", "#UNKNOWN_PLAYLIST_NAME" ) ) ) )
 
-					RuiSetString( Hud_GetRui( statusEl ), "bulletPointText1", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_001", "" ) ) )
-					RuiSetString( Hud_GetRui( statusEl ), "bulletPointText2", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_002", "" ) ) )
-					RuiSetString( Hud_GetRui( statusEl ), "bulletPointText3", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_003", "" ) ) )
-					RuiSetString( Hud_GetRui( statusEl ), "bulletPointText4", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_004", "" ) ) )
-					RuiSetString( Hud_GetRui( statusEl ), "bulletPointText5", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_005", "" ) ) )
+					string dinf = "";
+					if ( mmdf )
+					{
+						float maxWaitTime = LocalPlayerIsMixtapeSearching() ? GetMixtapeWaitTimeForPlaylist( playlistName ) : 0.0
+						if ( maxWaitTime > 0.0 )
+							dinf = format( "`0 (%s, %0.0f/%0.0f)", lastActiveSearchingPlaylist, CalcMatchmakingWaitTime(), maxWaitTime )
+						else
+							dinf = format( "`0 (%s, %0.0f)", lastActiveSearchingPlaylist, CalcMatchmakingWaitTime() )
+					}
+
+					bool oldMixtapeSkipEnabled = file.mixtapeSkipEnabled
+
+					//param6 = "aitdm,at,cp,lts,ctf,ps,tdm,ffa,aitdm2"
+					//param6 = "lts,ffa"
+					if ( param6.len() > 0 )
+					{
+						file.mixtapeSkipEnabled = false
+
+						string statusText = Localize( "#MATCHMAKING_PLAYLIST", "" ) + dinf
+						RuiSetString( Hud_GetRui( statusEl ), "statusText", statusText )
+						for ( int idx = 1; idx <= 5; ++idx )
+							RuiSetString( Hud_GetRui( statusEl ), ("bulletPointText" + idx), "" )
+
+						const int MAX_SHOWN_PLAYLISTS = 9
+						array<string> searchingPlaylists = split( param6, "," )
+						int searchingCount = minint( searchingPlaylists.len(), MAX_SHOWN_PLAYLISTS )
+						RuiSetInt( Hud_GetRui( statusEl ), "playlistCount", searchingCount )
+						for( int idx = 0; idx < searchingCount; ++idx )
+						{
+							asset playlistThumbnail = GetPlaylistThumbnailImage( searchingPlaylists[idx] )
+							RuiSetImage( Hud_GetRui( statusEl ), format( "playlistIcon%d", idx ), playlistThumbnail )
+						}
+					}
+					else
+					{
+						file.mixtapeSkipEnabled = true
+
+						string statusText = Localize( "#MATCHMAKING_PLAYLIST", Localize( GetPlaylistVarOrUseValue( playlistName, "name", "#UNKNOWN_PLAYLIST_NAME" ) ) ) + dinf
+						RuiSetString( Hud_GetRui( statusEl ), "statusText", statusText )
+
+						bool mixtapeIsEnabled = MixtapeMatchmakingIsEnabled()
+						asset playlistThumbnail = mixtapeIsEnabled ? GetPlaylistThumbnailImage( playlistName ) : $""
+						RuiSetInt( Hud_GetRui( statusEl ), "playlistCount", 1 )
+						RuiSetImage( Hud_GetRui( statusEl ), "playlistIcon0", playlistThumbnail )
+
+						RuiSetString( Hud_GetRui( statusEl ), "bulletPointText1", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_001", "" ) ) )
+						RuiSetString( Hud_GetRui( statusEl ), "bulletPointText2", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_002", "" ) ) )
+						RuiSetString( Hud_GetRui( statusEl ), "bulletPointText3", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_003", "" ) ) )
+						RuiSetString( Hud_GetRui( statusEl ), "bulletPointText4", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_004", "" ) ) )
+						RuiSetString( Hud_GetRui( statusEl ), "bulletPointText5", Localize( GetPlaylistVarOrUseValue( playlistName, "gamemode_bullet_005", "" ) ) )
+					}
+
+					if ( oldMixtapeSkipEnabled != file.mixtapeSkipEnabled )
+						UpdateFooterOptions()
 
 					Hud_Show( statusEl )
+
 					string maxPlayers = ""
 					int mapIdx = int( param3 )
 					int modeIdx = int( param4 )
@@ -897,7 +1184,10 @@ void function UpdateMatchmakingStatus()
 				else
 				{
 					Hud_SetText( titleEl, "#MATCHMAKING" )
+
 					Hud_Show( statusEl )
+					RuiSetString( Hud_GetRui( statusEl ), "statusText", "" )
+					RuiSetInt( Hud_GetRui( statusEl ), "playlistCount", 0 )
 				}
 
 				MatchmakingSetSearchText( matchmakingStatus, param1, param2, param3, param3 )
@@ -1049,7 +1339,8 @@ void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int 
 void function BigPlayButton1_Activate( var button )
 {
 	SendOpenInvite( false )
-	void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( "PlaylistMenu" ) )
+	string playlistMenuName = GetPlaylistMenuName()
+	void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( playlistMenuName ) )
 	handlerFunc( button )
 	// Hud_Hide( file.chatroomMenu )
 }
@@ -1399,8 +1690,16 @@ void function UpdateTimeToRestartMatchmaking( float time )//JFS: This uses UI ti
 
 	if ( time > 0  )
 	{
-		MatchmakingSetSearchText( "#MATCHMAKING_WAIT_BEFORE_RESTARTING_MATCHMAKING" )
-		MatchmakingSetCountdownTimer( time, false )
+		if ( AmIPartyMember() )
+		{
+			MatchmakingSetSearchText( "#MATCHMAKING_WAIT_ON_PARTY_LEADER_RESTARTING_MATCHMAKING" )
+		}
+		else
+		{
+			MatchmakingSetSearchText( "#MATCHMAKING_WAIT_BEFORE_RESTARTING_MATCHMAKING" )
+			MatchmakingSetCountdownTimer( time, false )
+		}
+
 		ShowMatchmakingStatusIcons()
 	}
 	else

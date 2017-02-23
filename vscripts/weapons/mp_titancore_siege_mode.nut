@@ -125,7 +125,11 @@ void function SmartCoreThink( entity weapon, float coreDuration )
 			}
 
 			if ( IsValid( weapon ) )
+			{
+				if ( IsValid( owner ) )
+					CoreDeactivate( owner, weapon )
 				OnAbilityChargeEnd_TitanCore( weapon )
+			}
 
 			if ( IsValid( soul ) )
 			{

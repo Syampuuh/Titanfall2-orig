@@ -173,8 +173,8 @@ WeaponData
 	"ads_fov_zoomfrac_start"						"0.0"
 	"ads_fov_zoomfrac_end"							"1.0"
 
-	"charge_time" 		"2.25"
-	"charge_levels"		"5"
+	"charge_time" 									"2.25"
+	"charge_levels"									"5"
 	"charge_cooldown_time"							"0.5"
 	"charge_cooldown_delay"   						"0.0"
 	"charge_is_triggered_by_ADS"					"1"

@@ -208,7 +208,7 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 		SetObjectCanBeMeleed( decoy, true )
 
 		decoy.SetTimeout( DECOY_DURATION )
-		decoy.SetKillOnCollision( true )
+		decoy.SetKillOnCollision( false )
 
 	}
 
@@ -274,11 +274,14 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 
 bool function PlayerCanUseDecoy( entity ownerPlayer ) //For holopilot and HoloPilot Nova. No better place to put this for now
 {
-	if ( ownerPlayer.IsTraversing() )
-		return false
+	if ( !ownerPlayer.IsZiplining() )
+	{
+		if ( ownerPlayer.IsTraversing() )
+			return false
 
-	if ( ownerPlayer.ContextAction_IsActive() ) //Stops every single context action from letting decoy happen, including rodeo, melee, embarking etc
-		return false
+		if ( ownerPlayer.ContextAction_IsActive() ) //Stops every single context action from letting decoy happen, including rodeo, melee, embarking etc
+			return false
+	}
 
 	//Do we need to check isPhaseShifted here? Re-examine when it's possible to get both Phase and Decoy (maybe through burn cards?)
 

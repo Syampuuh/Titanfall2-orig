@@ -63,6 +63,7 @@ global struct DialogData
 	asset image
 	bool forceChoice = false
 	bool noChoice = false
+	bool noChoiceWithNavigateBack = false
 	bool showSpinner = false
 	bool showPCBackButton = false
 	float inputDisableTime = 0

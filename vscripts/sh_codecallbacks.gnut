@@ -21,6 +21,14 @@ global function CodeCallback_OnTurretCancelPressed
 
 #if SERVER
 global function CodeCallback_OnWeaponReload
+global function SetCallback_OnPlayerReload
+#endif
+
+#if SERVER
+struct
+{
+	void functionref( entity ) Callback_OnPlayerReload
+} file
 #endif
 
 #if CLIENT
@@ -49,6 +57,7 @@ function CodeCallbacksShared_Init()
 
 	#if SERVER
 	AddClientCommandCallback( "DisembarkTitan", ClientCommand_DisembarkTitan )
+	SetCallback_OnPlayerReload( PlayerReloadGamemodeLogic_Default )
 	#endif
 }
 
@@ -223,6 +232,9 @@ void function CodeCallback_OnWeaponReload( entity weapon )
 	if ( !IsPilot( weaponOwner )  )
 		return
 
+	//This calls a function that can be set per gamemode. Runs an empty function by default.
+	file.Callback_OnPlayerReload( weaponOwner )
+
 	#if GRUNTCHATTER_ENABLED
 	if ( NPC_GruntChatterSPEnabled( weaponOwner ) )
 		GruntChatter_TryPlayerPilotReloading( weaponOwner )
@@ -231,6 +243,16 @@ void function CodeCallback_OnWeaponReload( entity weapon )
 	#if BATTLECHATTER_ENABLED
 		PlayBattleChatterLine( weaponOwner, "bc_pReload" )
 	#endif
+}
+
+void function SetCallback_OnPlayerReload( void functionref( entity ) rules )
+{
+	file.Callback_OnPlayerReload = rules
+}
+
+void function PlayerReloadGamemodeLogic_Default ( entity player )
+{
+
 }
 #endif
 

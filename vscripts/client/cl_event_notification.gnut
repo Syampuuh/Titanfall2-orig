@@ -329,6 +329,13 @@ void function EventNotification( int eventID, entity ent, var eventVal )
 			AnnouncementFromClass( player, announcement )
 			break
 
+		case eEventNotifications.BLEEDOUT_SelfHealPrompt:
+			//By default notification messages will not display if the new message is the same as the last message.
+			if ( player.cv.hud.s.lastEventNotificationText == "#BLEEDOUT_USE_TEAMMATE_RES"  )
+				player.cv.hud.s.lastEventNotificationText = ""
+			SetTimedEventNotification( 1.0, "#BLEEDOUT_USE_TEAMMATE_RES" )
+			break
+
 		case eEventNotifications.Clear:
 			HideEventNotification()
 			break

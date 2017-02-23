@@ -20,6 +20,7 @@ global function UICodeCallback_AcceptInvite
 global function UICodeCallback_OnDetenteDisplayed
 global function UICodeCallback_OnSpLogDisplayed
 global function UICodeCallback_EntitlementsChanged
+global function UICodeCallback_StoreTransactionCompleted
 global function UICodeCallback_GamePurchased
 
 global function AdvanceMenu
@@ -873,6 +874,8 @@ function InitGamepadConfigs()
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_pogo_stick.cfg", southpaw = "gamepad_button_layout_pogo_stick_southpaw.cfg" } )
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_button_kicker.cfg", southpaw = "gamepad_button_layout_button_kicker_southpaw.cfg" } )
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_circle.cfg", southpaw = "gamepad_button_layout_circle_southpaw.cfg" } )
+	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_ninja.cfg", southpaw = "gamepad_button_layout_ninja_southpaw.cfg" } )
+	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_custom.cfg", southpaw = "gamepad_button_layout_custom.cfg" } )
 
 	uiGlobal.stickConfigs = []
 	uiGlobal.stickConfigs.append( "gamepad_stick_layout_default.cfg" )
@@ -891,6 +894,8 @@ function InitGamepadConfigs()
 
 	ExecCurrentGamepadButtonConfig()
 	ExecCurrentGamepadStickConfig()
+
+	SetStandardAbilityBindingsForPilot( GetLocalClientPlayer() )
 }
 
 function InitMenus()
@@ -905,6 +910,8 @@ function InitMenus()
 	AddMenu( "PlayVideoMenu", $"resource/ui/menus/play_video.menu", InitPlayVideoMenu )
 	AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu, "#LOBBY" )
 	AddMenu( "PlaylistMenu", $"resource/ui/menus/playlist.menu", InitPlaylistMenu )
+	AddMenu( "PlaylistMixtapeMenu", $"resource/ui/menus/playlist_mixtape.menu", InitPlaylistMixtapeMenu )
+	AddMenu( "PlaylistMixtapeChecklistMenu", $"resource/ui/menus/playlist_mixtape_checklist.menu", InitPlaylistMixtapeChecklistMenu )
 
 	AddMenu( "SinglePlayerDevMenu", $"resource/ui/menus/singleplayer_dev.menu", InitSinglePlayerDevMenu, "SINGLE PLAYER DEV" )
 	AddMenu( "SinglePlayerMenu", $"resource/ui/menus/singleplayer.menu", InitSinglePlayerMenu, "SINGLE PLAYER" )
@@ -1878,8 +1885,18 @@ void function QuitGame()
 }
 #endif
 
+void function UICodeCallback_StoreTransactionCompleted()
+{
+	// this callback is only supported and needed on PS4 currently
+#if PS4_PROG
+	if ( InStoreMenu() )
+		OnOpenDLCStore()
+#endif
+}
+
 void function UICodeCallback_GamePurchased()
 {
+	// this callback is only supported and needed on PC currently
 #if PC_PROG
 	DialogData dialogData
 	dialogData.header = "#PURCHASE_GAME_COMPLETE"
@@ -1903,17 +1920,6 @@ void function LaunchGamePurchaseOrDLCStore()
 	}
 	else
 	{
-#if PC_PROG
-		if ( !Origin_IsOverlayAvailable() )
-		{
-			DialogData dialogData
-			dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
-			AddDialogButton( dialogData, "#OK" )
-
-			OpenDialog( dialogData )
-			return
-		}
-#endif
 		OpenStoreMenu( "StoreMenu" )
 	}
 }

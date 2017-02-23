@@ -48,6 +48,8 @@ global struct ComboStruct
 
 	var navUpButton = null
 	var navDownButton = null
+	bool navUpButtonDisabled = false
+	bool navDownButtonDisabled = false
 }
 
 struct
@@ -522,7 +524,11 @@ void function UpdateButtonNav( ComboStruct comboStruct )
 
 			if ( row == MAX_COMBO_BUTTON_ROWS - 1 || comboStruct.comboButtonGrid[row+1][0].button == null )
 			{
-				if ( comboStruct.navDownButton != null )
+				if ( comboStruct.navDownButtonDisabled )
+				{
+					//
+				}
+				else if ( comboStruct.navDownButton != null )
 				{
 					comboStruct.comboButtonGrid[row][col].button.SetNavDown( comboStruct.navDownButton )
 
@@ -543,7 +549,11 @@ void function UpdateButtonNav( ComboStruct comboStruct )
 
 			if ( row == 0 )
 			{
-				if ( comboStruct.navUpButton != null )
+				if ( comboStruct.navUpButtonDisabled )
+				{
+					//
+				}
+				else if ( comboStruct.navUpButton != null )
 				{
 					comboStruct.comboButtonGrid[row][col].button.SetNavUp( comboStruct.navUpButton )
 

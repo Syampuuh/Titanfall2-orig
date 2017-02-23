@@ -157,6 +157,7 @@ global enum eDamageSourceId
 	mp_weapon_arena1
 	mp_weapon_arena2
 	mp_weapon_arena3
+	mp_weapon_rspn101_og
 
 	//
 	melee_pilot_emptyhanded
@@ -279,6 +280,7 @@ global enum eDamageSourceId
 	mp_titanability_sonar_pulse
 
 	bombardment
+	bleedout
 	//damageSourceId=eDamageSourceId.xxxxx
 	//fireteam
 	//marvin
@@ -570,6 +572,7 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.at_turret_override ]						= "AT Turret",
 		[ eDamageSourceId.phase_shift ]								= "#WPN_SHIFTER",
 		[ eDamageSourceId.gamemode_bomb_detonation ]				= "Bomb Detonation",
+		[ eDamageSourceId.bleedout ]								= "#DEATH_BLEEDOUT",
 
 		[ eDamageSourceId.damagedef_unknownBugIt ] 					= "#DEATH_GENERIC_KILLED",
 		[ eDamageSourceId.damagedef_unknown ] 						= "#DEATH_GENERIC_KILLED",

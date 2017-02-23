@@ -136,10 +136,12 @@ function TitanTookDamageThread( float damage, x, y, z, int damageType, int damag
 		DamageIndicators( damageHistory, true )
 	}
 
-	if ( doomedNow )
+	entity soul = localViewPlayer.GetTitanSoul()
+	if ( PlayerHasPassive( localViewPlayer, ePassives.PAS_AUTO_EJECT ) ) //TODO: Handle nuclear eject if we ever allow nuclear + auto eject combo again
 	{
-		if ( PlayerHasPassive( localViewPlayer, ePassives.PAS_AUTO_EJECT ) ) //TODO: Handle nuclear eject if we ever allow nuclear + auto eject combo again
+		if ( ShouldPlayAutoEjectAnim( localViewPlayer, soul, doomedNow )  )
 			thread PlayerEjects( localViewPlayer, cockpit )
+
 	}
 
 	if ( damageType & DF_CRITICAL )
@@ -147,6 +149,17 @@ function TitanTookDamageThread( float damage, x, y, z, int damageType, int damag
 		localViewPlayer.Signal( "CriticalHitReceived" )
 		EmitSoundOnEntity( localViewPlayer, "titan_damage_crit_3p_vs_1p" )
 	}
+}
+
+bool function ShouldPlayAutoEjectAnim( entity player, entity titanSoul, bool doomedNow )
+{
+	if ( !titanSoul.IsDoomed() )
+		return false
+
+	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) //Some other context action, e.g. melee instead of eject. Then again
+		return false
+
+	return true
 }
 
 string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
@@ -413,6 +426,7 @@ void function DamageIndicatorRui( vector damageOrigin, int arrowType, bool playe
 	float startTime = Time()
 
 	var rui = RuiCreate( $"ui/damage_indicator.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	RuiSetResolutionToScreenSize( rui )
 	RuiSetGameTime( rui, "startTime", startTime )
 	RuiSetFloat( rui, "duration", DAMAGE_INDICATOR_DURATION )
 	RuiSetInt( rui, "attackerType", arrowType )
@@ -514,14 +528,27 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 		{
 			shouldBeVisible = false
 		}
-		else if ( requireLos && TraceLineSimple( grenade.GetOrigin(), GetRandomOriginWithinBounds( player ), grenade ) < 1.0 )
-		{
-			shouldBeVisible = false
-		}
 		else
 		{
-			shouldBeVisible = true
-			lastVisibleTime = Time()
+			bool tracePassed = false
+
+			if ( requireLos )
+			{
+				TraceResults result = TraceLine( grenade.GetOrigin(), GetRandomOriginWithinBounds( player ), grenade, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+				if ( result.fraction == 1.0 )
+					tracePassed = true
+			}
+
+			if ( requireLos && !tracePassed )
+			{
+				shouldBeVisible = false
+			}
+			else
+			{
+				shouldBeVisible = true
+				lastVisibleTime = Time()
+			}
 		}
 
 		if ( shouldBeVisible || Time() - lastVisibleTime < 0.25 )

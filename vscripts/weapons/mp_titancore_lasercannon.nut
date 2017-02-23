@@ -120,7 +120,6 @@ void function OnAbilityChargeEnd_LaserCannon( entity weapon )
 	{
 		player.Anim_Stop()
 	}
-
 	#endif
 }
 
@@ -137,8 +136,12 @@ bool function OnAbilityStart_LaserCannon( entity weapon )
 	entity soul = player.GetTitanSoul()
 	if ( soul == null )
 		soul = player
-	StatusEffect_AddTimed( soul, eStatusEffect.turn_slow, SEVERITY_SLOWTURN_LASERCORE, stunDuration + fadetime, fadetime )
-	StatusEffect_AddTimed( soul, eStatusEffect.move_slow, SEVERITY_SLOWMOVE_LASERCORE, stunDuration + fadetime, fadetime )
+
+	if ( !player.ContextAction_IsMeleeExecution() ) //don't do this during executions
+	{
+		StatusEffect_AddTimed( soul, eStatusEffect.turn_slow, SEVERITY_SLOWTURN_LASERCORE, stunDuration + fadetime, fadetime )
+		StatusEffect_AddTimed( soul, eStatusEffect.move_slow, SEVERITY_SLOWMOVE_LASERCORE, stunDuration + fadetime, fadetime )
+	}
 
 	if ( player.IsPlayer() )
 	{

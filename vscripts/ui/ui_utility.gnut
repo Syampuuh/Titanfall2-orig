@@ -201,6 +201,11 @@ bool function PartyHasMembers()
 	return false
 }
 
+bool function AmIPartyMember()
+{
+	return ( PartyHasMembers() && !AmIPartyLeader() )
+}
+
 string function GetGameModeDisplayName( string mode )
 {
 	return GAMETYPE_TEXT[ mode ]
@@ -437,6 +442,20 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 	Plat_UnlockAchievementByID( achievementID )
 }
 
+void function TryUnlockCollectiblesAchievement()
+{
+	int totalLionsCollectedForGame = GetTotalLionsCollected()
+
+	if ( totalLionsCollectedForGame >= GetTotalLionsInGame() )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_3 )
+
+	if ( totalLionsCollectedForGame >= ACHIEVEMENT_COLLECTIBLES_2_COUNT )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_2 )
+
+	if ( totalLionsCollectedForGame >= ACHIEVEMENT_COLLECTIBLES_1_COUNT )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_1 )
+}
+
 void function TryUnlockCompletedGameAchievements()
 {
 	if ( Script_IsRunningTrialVersion() )
@@ -470,4 +489,12 @@ void function TryUnlockCompletedGameAchievements()
 
 	if ( masterCompleted >= numRows )
 		ScriptCallback_UnlockAchievement( achievements.COMPLETE_MASTER )
+}
+
+void function PopUpOriginOverlayDisabledDialog()
+{
+	DialogData dialogData
+	dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+	AddDialogButton( dialogData, "#OK" )
+	OpenDialog( dialogData )
 }

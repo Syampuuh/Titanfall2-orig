@@ -92,7 +92,7 @@ void function OnProjectileIgnite_weapon_thermite_grenade( entity projectile )
 
 		int statusEffectHandle = -1
 		entity attachedToEnt = projectile.GetParent()
-		if ( attachedToEnt && attachedToEnt.IsPlayer() && attachedToEnt.IsTitan() )
+		if ( ShouldAddThermiteStatusEffect( attachedToEnt, owner ) )
 			statusEffectHandle = StatusEffect_AddEndless( attachedToEnt, eStatusEffect.thermite, 1.0 )
 
 		OnThreadEnd(
@@ -146,11 +146,29 @@ void function OnProjectileIgnite_weapon_thermite_grenade( entity projectile )
 
 			wait 0.2
 
-			if ( statusEffectHandle != -1 && IsValid( attachedToEnt ) && !attachedToEnt.IsTitan() )
+			if ( statusEffectHandle != -1 && IsValid( attachedToEnt ) && !attachedToEnt.IsTitan() ) //Stop if thermited player Titan becomes a Pilot
 			{
 				StatusEffect_Stop( attachedToEnt, statusEffectHandle )
 				statusEffectHandle = -1
 			}
 		}
 	}
+
+bool function ShouldAddThermiteStatusEffect( entity attachedEnt, entity thermiteOwner )
+{
+	if ( !IsValid( attachedEnt ) )
+		return false
+
+	if ( !attachedEnt.IsPlayer() )
+		return false
+
+	if ( !attachedEnt.IsTitan() )
+		return false
+
+	if ( IsValid( thermiteOwner ) &&  attachedEnt.GetTeam() == thermiteOwner.GetTeam() )
+		return false
+
+	return true
+}
+
 #endif

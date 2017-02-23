@@ -36,7 +36,10 @@ void function LeaveOpenInvite()
 
 void function JoinOpenInvite( var button )
 {
-	ClientCommand( "joinopeninvite" )
+	if ( CanJoinOpenInvite() )
+		ClientCommand( "joinopeninvite" )
+	else if ( CanLeaveOpenInvite() )
+		ClientCommand( "leaveopeninvite" )
 }
 
 void function JoinOpenInvite_OnClick( var button )
@@ -93,6 +96,8 @@ void function UpdateOpenInvite()
 		return
 	}
 
+	array<string> playlists = split( openInvite.playlistName, "," )
+
 	string message = ""
 	string param1 = ""
 	string ornull param2 = null
@@ -106,12 +111,24 @@ void function UpdateOpenInvite()
 		param1 = openInvite.originatorName
 		break;
 	case "playlist":
-		if ( openInvite.amILeader )
-			message = "#OPENINVITE_SENDER_PLAYLIST"
+		if ( playlists.len() > 1 )
+		{
+			if ( openInvite.amILeader )
+				message = "#OPENINVITE_SENDER_PLAYLIST_MANY"
+			else
+				message = "#OPENINVITE_PLAYLIST_MANY"
+			param1 = openInvite.originatorName
+			param2 = GetPlaylistDisplayName( openInvite.playlistName )
+		}
 		else
-			message = "#OPENINVITE_PLAYLIST"
-		param1 = openInvite.originatorName
-		param2 = GetPlaylistDisplayName( openInvite.playlistName )
+		{
+			if ( openInvite.amILeader )
+				message = "#OPENINVITE_SENDER_PLAYLIST"
+			else
+				message = "#OPENINVITE_PLAYLIST"
+			param1 = openInvite.originatorName
+			param2 = GetPlaylistDisplayName( openInvite.playlistName )
+		}
 		break;
 	case "private_match":
 		if ( openInvite.amILeader )

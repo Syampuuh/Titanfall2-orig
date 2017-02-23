@@ -186,7 +186,7 @@ string function PlayerXPDisplayGenAndLevel( int gen, int level, bool isCompact =
 	else
 	{
 		string levelText
-		if ( level < 10 )
+		if ( level <= 10 )
 			levelText = "0" + string( level - 1 )
 		else
 			levelText = string( level - 1 )

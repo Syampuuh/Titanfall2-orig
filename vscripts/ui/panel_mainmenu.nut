@@ -150,6 +150,8 @@ void function OnShowMainMenuPanel()
 	ExecCurrentGamepadButtonConfig()
 	ExecCurrentGamepadStickConfig()
 
+	//SetNextAutoMatchmakingPlaylist( "" )
+
 	PanelFocusDefault( file.panel )
 	/*var focus = GetFocus()
 	bool validFocus = false

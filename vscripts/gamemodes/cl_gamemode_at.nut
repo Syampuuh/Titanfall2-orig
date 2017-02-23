@@ -736,8 +736,8 @@ void function ShowWaveInfo( entity player, int waveNum )
 	if ( waveNum == GetWaveDataSize()-1 )
 	{
 		RuiSetString( rui, "titleText", "#AT_WAVE_FINAL" )
-	}
 
+	}
 	int count = 1
 
 	float offsetTimeAdd = 0.75

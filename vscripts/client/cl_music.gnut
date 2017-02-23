@@ -554,6 +554,32 @@ function RegisterGameModeMusic()
 			break
 		}
 
+		case SPEEDBALL:
+		{
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_speedball_intro", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_speedball_intro", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_speedball_game_win", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_speedball_game_win", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_WON, "music_mp_speedball_round_win", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_WON, "music_mp_speedball_round_win", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_speedball_round_draw", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_speedball_round_draw", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_LOST, "music_mp_speedball_round_lose", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_LOST, "music_mp_speedball_round_lose", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_speedball_game_lose", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_speedball_game_lose", TEAM_MILITIA )
+
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_coliseum_lastminute", TEAM_IMC )
+			RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_coliseum_lastminute", TEAM_MILITIA )
+
+			break
+		}
+
 		case GAMEMODE_SP:
 		{
 			// TEMP tracks until Erik works on it
@@ -654,7 +680,7 @@ function PlayWinnerDeterminedMusic( playerTeam, winningTeam )
 	{
 		winningMusic = eMusicPieceID.ROUND_BASED_GAME_WON
 		losingMusic = eMusicPieceID.ROUND_BASED_GAME_LOST
-		drawingMusic = eMusicPieceID.ROUND_BASED_GAME_LOST
+		drawingMusic = eMusicPieceID.LEVEL_DRAW
 	}
 	else
 	{

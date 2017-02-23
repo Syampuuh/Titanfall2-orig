@@ -206,6 +206,7 @@ WeaponData
 		aggressive_ai
 		{
 			"npc_pre_fire_delay"							"*0.1"
+			"npc_max_range"   								"*0.5"
 		}
 	}
 }

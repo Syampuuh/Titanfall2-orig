@@ -118,11 +118,13 @@ WeaponData
 		// Damage - When Used by Players
 		"damage_near_value"   							"40"
 		"damage_far_value"								"35"
+		"damage_very_far_value"							"25"
 		"damage_near_value_titanarmor"					"80"
 		"damage_far_value_titanarmor" 					"60"
 		"damage_rodeo" 									"200"
-		"damage_near_distance"							"1800"
-		"damage_far_distance" 							"2000"
+		"damage_near_distance"							"1500"
+		"damage_far_distance" 							"1800"
+		"damage_very_far_distance" 						"2200"
 
 		"damage_headshot_scale"							"1.5"
 
@@ -156,11 +158,13 @@ WeaponData
 		// Damage - When Used by Players
 		"damage_near_value"   							"20"
 		"damage_far_value"								"13"
+		"damage_very_far_value"							"13"
 		"damage_near_value_titanarmor"					"35"
 		"damage_far_value_titanarmor" 					"25"
 		"damage_rodeo" 									"200"
 		"damage_near_distance"							"1800"
 		"damage_far_distance" 							"2000"
+		"damage_very_far_distance" 						"3000"
 
 		"damage_headshot_scale"							"3"
 
@@ -247,9 +251,9 @@ WeaponData
 	"spread_stand_hip_sprint"                       "2.0"
 	"spread_crouch_hip"   							"2.0"
 
-	"spread_stand_ads"  							"0.0" //"0.25"
-	"spread_crouch_ads"  							"0.0" //"0.1"
-	"spread_air_ads"   								"0.0" //"0.5"
+	"spread_stand_ads"  							"0.4" //"0.25"
+	"spread_crouch_ads"  							"0.2" //"0.1"
+	"spread_air_ads"   								"0.5" //"0.5"
 
 	"spread_kick_on_fire_stand_hip"   				"0"
 	"spread_kick_on_fire_crouch_hip"  				"0"
@@ -294,12 +298,12 @@ WeaponData
 	"viewkick_ads_weaponFraction" 					"0.1"
 	"viewkick_ads_weaponFraction_vmScale" 			"0.5"
 
-	"viewkick_scale_firstshot_ads"					"0"
+	"viewkick_scale_firstshot_ads"					"0.5"
 	"viewkick_scale_firstshot_hipfire"				"0"
 	"viewkick_scale_min_hipfire"  					"3"
 	"viewkick_scale_max_hipfire"  					"1.0"
 	"viewkick_scale_min_ads"  						"1.0"
-	"viewkick_scale_max_ads"  						"0.25"
+	"viewkick_scale_max_ads"  						"0.5"
 	"viewkick_scale_valuePerShot" 					"1.0"
 	"viewkick_scale_valueLerpStart"   				"0"
 	"viewkick_scale_valueLerpEnd" 					"25"

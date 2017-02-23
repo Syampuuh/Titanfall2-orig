@@ -69,6 +69,8 @@ void function InitRandomUnlocks()
 		file.randomUnlocks[ unlockType ] <- []
 	}
 
+	file.randomUnlockItems.clear()
+
 	dataTable = GetDataTable( $"datatable/unlocks_random.rpak" )
 	int numRows = GetDatatableRowCount( dataTable )
 	for ( int row = 0; row < numRows; row++ )
@@ -292,6 +294,8 @@ void function AwardRandomItem( entity player, int unlockType, string parentRef =
 
 	int currentVal = player.GetPersistentVarAsInt( pVar )
 	player.SetPersistentVar( pVar, currentVal + 1 )
+
+	PIN_GiveItem( player, false, "gift_" + GetUnlockTypeName( unlockType ) + "_" + parentRef, 1 )
 }
 #endif // SERVER
 
@@ -317,6 +321,27 @@ string function _GetRandomUnlockItemPersistentVar( int unlockType, string parent
 		case eUnlockType.FACTION_LEVEL:
 			pVar = "randomFactionLevelUnlocks[" + parentRef + "]"
 			break
+	}
+
+	return pVar
+}
+
+string function GetUnlockTypeName( int unlockType )
+{
+	string pVar
+	switch ( unlockType )
+	{
+		case eUnlockType.PLAYER_LEVEL:
+			return "playerlevel"
+
+		case eUnlockType.TITAN_LEVEL:
+			return "titanlevel"
+
+		case eUnlockType.WEAPON_LEVEL:
+			return "weaponlevel"
+
+		case eUnlockType.FACTION_LEVEL:
+			return "factionlevel"
 	}
 
 	return pVar
@@ -567,10 +592,12 @@ bool function PlayerRandomUnlock_GiveItemOfUnlockType( entity player, int unlock
 	else if ( randomUnlockItem.ref == "coliseum_ticket" )
 	{
 		Player_GiveColiseumTickets( player, 1 )
+		PIN_GiveItem( player, true, "coliseum_ticket", 1 )
 	}
 	else
 	{
 		SetItemOwned( player, itemData.ref, itemData.parentRef, true )
+		PIN_GiveItem( player, false, itemData.ref, 1 )
 	}
 
 	Player_AddRecentUnlock( player, itemData, count )

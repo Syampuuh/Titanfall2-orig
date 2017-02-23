@@ -196,6 +196,7 @@ void function ResetToDefaultsDialog( var button )
 	dialogData.message = "#GAMEPADCUSTOM_DIALOG_RESET_PROMPT"
 	AddDialogButton( dialogData, "#GAMEPADCUSTOM_DIALOG_RESET_CONFIRM", ResetToDefaults )
 	AddDialogButton( dialogData, "#GAMEPADCUSTOM_DIALOG_RESET_CANCEL" )
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 
@@ -218,6 +219,7 @@ void function VerifyAimAssistDisabled( var button )
 	dialogData.message = "#GAMEPADCUSTOM_DIALOG_AIMASSIST_PROMPT"
 	AddDialogButton( dialogData, "#GAMEPADCUSTOM_DIALOG_AIMASSIST_CONFIRM", DisableAimassistSetting )
 	AddDialogButton( dialogData, "#GAMEPADCUSTOM_DIALOG_AIMASSIST_CANCEL" )
+	dialogData.noChoiceWithNavigateBack = true
 	OpenDialog( dialogData )
 }
 

@@ -171,6 +171,12 @@ void function AddTargetNameCreateCallback( string targetName, void functionref( 
 	clGlobal.onTargetNameCreateCallbacks[ targetName ].append( callbackFunc )
 }
 
+void function AddCallback_MinimapEntSpawned( void functionref( entity ) callbackFunc )
+{
+	Assert( !clGlobal.onMinimapEntSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntSpawned" )
+	clGlobal.onMinimapEntSpawnedCallbacks.append( callbackFunc )
+}
+
 void function AddCallback_LocalViewPlayerSpawned( void functionref( entity ) callbackFunc )
 {
 	Assert( !clGlobal.onLocalViewPlayerSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddLocalViewPlayerSpawnedCallback" )

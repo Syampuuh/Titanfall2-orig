@@ -1493,7 +1493,7 @@ array<ItemProgressData> function GetProgressDataForUnlockType( entity player, in
 			levelUpData.segments = WeaponGetNumPipsForXP( itemRef, startXP )
 			levelUpData.startingSegments = WeaponGetFilledPipsForXP( itemRef, startXP )
 			levelUpData.endingSegments = levelUpData.startingSegments + awardedXP
-			Assert( levelUpData.segments != levelUpData.endingSegments )
+			//Assert( levelUpData.segments != levelUpData.endingSegments )
 
 			progressData.levelUpData.append( levelUpData )
 			printt( itemRef, "leftovers", awardedXP, "/", levelUpData.segments )

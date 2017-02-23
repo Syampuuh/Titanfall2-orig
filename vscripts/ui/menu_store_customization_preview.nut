@@ -137,6 +137,18 @@ void function OnCustomizationPreviewButton_Activate( var button )
 
 void function OnBuyButton_Activate( var button )
 {
+#if PC_PROG
+	if ( !Origin_IsOverlayAvailable() )
+	{
+		DialogData dialogData
+		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+		AddDialogButton( dialogData, "#OK" )
+
+		OpenDialog( dialogData )
+		return
+	}
+#endif
+
 	if ( !LocalPlayerHasEntitlement( uiGlobal.entitlementId ) )
 	{
 		DialogData dialogData
@@ -168,7 +180,7 @@ void function OnBuyButton_Activate( var button )
 				break
 		}
 
-		dialogData.message = "#STORE_CUSTOMIZATION_PACK_WARNING"
+		dialogData.message = "#STORE_CUSTOMIZATION_PACK_WARNING_DLC2"
 		AddDialogButton( dialogData, "#BUY", Store_BuyCustomizationPack )
 		AddDialogButton( dialogData, "#CANCEL" )
 
@@ -182,8 +194,7 @@ void function OnBuyButton_Activate( var button )
 
 void function Store_BuyCustomizationPack()
 {
-	PurchaseEntitlement( uiGlobal.entitlementId )
-	uiGlobal.updateCachedNewItems = true
+	StorePurchase( uiGlobal.entitlementId )
 }
 
 void function EntitlementsChanged_Customization()

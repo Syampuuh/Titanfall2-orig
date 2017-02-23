@@ -131,6 +131,24 @@ asset function GetGameStateAsset()
 	if ( GAMETYPE == CAPTURE_POINT )
 		return $"ui/gamestate_info_cp.rpak"
 
+	if ( GAMETYPE == PILOT_SKIRMISH )
+		return $"ui/gamestate_info_ps.rpak"
+
+	if ( GAMETYPE == COLISEUM )
+		return $"ui/gamestate_info_coliseum.rpak"
+
+	if ( GAMETYPE == SPEEDBALL )
+		return $"ui/gamestate_info_speedball.rpak"
+
+	if ( GAMETYPE == RAID)
+		return $"ui/gamestate_info_raid.rpak"
+
+	if ( GAMETYPE == MARKED_FOR_DEATH )
+		return $"ui/gamestate_info_mfd.rpak"
+
+	if ( GAMETYPE == ATCOOP )
+		return $"ui/gamestate_info_atcoop.rpak"
+
 	return $"ui/gamestate_info.rpak"
 }
 
@@ -303,7 +321,11 @@ void function TEMP_UpdateRuiScores( entity player )
 	if ( IsRoundBased() )
 	{
 		endTime = expect float( level.nv.roundEndTime )
-		RuiSetString( file.gamestate_info, "statusText", Localize( "#GAMESTATE_ROUND_N", GetRoundsPlayed() + 1 ) )
+		if (
+			GetGameState() == eGameState.Prematch ||
+			GetGameState() == eGameState.Playing
+			)
+			RuiSetString( file.gamestate_info, "roundText", Localize( "#GAMESTATE_ROUND_N", GetRoundsPlayed() + 1 ) )
 	}
 	else
 	{
@@ -430,10 +452,6 @@ array<int> function GetPilotTitanStatusForTeam( int team )
 	int playerIndex = 0
 	foreach ( teamPlayer in GetPlayerArrayOfTeam( team ) )
 	{
-		//If titans are not available in the gamemode, do not show titan status ui.
-		if ( Riff_TitanAvailability() == eTitanAvailability.Never )
-			continue
-
 		entity titan
 		if ( teamPlayer.GetPetTitan() )
 			titan = teamPlayer.GetPetTitan()
@@ -616,6 +634,7 @@ void function ClGameState_Changed()
 			switch ( GAMETYPE )
 			{
 				case CAPTURE_THE_FLAG:
+				case RAID:
 					Announcement_SetSubText( announcement, "#GAMEMODE_ANNOUNCEMENT_SUDDEN_DEATH_CTF" )
 					break
 

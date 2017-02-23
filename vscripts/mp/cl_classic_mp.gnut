@@ -192,6 +192,9 @@ void function StartPlayerCountdown()
 
 void function UseDoubleXP( ... )
 {
+	if ( HudChat_HasAnyMessageModeStoppedRecently() )
+		return
+
 	entity player = GetLocalClientPlayer()
 
 	if ( Player_GetDoubleXPCount( player ) < 1 )
@@ -249,7 +252,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	RegisterButtonPressedCallback( BUTTON_Y, UseDoubleXP )
 	RegisterButtonPressedCallback( KEY_ENTER, UseDoubleXP )
-	if ( GameRules_GetGameMode() != COLISEUM ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
+	if ( GameRules_GetGameMode() != COLISEUM && GameRules_GetGameMode() != HUNTED ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
 	{
 		RegisterButtonPressedCallback( BUTTON_X, OpenBoostMenu )
 		RegisterButtonPressedCallback( KEY_SPACE, OpenBoostMenu )
@@ -261,8 +264,8 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
 	{
-		if ( GameRules_GetGameMode() == COLISEUM )
-			file.loadoutsRUI = RuiCreate( $"ui/dropship_intro_coliseum_loadouts.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
+		if ( GameRules_GetGameMode() == COLISEUM || GameRules_GetGameMode() == HUNTED )
+			file.loadoutsRUI = null //RuiCreate( $"ui/dropship_intro_coliseum_loadouts.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
 		else
 			file.loadoutsRUI = RuiCreate( $"ui/dropship_intro_pilot_loadouts.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
 	}
@@ -313,8 +316,6 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "HUD_match_start_timer_0_seconds_1P" )
 
-	wait 1.0
-
 	if ( file.introJumpingRUI != null )
 		RuiDestroy( file.introJumpingRUI )
 
@@ -325,7 +326,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	DeregisterButtonPressedCallback( BUTTON_Y, UseDoubleXP )
 	DeregisterButtonPressedCallback( KEY_ENTER, UseDoubleXP )
-	if ( GameRules_GetGameMode() != COLISEUM ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
+	if ( GameRules_GetGameMode() != COLISEUM && GameRules_GetGameMode() != HUNTED ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
 	{
 		DeregisterButtonPressedCallback( BUTTON_X, OpenBoostMenu )
 		DeregisterButtonPressedCallback( KEY_SPACE, OpenBoostMenu )

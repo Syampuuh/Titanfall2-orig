@@ -84,6 +84,7 @@ struct
 	var customizeHeader
 	var callsignHeader
 	var networksHeader
+	var storeHeader
 
 	var startMatchButton
 	var selectMapButton
@@ -223,7 +224,7 @@ void function InitPrivateMatchMenu()
 
 	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_SWITCH_TEAMS", "#SWITCH_TEAMS", PCSwitchTeamsButton_Activate, CanSwitchTeams )
 	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_MUTE", "#MOUSE2_MUTE", null, CanMute )
-	AddMenuFooterOption( menu, BUTTON_TRIGGER_RIGHT, "#R_TRIGGER_TOGGLE_SPECTATE", "#SPECTATE_TEAM", PCToggleSpectateButton_Activate, CanSwitchTeams )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#RB_TRIGGER_TOGGLE_SPECTATE", "#SPECTATE_TEAM", PCToggleSpectateButton_Activate, CanSwitchTeams )
 
 	AddMenuVarChangeHandler( "focus", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isFullyConnected", UpdateFooterOptions )
@@ -294,13 +295,11 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
-	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
-	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
+//	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
+//	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
 //	file.armoryButton = armoryButton
 //	Hud_AddEventHandler( armoryButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ArmoryMenu" ) ) )
-
-
 
 	headerIndex++
 	buttonIndex = 0
@@ -313,7 +312,6 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	Hud_AddEventHandler( file.factionButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "FactionChoiceMenu" ) ) )
 	file.statsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STATS" )
 	Hud_AddEventHandler( file.statsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ViewStatsMenu" ) ) )
-
 
 	file.callsignCard = Hud_GetChild( menu, "CallsignCard" )
 
@@ -336,6 +334,12 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 
 	headerIndex++
 	buttonIndex = 0
+	file.storeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_STORE" )
+	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BROWSE" )
+	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
+
+	headerIndex++
+	buttonIndex = 0
 	var settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
 	var controlsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_CONTROLS" )
 	Hud_AddEventHandler( controlsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsMenu" ) ) )
@@ -353,6 +357,7 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	var knbButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
 	Hud_AddEventHandler( knbButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
+	comboStruct.navDownButtonDisabled = true
 	ComboButtons_Finalize( comboStruct )
 }
 
@@ -418,21 +423,53 @@ void function OnLobbyMenu_Open()
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		bool hasSeenStore = expect bool( GetPersistentVar( "hasSeenStore" ) )
+		//bool emotesAreEnabled = EmotesEnabled()
+		// "Customize"
+		{
+			bool anyNewPilotItems = HasAnyNewPilotItems( player )
+			bool anyNewTitanItems = HasAnyNewTitanItems( player )
+			bool anyNewBoosts = HasAnyNewBoosts( player )
+			bool anyNewCommsIcons = false // emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
+			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
 
-		RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", HasAnyNewPilotItems( player ) || HasAnyNewTitanItems( player ) || HasAnyNewBoosts( player ) || !hasSeenStore )
-		ComboButton_SetNew( file.pilotButton, HasAnyNewPilotItems( player ) )
-		ComboButton_SetNew( file.titanButton, HasAnyNewTitanItems( player ) )
-		ComboButton_SetNew( file.boostsButton, HasAnyNewBoosts( player ) )
-		ComboButton_SetNew( file.storeButton, !hasSeenStore )
+			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
+			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
+			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
+			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
+		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 
-//		RuiSetBool( Hud_GetRui( file.networksHeader ), "isNew", HasAnyNewFactions( player ))
-//		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+			/*
+			if ( !emotesAreEnabled )
+			{
+				Hud_Hide( file.dpadCommsButton )
+				ComboButtons_ResetColumnFocus( file.lobbyComboStruct )
+			}
+			else
+			{
+				Hud_Show( file.dpadCommsButton )
+			}
+			*/
+		}
 
-		RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", HasAnyNewCallsignBanners( player )|| HasAnyNewCallsignPatches( player ) || HasAnyNewFactions( player ))
-		ComboButton_SetNew( file.bannerButton, HasAnyNewCallsignBanners( player ) )
-		ComboButton_SetNew( file.patchButton, HasAnyNewCallsignPatches( player ) )
-		ComboButton_SetNew( file.factionButton, HasAnyNewFactions( player ) )
+		// "Store"
+		{
+			bool storeIsNew = DLCStoreShouldBeMarkedAsNew()
+			RuiSetBool( Hud_GetRui( file.storeHeader ), "isNew", storeIsNew )
+			ComboButton_SetNew( file.storeButton, storeIsNew )
+		}
+
+		// "Callsign"
+		{
+			bool anyNewBanners = HasAnyNewCallsignBanners( player )
+			bool anyNewPatches = HasAnyNewCallsignPatches( player )
+			bool anyNewFactions = HasAnyNewFactions( player )
+			bool anyNewCallsignHeader = (anyNewBanners || anyNewPatches || anyNewFactions)
+
+			RuiSetBool( Hud_GetRui( file.callsignHeader ), "isNew", anyNewCallsignHeader )
+			ComboButton_SetNew( file.bannerButton, anyNewBanners )
+			ComboButton_SetNew( file.patchButton, anyNewPatches )
+			ComboButton_SetNew( file.factionButton, anyNewFactions )
+		}
 
 		thread PrivateLobby_UpdateInboxButtons()
 	}

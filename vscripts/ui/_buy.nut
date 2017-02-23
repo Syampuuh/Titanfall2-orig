@@ -46,6 +46,9 @@ void function OpenBuyItemDialog( array<var> buttons, var button, string itemName
 		dialogData.header = Localize( "#BUY_HEADER_NOT_PURCHASABLE", Localize( itemName ), unlockReqText )
 //		dialogData.message = unlockReqText
 		dialogData.ruiMessage = ruiMessage
+		dialogData.noChoiceWithNavigateBack = true
+
+		AddDialogButton( dialogData, "#OK" )
 	}
 	else if ( file.itemToBuy.availableCredits >= file.itemToBuy.cost )
 	{
@@ -57,8 +60,10 @@ void function OpenBuyItemDialog( array<var> buttons, var button, string itemName
 		DialogMessageRuiData ruiMessage
 		ruiMessage.message = unlockReqText
 		dialogData.ruiMessage = ruiMessage
+		dialogData.noChoiceWithNavigateBack = true
 
 		AddDialogButton( dialogData, "#BUY", BuyItem )
+		AddDialogButton( dialogData, "#CANCEL" )
 	}
 	else
 	{
@@ -72,9 +77,10 @@ void function OpenBuyItemDialog( array<var> buttons, var button, string itemName
 		DialogMessageRuiData ruiMessage
 		ruiMessage.message = "\n\n" + unlockReqText
 		dialogData.ruiMessage = ruiMessage
-	}
+		dialogData.noChoiceWithNavigateBack = true
 
-	AddDialogButton( dialogData, "#CANCEL" )
+		AddDialogButton( dialogData, "#OK" )
+	}
 
 	OpenDialog( dialogData )
 }
@@ -87,10 +93,10 @@ void function BuyItem()
 	RefreshCreditsAvailable( creditsAvailable )
 	RefreshCreditsAvailableAllButtons( file.buttons, creditsAvailable )
 
+	ClientCommand( "BuyItem " + file.itemToBuy.ref + " " + file.itemToBuy.parentRef )
+
 	if ( file.itemToBuy.equipFunc != null )
 		file.itemToBuy.equipFunc( file.itemToBuy.button )
-
-	ClientCommand( "BuyItem " + file.itemToBuy.ref + " " + file.itemToBuy.parentRef )
 }
 
 void function OpenBuyTicketDialog( array<var> buttons, var button )
@@ -146,9 +152,15 @@ void function BuyTicket()
 	int creditsAvailable = file.itemToBuy.availableCredits - file.itemToBuy.cost
 	RefreshCreditsAvailable( creditsAvailable )
 	RefreshCreditsAvailableAllButtons( file.buttons, creditsAvailable )
+	int numTickets = Player_GetColiseumTicketCount( GetLocalClientPlayer() )
 	ClientCommand( "BuyTicket " )
 
-	BuyIntoColiseumTicket()
+	int requiredTickets = 1
+	if ( GetPartySize() == 2 )
+		requiredTickets = 2
+
+	if ( numTickets + 1 >= requiredTickets )
+		BuyIntoColiseumTicket()
 }
 
 void function RefreshCreditsAvailableAllButtons( array<var> buttons, int creditsAvailableOverride = -1 )

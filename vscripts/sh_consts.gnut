@@ -39,11 +39,16 @@ global const WINGMAN_PILOT_SKIRMISH = "wps"
 global const HARDCORE_TDM = "htdm"
 global const FREE_AGENCY = "fra"
 global const FORT_WAR = "fw"
+global const HUNTED = "hunted"
+global const DON = "don"
+global const SPEEDBALL = "speedball"
+global const RAID = "raid"
+global const ATCOOP = "atcoop"
 
 global const VERBOSE_DAMAGE_PRINTOUTS = false
 
-global const SAVEGAME_VERSION = 8 // increment when saves need to be tossed
-global const PERSISTENCE_INIT_VERSION = 218
+global const SAVEGAME_VERSION = 9 // increment when saves need to be tossed
+global const PERSISTENCE_INIT_VERSION = 219
 
 global const TEMP_NETWORTH_VAR = "activeBCID"
 
@@ -1105,7 +1110,8 @@ global enum eItemTypes
 	TITAN_SCORCH_PASSIVE,
 	TITAN_LEGION_PASSIVE,
 	TITAN_WARPAINT,
-	PRIME_TITAN_NOSE_ART,
+	PRIME_TITAN_NOSE_ART, //Not needed anymore since Prime Titans now share nose arts, but since the comment above suggests not deleting entries we're keeping this in here
+	GAME_MODE
 	COUNT
 }
 
@@ -1509,6 +1515,14 @@ global enum eEventNotifications
 	AT_SupplyDropExpired,
 	WEAP_AmmoFull,
 	WEAP_GotAmmo,
+	HUNTED_PlayerBecomesHunter,
+	HUNTED_PlayerSecuresAsset,
+	HUNTED_PlayerDropsAsset,
+	HUNTED_Reinforcements,
+	SPEEDBALL_FlagPickedUp,
+	SPEEDBALL_FlagDropped,
+	DON_Reinforcements,
+	BLEEDOUT_SelfHealPrompt,
 	BATT_HealthFull
 	BATT_Full
 }
@@ -2066,6 +2080,25 @@ global const ATTRITION_SCORE_BONUS_STOLEN	= 00
 global const ATTRITION_SCORE_PILOT_MIN		= 10 //The minimum amount of bonus money you get for a player pilot kill
 global const ATTRITION_SCORE_TITAN_MIN		= 50 //The minimum amount of bonus money you get for a player titan kill
 
+global const ATCOOP_SCORE_BOUNTY_SURVIVAL	= 200
+global const ATCOOP_SCORE_BOSS   			= 50
+global const ATCOOP_SCORE_BOSS_DAMAGE		= 200
+global const ATCOOP_SCORE_TITAN   			= 0//40//100
+global const ATCOOP_SCORE_SUPER_SPECTRE 	= 25//100//50
+global const ATCOOP_SCORE_MEGATURRET		= 25
+global const ATCOOP_SCORE_SENTRYTURRET		= 5
+global const ATCOOP_SCORE_PILOT   			= 0//20
+global const ATCOOP_SCORE_AIR_DRONE 		= 5//20
+global const ATCOOP_SCORE_PROWLER  			= 5//5
+global const ATCOOP_SCORE_GRUNT   			= 5//5
+global const ATCOOP_SCORE_SPECTRE 			= 10//20//10
+global const ATCOOP_SCORE_STALKER 			= 10//30//25//10
+global const ATCOOP_SCORE_MARVIN  			= 00
+global const ATCOOP_SCORE_BONUS				= 00
+global const ATCOOP_SCORE_BONUS_STOLEN		= 00
+global const ATCOOP_SCORE_PILOT_MIN			= 5 //The minimum amount of bonus money you get for a player pilot kill
+global const ATCOOP_SCORE_TITAN_MIN			= 25 //The minimum amount of bonus money you get for a player titan kill
+
 global const ZIPLINE_IDLE_ANIM = "pt_zipline_slide_idle"
 
 global const DEFAULT_CONVERSATION_DEBOUNCE_TIME = 10.0
@@ -2162,6 +2195,7 @@ global enum ePresentationType
 	INACTIVE,
 	DEFAULT,
 	STORE_CAMO_PACKS,
+	STORE_FRONT,
 	PILOT,
 	PILOT_LOADOUT_EDIT,
 	PILOT_CHARACTER,
@@ -2398,6 +2432,9 @@ global const int GAMEMODE_BOMB_SCORE_EXPLODE = 1
 global const int GAMEMODE_BOMB_SCORE_CARRY = 250 //Subdiving distance between Harvesters
 global const int GAMEMODE_BOMB_SCORE_KILL_TITAN = 100
 global const int GAMEMODE_BOMB_SCORE_KILL_PILOT = 50
+
+//Raid Mode
+global const int GAMEMODE_RAID_SCORE_PLANT = 1
 
 global const int TITAN_WEAK = 0
 global const int TITAN_HENCH = 1

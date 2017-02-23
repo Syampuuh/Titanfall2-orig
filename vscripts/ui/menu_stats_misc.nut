@@ -35,7 +35,7 @@ void function UpdateViewStatsMiscMenu()
 	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat3" ), Localize( "#STATS_HEADER_SUCCESSFUL_EVACS" ), 	$"rui/medals/extract", 						GetPlayerStatInt( player, "misc_stats", "evacsSurvived" ) )
 	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat4" ), Localize( "#STATS_HEADER_TITANS_CALLED_IN" ), 	$"rui/medals/titanfall", 					GetPlayerStatInt( player, "misc_stats", "titanFalls" ) )
 	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat5" ), Localize( "#STATS_KILLS_PET_TITAN" ), 			$"rui/medals/kill_robot", 					GetPlayerStatInt( player, "kills_stats", "petTitanKillsFollowMode" ) + GetPlayerStatInt( player, "kills_stats", "petTitanKillsGuardMode" ) )
-	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat6" ), Localize( "#STATS_HEADER_NUMBER_OF_EJECTS" ), 	$"rui/medals/extract", 						GetPlayerStatInt( player, "misc_stats", "timesEjected" ) )
+	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat6" ), Localize( "#STATS_HEADER_NUMBER_OF_EJECTS" ), 	$"rui/medals/eject", 						GetPlayerStatInt( player, "misc_stats", "timesEjected" ) )
 	SetMedalStatBoxDisplay( Hud_GetChild( file.menu, "MedalStat7" ), Localize( "#STATS_KILLS_WHILE_EJECTING" ), 	$"rui/medals/kill", 						GetPlayerStatInt( player, "kills_stats", "whileEjecting" ) )
 
 	SetStatBoxDisplay( Hud_GetChild( file.menu, "DistStat0" ), Localize( "#STATS_HEADER_DISTANCE_TOTAL" ), 				StatToDistanceString( "distance_stats", "total" ) )
