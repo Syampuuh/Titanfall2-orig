@@ -2,7 +2,7 @@
 
 ## 23 February 2016 - The Live Fire Patch
 
-*(includes server-sided changes made on 23 January)*
+*(includes server-sided changes made on 23 January, does **not** include server-sided changes made post-patch such as the Hemlok nerf)*
 
 ### Content and Feature Additions:
 
