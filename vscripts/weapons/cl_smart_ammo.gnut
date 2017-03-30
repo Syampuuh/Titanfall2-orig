@@ -137,6 +137,8 @@ function SmartAmmo_LockedOntoWarningHUD_Update()
 	}
 	else
 	{
+		entity soul = GetSoulFromPlayer( player )
+
 		if ( file.statusWarning != "" )
 		{
 			RuiSetString( file.lockon_hud, "lockMessage", file.statusWarning )
@@ -149,6 +151,15 @@ function SmartAmmo_LockedOntoWarningHUD_Update()
 		else if ( StatusEffect_Get( player, eStatusEffect.lockon_detected) )
 		{
 			RuiSetString( file.lockon_hud, "lockMessage", "#LOCKON_WARNING" )
+			RuiSetBool( file.lockon_hud, "isVisible", true )
+			RuiSetBool( file.lockon_hud, "northLock", false )
+			RuiSetBool( file.lockon_hud, "southLock", false )
+			RuiSetBool( file.lockon_hud, "westLock", false )
+			RuiSetBool( file.lockon_hud, "eastLock", false )
+		}
+		else if ( StatusEffect_Get( player, eStatusEffect.lockon_detected_titan) || (soul != null && StatusEffect_Get( soul, eStatusEffect.lockon_detected_titan) && player.IsTitan() ))
+		{
+			RuiSetString( file.lockon_hud, "lockMessage", "#LOCKON_WARNING_TITAN" )
 			RuiSetBool( file.lockon_hud, "isVisible", true )
 			RuiSetBool( file.lockon_hud, "northLock", false )
 			RuiSetBool( file.lockon_hud, "southLock", false )

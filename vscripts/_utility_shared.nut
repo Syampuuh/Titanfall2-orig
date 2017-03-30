@@ -167,6 +167,7 @@ void function InitWeaponScripts()
 	MpTitanWeaponSword_Init()
 	MpTitanAbilityHover_Init()
 	MpTitanWeaponTrackerRockets_Init()
+	MpTitanWeaponStunLaser_Init()
 
 	#if SERVER
 		BallLightning_Init()
@@ -394,12 +395,19 @@ void function WaitForever()
 }
 
 #if SERVER
+
 bool function ShouldDoReplay( entity player, entity attacker, float replayTime, int methodOfDeath )
 {
 	if ( ShouldDoReplayIsForcedByCode() )
 	{
 		print( "ShouldDoReplay(): Doing a replay because code forced it." );
 		return true
+	}
+
+	if ( GetCurrentPlaylistVarInt( "replay_disabled", 0 ) == 1 )
+	{
+		print( "ShouldDoReplay(): Not doing a replay because 'replay_disabled' is enabled in the current playlist.\n" );
+		return false
 	}
 
 	switch( methodOfDeath )
@@ -758,11 +766,6 @@ float function Tween_ExpoEaseIn( float frac )
 {
 	Assert( frac >= 0.0 && frac <= 1.0 )
 	return pow( 2, 10 * ( frac - 1 ) );
-}
-
-bool function CoinFlip()
-{
-	return RandomInt( 2 ) != 0
 }
 
 bool function LegalOrigin( vector origin )
@@ -1873,6 +1876,36 @@ int function CompareCTF( entity a, entity b )
 	return 0
 }
 
+int function CompareSpeedball( entity a, entity b )
+{
+	// Capture the flag sorting. Sort priority = pilot kills > flag captures > death
+
+	// 1) Pilot Kills
+	int aVal = a.GetPlayerGameStat( PGS_KILLS )
+	int bVal = b.GetPlayerGameStat( PGS_KILLS )
+
+	if ( aVal < bVal )
+		return 1
+	else if ( aVal > bVal )
+		return -1
+
+	// 2) Flag Captures
+	int result = CompareAssault( a, b )
+	if ( result != 0 )
+		return result
+
+	// 3) Deaths
+	aVal = a.GetPlayerGameStat( PGS_DEATHS )
+	bVal = b.GetPlayerGameStat( PGS_DEATHS )
+
+	if ( aVal < bVal )
+		return -1
+	else if ( aVal > bVal )
+		return 1
+
+	return 0
+}
+
 int function CompareMFD( entity a, entity b )
 {
 	// 1) Marks Killed
@@ -2806,12 +2839,6 @@ string function GenerateTitanOSAlias( entity player, string aliasSuffix )
 	}
 	else
 	{
-
-		/* TODO: Old way of generating TitanOSAlias, delete if regarded as safe
-		int titanOSVoiceIndex = player.GetVoicePackIndex()
-		string titanOSEnumItemName = PersistenceGetEnumItemNameForIndex( "titanVoice", titanOSVoiceIndex )
-		string modifiedAlias = "diag_gs_titan" + TITAN_OS_VOICE_PACK[ titanOSEnumItemName ] + "_" + aliasSuffix*/
-
 		entity titan
 		if ( player.IsTitan() )
 			titan = player
@@ -2820,7 +2847,6 @@ string function GenerateTitanOSAlias( entity player, string aliasSuffix )
 
 		Assert( IsValid( titan ) )
 		string titanCharacterName = GetTitanCharacterName( titan )
-
 		string primeTitanString = ""
 
 		if ( IsTitanPrimeTitan( titan ) )

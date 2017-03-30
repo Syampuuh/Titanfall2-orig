@@ -132,7 +132,7 @@ global struct ClientTitanSoulStruct
 {
 	bool titanUpgradesAnnounced = false
 	entity lastOwner
-
+	int upgradeCount = 0
 }
 
 

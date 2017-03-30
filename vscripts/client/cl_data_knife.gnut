@@ -29,6 +29,8 @@ const float TOPO_LOCK_IN_TIME_FRAC 		= 0.037  	// time for each slide move as ha
 const float TOPO_PRE_SLIDE_IN_TIME_FRAC = 0.02   	// wait time after done hacking, before panels slide back into the handle
 const float TOPO_SLIDE_IN_TIME_FRAC 	= 0.035 	// time for panels to slide in when done hacking
 
+const string SIGNAL_DATAKNIFECANCEL = "DataKnifeCancel"
+
 struct DataKnifeTopoInfo
 {
 	bool 	isInited = false
@@ -55,6 +57,7 @@ struct {
 void function ClDataKnife_Init()
 {
 	RegisterSignal( "DataKnifeCancel" )
+	RegisterSignal( "PlayerGetsKnifeUntilLosesParent" )
 
 	AddCreateCallback( "first_person_proxy", DataKnife_SetupFirstPersonProxyEvents )
 	AddCreateCallback( "predicted_first_person_proxy", DataKnife_SetupFirstPersonProxyEvents )
@@ -325,6 +328,9 @@ void function PlayerGetsKnifeUntilLosesParent( entity player, entity parentEnt )
 	if ( !EntHasModelSet( viewModel ) )
 		return
 
+	Signal( player, "PlayerGetsKnifeUntilLosesParent" )
+	EndSignal( player, "PlayerGetsKnifeUntilLosesParent" )
+
 	entity leechedEntity = parentEnt
 	if ( parentEnt.GetClassName() == "script_mover" )
 		leechedEntity = parentEnt.GetParent()
@@ -573,7 +579,8 @@ void function DataKnife_TopoPositionThink( entity knife, DataKnifeTopoInfo topoI
 		vector down = DataKnife_GetTopoDownVectorForSize( updateAng, topoSize )
 
 		// do the position/size update
-		RuiTopology_UpdatePos( topoInfo.topo, updateOrg, right, down )
+		if ( topoInfo.rui != null )
+			RuiTopology_UpdatePos( topoInfo.topo, updateOrg, right, down )
 
 		// hide/show for cloak
 		if ( topoInfo.rui != null )
@@ -631,7 +638,6 @@ void function DataKnife_CleanupRUITopologies( entity knife )
 	foreach ( topoInfo in file.dataKnifeTopologies )
 	{
 		DataKnife_Topology_DestroyRUI( topoInfo )
-		RuiTopology_Destroy( topoInfo.topo )
 	}
 
 	file.dataKnifeTopologies = []
@@ -659,12 +665,17 @@ var function DataKnife_Topology_CreateRUI( DataKnifeTopoInfo topoInfo, asset rui
 
 void function DataKnife_Topology_DestroyRUI( DataKnifeTopoInfo topoInfo )
 {
-	if ( topoInfo.rui == null )
-		return
+	if ( topoInfo.rui != null )
+	{
+		RuiDestroyIfAlive( topoInfo.rui )
+		topoInfo.rui = null
+	}
 
-	RuiDestroyIfAlive( topoInfo.rui )
-
-	topoInfo.rui = null
+	if ( topoInfo.topo != null )
+	{
+		RuiTopology_Destroy( topoInfo.topo )
+		topoInfo.topo = null
+	}
 }
 
 

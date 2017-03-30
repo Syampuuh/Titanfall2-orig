@@ -332,15 +332,18 @@ void function HACK_CookGrenade( entity weapon, entity weaponOwner )
 	if ( GameRules_GetGameMode() == COLISEUM )
 	{
 		#if SERVER
-		var impact_effect_table = weapon.GetWeaponInfoFileKeyField( "impact_effect_table" )
-		if ( impact_effect_table != null )
-		{
-			string fx = expect string( impact_effect_table )
-			PlayImpactFXTable( weaponOwner.EyePosition(), weaponOwner, fx )
-		}
-
 		int damageSource = weapon.GetDamageSourceID()
-		weaponOwner.Die( weaponOwner, weapon, { damageSourceId = damageSource } )
+
+		if ( damageSource == eDamageSourceId.mp_weapon_frag_grenade )
+		{
+			var impact_effect_table = weapon.GetWeaponInfoFileKeyField( "impact_effect_table" )
+			if ( impact_effect_table != null )
+			{
+				string fx = expect string( impact_effect_table )
+				PlayImpactFXTable( weaponOwner.EyePosition(), weaponOwner, fx )
+			}
+			weaponOwner.Die( weaponOwner, weapon, { damageSourceId = damageSource } )
+		}
 		#endif
 	}
 

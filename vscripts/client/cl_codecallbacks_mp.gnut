@@ -521,7 +521,7 @@ void function ServerCallback_YouRespawned()
 
 void function ServerCallback_YouDied( int attackerEHandle, float healthFrac, int damageSourceId )
 {
-	printt( "healthFrac: " + healthFrac )
+	printt( "ServerCallback_YouDied() healthFrac: " + healthFrac )
 	entity clientPlayer = GetLocalClientPlayer()
 	PlayPlayerDeathSound( clientPlayer )
 

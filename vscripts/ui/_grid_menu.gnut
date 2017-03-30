@@ -16,6 +16,12 @@ const string GRID_BTN_DELIM = "x"
 
 global function GridMenuInit
 
+global enum eGridPageFillDirection
+{
+	DOWN,
+	RIGHT
+}
+
 global enum eGridPageType
 {
 	VERTICAL,
@@ -60,9 +66,12 @@ global function Grid_GetActivePageButtons
 global function Grid_GetFirstPageButtonIndex
 global function Grid_SetName
 global function Grid_SetSubText
+global function Grid_GetNumPages
+global function Grid_GetElemNumForButton
+global function Grid_SetReadyState
 
-global function Grid_MenuOpened
-global function Grid_MenuClosed
+global function Grid_RegisterPageNavInputs
+global function Grid_DeregisterPageNavInputs
 
 global struct GridMenuData
 {
@@ -83,6 +92,7 @@ global struct GridMenuData
 	int tileWidth = 64
 	int tileHeight = 64
 	int numElements = 6
+	int pageFillDirection = eGridPageFillDirection.RIGHT
 	int pageType = eGridPageType.VERTICAL
 	int pageStyle = eGridPageStyle.DEFAULT
 	bool buttonAspectFixed = false
@@ -113,6 +123,7 @@ global struct GridMenuData
 
 	bool hasPageButtons = false
 	bool useCategories = false
+	bool forceHeaderAndFooterLayoutForSinglePage = false
 
 	bool functionref( var button, int index ) initCallback
 	void functionref( var button, int index ) getFocusCallback
@@ -130,7 +141,7 @@ struct
 
 void function GridMenuInit( var menu, GridMenuData data )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 
 	string menuName = Hud_GetHudName( menu )
 	if (!( menuName in file.menuData ))
@@ -142,7 +153,7 @@ void function GridMenuInit( var menu, GridMenuData data )
 	{
 		button.s.parentPanel <- menu
 		Hud_SetEnabled( button, true )
-		button.Show()
+		Hud_Show( button )
 	}
 
 	if ( !data.isInitialized )
@@ -150,16 +161,16 @@ void function GridMenuInit( var menu, GridMenuData data )
 		if ( Hud_HasChild( panel, "PageButton0" ) )
 		{
 			data.hasPageButtons = true
-			Hud_AddEventHandler( panel.GetChild( "PageButtonR" ), UIE_CLICK, OnBtnNextPage )
-			Hud_AddEventHandler( panel.GetChild( "PageButtonD" ), UIE_CLICK, OnBtnNextPage )
-			Hud_AddEventHandler( panel.GetChild( "PageButtonU" ), UIE_CLICK, OnBtnPrevPage )
-			Hud_AddEventHandler( panel.GetChild( "PageButtonL" ), UIE_CLICK, OnBtnPrevPage )
+			Hud_AddEventHandler( Hud_GetChild( panel, "PageButtonR" ), UIE_CLICK, OnBtnNextPage )
+			Hud_AddEventHandler( Hud_GetChild( panel, "PageButtonD" ), UIE_CLICK, OnBtnNextPage )
+			Hud_AddEventHandler( Hud_GetChild( panel, "PageButtonU" ), UIE_CLICK, OnBtnPrevPage )
+			Hud_AddEventHandler( Hud_GetChild( panel, "PageButtonL" ), UIE_CLICK, OnBtnPrevPage )
 		}
 
-		Hud_AddEventHandler( panel.GetChild( "PageDownHidden" ), UIE_GET_FOCUS, OnBtnHiddenNextPage )
-		Hud_AddEventHandler( panel.GetChild( "PageRightHidden" ), UIE_GET_FOCUS, OnBtnHiddenNextPage )
-		Hud_AddEventHandler( panel.GetChild( "PageUpHidden" ), UIE_GET_FOCUS, OnBtnHiddenPrevPage )
-		Hud_AddEventHandler( panel.GetChild( "PageLeftHidden" ), UIE_GET_FOCUS, OnBtnHiddenPrevPage )
+		Hud_AddEventHandler( Hud_GetChild( panel, "PageDownHidden" ), UIE_GET_FOCUS, OnBtnHiddenNextPage )
+		Hud_AddEventHandler( Hud_GetChild( panel, "PageRightHidden" ), UIE_GET_FOCUS, OnBtnHiddenNextPage )
+		Hud_AddEventHandler( Hud_GetChild( panel, "PageUpHidden" ), UIE_GET_FOCUS, OnBtnHiddenPrevPage )
+		Hud_AddEventHandler( Hud_GetChild( panel, "PageLeftHidden" ), UIE_GET_FOCUS, OnBtnHiddenPrevPage )
 
 		array<var> buttons = GetElementsByClassname( menu, "GridButtonClass" )
 		AddEventHandlerToButtonClass( menu, "GridButtonClass", UIE_GET_FOCUS, OnGridButtonGetFocus )
@@ -204,9 +215,9 @@ void function GridMenuInit( var menu, GridMenuData data )
 
 			int numPages = Grid_GetNumPages( data )
 			if ( numPages > 1 )
-				data.pagerPanel.Show()
+				Hud_Show( data.pagerPanel )
 			else
-				data.pagerPanel.Hide()
+				Hud_Hide( data.pagerPanel )
 
 			if ( Hud_HasChild( panel, "PageButtonL" ) )
 			{
@@ -250,34 +261,34 @@ void function GridMenuInit( var menu, GridMenuData data )
 				int panelWidth = Hud_GetWidth( panel )
 				int gridWidth = ContentScaledYAsInt( data.paddingVert ) + ( data.columns * ( data.tileWidth + ContentScaledYAsInt( data.paddingVert ) ) )
 
-				int buttonWidth = expect int( panel.GetChild( "PageButtonL" ).GetWidth() )
-				int buttonHeight = expect int( panel.GetChild( "PageButtonL" ).GetHeight() )
+				int buttonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
+				int buttonHeight = Hud_GetHeight( Hud_GetChild( panel, "PageButtonL" ) )
 
 				int yPos = (( (data.rows) * (data.tileHeight+ContentScaledXAsInt( data.paddingHorz ) ) ) / 2) - (buttonHeight/2)
 
-				panel.GetChild( "PageButtonL" ).SetPos( 0, yPos )
-				//panel.GetChild( "PageButtonR" ).SetPos( gridWidth + (data.paddingHorz)*2, yPos )
-				panel.GetChild( "PageButtonR" ).SetPos( panelWidth - buttonWidth, yPos )
+				Hud_SetPos( Hud_GetChild( panel, "PageButtonL" ), 0, yPos )
+				//Hud_SetPos( Hud_GetChild( panel, "PageButtonR" ), gridWidth + (data.paddingHorz)*2, yPos )
+				Hud_SetPos( Hud_GetChild( panel, "PageButtonR" ), panelWidth - buttonWidth, yPos )
 
-				panel.GetChild( "PageButtonL" ).s.parentPanel <- menu
-				panel.GetChild( "PageButtonR" ).s.parentPanel <- menu
+				Hud_GetChild( panel, "PageButtonL" ).s.parentPanel <- menu
+				Hud_GetChild( panel, "PageButtonR" ).s.parentPanel <- menu
 			}
 			else if ( data.pageStyle == eGridPageStyle.BIG )
 			{
-				int buttonWidth = expect int( panel.GetChild( "PageButtonL" ).GetWidth() )
-				int buttonHeight = expect int( panel.GetChild( "PageButtonL" ).GetHeight() )
+				int buttonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
+				int buttonHeight = Hud_GetHeight( Hud_GetChild( panel, "PageButtonL" ) )
 				float placementHeight = ((data.tileHeight * data.rows) + (ContentScaledYAsInt( data.paddingVert ) * (data.rows + 1))) * 0.5
-				panel.GetChild( "PageButtonL" ).SetPos( 0, placementHeight - (buttonHeight * 0.5) )
-				panel.GetChild( "PageButtonR" ).SetPos( Grid_GetPanelWidth( menu ) - buttonWidth, placementHeight - (buttonHeight * 0.5) )
+				Hud_SetPos( Hud_GetChild( panel, "PageButtonL" ), 0, placementHeight - (buttonHeight * 0.5) )
+				Hud_SetPos( Hud_GetChild( panel, "PageButtonR" ), Grid_GetPanelWidth( menu ) - buttonWidth, placementHeight - (buttonHeight * 0.5) )
 
-				panel.GetChild( "PageButtonL" ).s.parentPanel <- menu
-				panel.GetChild( "PageButtonR" ).s.parentPanel <- menu
+				Hud_GetChild( panel, "PageButtonL" ).s.parentPanel <- menu
+				Hud_GetChild( panel, "PageButtonR" ).s.parentPanel <- menu
 			}
 
 			if ( numPages > 1 )
 			{
-				int pageButtonWidth = expect int( panel.GetChild( PAGE_BTN_PREFIX + "0" ).GetWidth() )
-				int pageButtonHeight = expect int( panel.GetChild( PAGE_BTN_PREFIX + "0" ).GetHeight() )
+				int pageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, PAGE_BTN_PREFIX + "0" ) )
+				int pageButtonHeight = Hud_GetHeight( Hud_GetChild( panel, PAGE_BTN_PREFIX + "0" ) )
 
 				int padding = pageButtonWidth
 				if ( data.pageType == eGridPageType.VERTICAL )
@@ -298,15 +309,15 @@ void function GridMenuInit( var menu, GridMenuData data )
 
 				for ( int i = 0; i < numPages; i++ )
 				{
-					var pageButton = panel.GetChild( PAGE_BTN_PREFIX + i )
+					var pageButton = Hud_GetChild( panel, PAGE_BTN_PREFIX + i )
 					pageButton.s.parentPanel <- menu
-					pageButton.Show()
+					Hud_Show( pageButton )
 					Hud_SetEnabled( pageButton, true )
 
 					if ( data.pageType == eGridPageType.HORIZONTAL )
-						pageButton.SetPos( startX + (pageButtonWidth+padding)*i, (data.rows) * (data.tileHeight+ContentScaledXAsInt( data.paddingHorz )) + startY )
+						Hud_SetPos( pageButton, startX + (pageButtonWidth+padding)*i, (data.rows) * (data.tileHeight+ContentScaledXAsInt( data.paddingHorz )) + startY )
 					else
-						pageButton.SetPos( (data.columns) * (data.tileWidth+ContentScaledYAsInt( data.paddingVert )), startY + (pageButtonHeight+padding)*i )
+						Hud_SetPos( pageButton, (data.columns) * (data.tileWidth+ContentScaledYAsInt( data.paddingVert )), startY + (pageButtonHeight+padding)*i )
 
 					Hud_AddEventHandler( pageButton, UIE_CLICK, OnPageButtonClick )
 				}
@@ -314,19 +325,19 @@ void function GridMenuInit( var menu, GridMenuData data )
 		}
 		else if ( data.pageType == eGridPageType.VERTICAL )
 		{
-			int buttonWidth = expect int( panel.GetChild( "PageButtonU" ).GetWidth() )
-			int buttonHeight = expect int( panel.GetChild( "PageButtonU" ).GetHeight() )
+			int buttonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonU" ) )
+			int buttonHeight = Hud_GetHeight( Hud_GetChild( panel, "PageButtonU" ) )
 
 			int panelHeight = Hud_GetHeight( panel )
 			int gridHeight = ContentScaledXAsInt( data.paddingHorz ) + ( data.rows * ( data.tileHeight + ContentScaledXAsInt( data.paddingHorz ) ) )
 
 			int xPos = (( (data.columns) * (data.tileWidth+ContentScaledYAsInt( data.paddingVert )) ) / 2) - (buttonWidth/2)
 
-			panel.GetChild( "PageButtonU" ).SetPos( xPos, 0 )
-			panel.GetChild( "PageButtonD" ).SetPos( xPos, Grid_GetPanelHeight( menu ) - buttonHeight )
+			Hud_SetPos( Hud_GetChild( panel, "PageButtonU" ), xPos, 0 )
+			Hud_SetPos( Hud_GetChild( panel, "PageButtonD" ), xPos, Grid_GetPanelHeight( menu ) - buttonHeight )
 
-			panel.GetChild( "PageButtonU" ).s.parentPanel <- menu
-			panel.GetChild( "PageButtonD" ).s.parentPanel <- menu
+			Hud_GetChild( panel, "PageButtonU" ).s.parentPanel <- menu
+			Hud_GetChild( panel, "PageButtonD" ).s.parentPanel <- menu
 		}
 	}
 
@@ -339,7 +350,7 @@ void function GridMenuInit( var menu, GridMenuData data )
 
 void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false, bool initData = true )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 
 	int maxPerPage = Grid_GetMaxPerPage( data )
 	int numPages = Grid_GetNumPages( data )
@@ -347,12 +358,12 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 	string menuName = Hud_GetHudName( menu )
 
 	int firstElem = data.currentPage * maxPerPage
-	int lastElem = ((data.currentPage+1) * maxPerPage)
+	int lastElem = ((data.currentPage + 1) * maxPerPage) - 1
 
 	bool isFirstPage = data.currentPage == 0
 	bool isLastPage = data.currentPage == numPages - 1
 
-	for ( int i=firstElem; i<lastElem; i++ )
+	for ( int i = firstElem; i <= lastElem; i++ )
 	{
 		int row = Grid_GetRowFromElementNumber( i, data )
 		int col = Grid_GetColumnFromElementNumber( i, data )
@@ -360,18 +371,18 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 		int xPos = ( ( ContentScaledXAsInt( data.paddingHorz ) + data.tileWidth ) * col ) + ContentScaledXAsInt( data.panelLeftPadding )
 		int yPos = ( ( ContentScaledYAsInt( data.paddingVert ) + data.tileHeight ) * row ) + ContentScaledYAsInt( data.panelTopPadding )
 
-		if ( numPages > 1 )
+		if ( numPages > 1 || data.forceHeaderAndFooterLayoutForSinglePage )
 		{
 			if ( data.hasPageButtons )
 			{
 				if ( data.pageType == eGridPageType.HORIZONTAL )
 				{
-					int buttonWidth = expect int( panel.GetChild( "PageButtonL" ).GetWidth() )
+					int buttonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
 					xPos += buttonWidth + ContentScaledXAsInt( data.paddingHorz * 2)
 				}
 				else
 				{
-					int buttonHeight = expect int( panel.GetChild( "PageButtonU" ).GetHeight() )
+					int buttonHeight = Hud_GetHeight( Hud_GetChild( panel, "PageButtonU" ) )
 					yPos += buttonHeight + ContentScaledYAsInt( data.paddingVert )
 
 				}
@@ -383,10 +394,16 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 
 				int panelWidth = Hud_GetWidth( panel ) - ContentScaledXAsInt( data.panelLeftPadding + data.panelRightPadding )
 				int panelHeight = Hud_GetHeight( panel ) - ContentScaledYAsInt( data.panelTopPadding + data.panelBottomPadding )
+
 				Hud_SetX( data.pagerPanel, ContentScaledXAsInt( data.panelLeftPadding ) )
 				Hud_SetWidth( data.pagerPanel, panelWidth )
-				Hud_SetWidth( Hud_GetChild( data.pagerPanel, "Anchor" ), panelWidth )
-				Hud_SetHeight( Hud_GetChild( data.pagerPanel, "Anchor" ), panelHeight )
+
+				int anchorWidth	= panelWidth
+				int anchorHeight = Hud_GetHeight( Hud_GetParent( data.pagerPanel_anchor ) )
+
+				Hud_SetWidth( data.pagerPanel_anchor, anchorWidth )
+				Hud_SetHeight( data.pagerPanel_anchor, anchorHeight )
+
 				Hud_SetWidth( data.pagerPanel_name, panelWidth )
 				Hud_SetWidth( data.pagerPanel_subText, panelWidth )
 
@@ -409,11 +426,20 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 					pageName = data.pageNameCallback( data.currentPage, numPages )
 
 				if ( data.footerPanel != null )
-					Hud_SetText( data.footerPanel, Localize( "#GRID_PAGE_N_OF_N", data.currentPage + 1, numPages ) )
+				{
+					if ( numPages > 1 )
+					{
+						Hud_SetText( data.footerPanel, Localize( "#GRID_PAGE_N_OF_N", data.currentPage + 1, numPages ) )
+						Hud_Show( data.footerPanel )
+					}
+					else
+					{
+						Hud_Hide( data.footerPanel )
+					}
+				}
 
 				RuiSetString( labelRui, "buttonText", Localize( pageName )  )
 			}
-
 		}
 
 		if ( data.panel_frame != null )
@@ -429,8 +455,8 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 		}
 
 		var elem = Grid_GetButtonAtRowColumn( menu, row, col )
-		elem.SetSize( data.tileWidth, data.tileHeight )
-		elem.SetPos( xPos, yPos )
+		Hud_SetSize( elem, data.tileWidth, data.tileHeight )
+		Hud_SetPos( elem, xPos, yPos )
 
 		elem.s.elemNum <- i
 		elem.s.parentPanel <- menu
@@ -453,20 +479,20 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 
 			if ( didInitializeButton )
 			{
-				elem.Show()
+				Hud_Show( elem )
 				if ( forceShow && data.buttonFadeCallback != null )
 					data.buttonFadeCallback( elem, 255, 0.0 )
 				Hud_SetEnabled( elem, true )
 			}
 			else
 			{
-				elem.Hide()
+				Hud_Hide( elem )
 				Hud_SetEnabled( elem, false )
 			}
 		}
 		else
 		{
-			elem.Hide()
+			Hud_Hide( elem )
 			Hud_SetEnabled( elem, false )
 		}
 	}
@@ -487,7 +513,7 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 					if ( isFirstPage )
 						elem.SetNavLeft( elem )
 					else
-						elem.SetNavLeft( panel.GetChild( "PageLeftHidden" ) )
+						elem.SetNavLeft( Hud_GetChild( panel, "PageLeftHidden" ) )
 
 					elem.SetNavRight( Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex + 1 ) )
 				}
@@ -497,7 +523,7 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 					if ( isLastPage )
 						elem.SetNavRight( elem )
 					else
-						elem.SetNavRight( panel.GetChild( "PageRightHidden" ) )
+						elem.SetNavRight( Hud_GetChild( panel, "PageRightHidden" ) )
 				}
 				else
 				{
@@ -581,39 +607,39 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 	}
 	else
 	{
-		for ( int i = firstElem; i < data.numElements && i < lastElem; i++ )
+		for ( int i = firstElem; i < data.numElements && i <= lastElem; i++ )
 		{
 			int row = Grid_GetRowFromElementNumber( i, data )
 			int col = Grid_GetColumnFromElementNumber( i, data )
 			var elem = Grid_GetButtonAtRowColumn( menu, row, col )
 
-			if ( row < data.rows - 1 && i + data.columns < data.numElements )
+			if ( IsPageDownEdge( row, data ) )
+				elem.SetNavDown( Hud_GetChild( panel, "PageDownHidden" ) )
+			else if ( row + 1 < data.rows && Hud_IsVisible( Grid_GetButtonAtRowColumn( menu, row + 1, col ) ) )
 				elem.SetNavDown( Grid_GetButtonAtRowColumn( menu, row + 1, col ) )
-			else if ( data.currentPage < numPages - 1 && data.pageType == eGridPageType.VERTICAL )
-				elem.SetNavDown( panel.GetChild( "PageDownHidden" ) )
 			else
 				elem.SetNavDown( elem )
 
-			if ( row > 0 )
+			if ( IsPageUpEdge( row, data ) )
+				elem.SetNavUp( Hud_GetChild( panel, "PageUpHidden" ) )
+			else if ( row - 1 >= 0 && Hud_IsVisible( Grid_GetButtonAtRowColumn( menu, row - 1, col ) ) )
 				elem.SetNavUp( Grid_GetButtonAtRowColumn( menu, row - 1, col ) )
-			else if ( data.currentPage > 0 && data.pageType == eGridPageType.VERTICAL )
-				elem.SetNavUp( panel.GetChild( "PageUpHidden" ) )
 			else
 				elem.SetNavUp( elem )
 
-			if ( col > 0 )
-				elem.SetNavLeft( Grid_GetButtonAtRowColumn( menu, row, col - 1 ) )
-			else if ( data.currentPage > 0 && data.pageType == eGridPageType.HORIZONTAL )
-				elem.SetNavLeft( panel.GetChild( "PageLeftHidden" ) )
-			else
-				elem.SetNavLeft( elem )
-
-			if ( col < data.columns - 1 && i + 1 < data.numElements )
+			if ( IsPageRightEdge( col, data ) )
+				elem.SetNavRight( Hud_GetChild( panel, "PageRightHidden" ) )
+			else if ( col + 1 < data.columns && Hud_IsVisible( Grid_GetButtonAtRowColumn( menu, row, col + 1 ) ) )
 				elem.SetNavRight( Grid_GetButtonAtRowColumn( menu, row, col + 1 ) )
-			else if ( data.currentPage < numPages - 1 && data.pageType == eGridPageType.HORIZONTAL )
-				elem.SetNavRight( panel.GetChild( "PageRightHidden" ) )
 			else
 				elem.SetNavRight( elem )
+
+			if ( IsPageLeftEdge( col, data ) )
+				elem.SetNavLeft( Hud_GetChild( panel, "PageLeftHidden" ) )
+			else if ( col - 1 >= 0 && Hud_IsVisible( Grid_GetButtonAtRowColumn( menu, row, col - 1 ) ) )
+				elem.SetNavLeft( Grid_GetButtonAtRowColumn( menu, row, col - 1 ) )
+			else
+				elem.SetNavLeft( elem )
 		}
 	}
 
@@ -653,20 +679,20 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 	{
 		SelectPageButton( menu, data, data.currentPage )
 
-		panel.GetChild( "PageButtonL" ).Hide()
-		panel.GetChild( "PageButtonR" ).Hide()
-		panel.GetChild( "PageButtonU" ).Hide()
-		panel.GetChild( "PageButtonD" ).Hide()
+		Hud_Hide( Hud_GetChild( panel, "PageButtonL" ) )
+		Hud_Hide( Hud_GetChild( panel, "PageButtonR" ) )
+		Hud_Hide( Hud_GetChild( panel, "PageButtonU" ) )
+		Hud_Hide( Hud_GetChild( panel, "PageButtonD" ) )
 
 		if ( data.currentPage > 0 )
 		{
 			if ( data.pageType == eGridPageType.HORIZONTAL )
 			{
-				panel.GetChild( "PageButtonL" ).Show()
+				Hud_Show( Hud_GetChild( panel, "PageButtonL" ) )
 			}
 			else
 			{
-				panel.GetChild( "PageButtonU" ).Show()
+				Hud_Show( Hud_GetChild( panel, "PageButtonU" ) )
 			}
 		}
 
@@ -674,11 +700,11 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 		{
 			if ( data.pageType == eGridPageType.HORIZONTAL )
 			{
-				panel.GetChild( "PageButtonR" ).Show()
+				Hud_Show( Hud_GetChild( panel, "PageButtonR" ) )
 			}
 			else
 			{
-				panel.GetChild( "PageButtonD" ).Show()
+				Hud_Show( Hud_GetChild( panel, "PageButtonD" ) )
 			}
 		}
 	}
@@ -763,7 +789,7 @@ var function GetBestNavFocus( var menu )
 		{
 			int elemIndex = -1
 			int checkRow = lastRow
-			while ( elemIndex == - 1 )
+			while ( elemIndex == -1 )
 			{
 				elemIndex = GetRow_RightMostIndex( menu, checkRow )
 				checkRow--
@@ -776,7 +802,7 @@ var function GetBestNavFocus( var menu )
 		{
 			int elemIndex = -1
 			int checkRow = lastRow
-			while ( elemIndex == - 1 )
+			while ( elemIndex == -1 )
 			{
 				elemIndex = GetRow_LeftMostIndex( menu, checkRow )
 				checkRow--
@@ -792,7 +818,7 @@ var function GetBestNavFocus( var menu )
 		{
 			int elemIndex = -1
 			int checkCol = lastCol
-			while ( elemIndex == - 1 )
+			while ( elemIndex == -1 )
 			{
 				elemIndex = GetColumn_BottomMostIndex( menu, checkCol )
 				checkCol--
@@ -805,7 +831,7 @@ var function GetBestNavFocus( var menu )
 		{
 			int elemIndex = -1
 			int checkCol = lastCol
-			while ( elemIndex == - 1 )
+			while ( elemIndex == -1 )
 			{
 				elemIndex = GetColumn_TopMostIndex( menu, checkCol )
 				checkCol--
@@ -822,19 +848,19 @@ var function GetBestNavFocus( var menu )
 
 void function SelectPageButton( var menu, GridMenuData data, int pageNum )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
-	var button = panel.GetChild( PAGE_BTN_PREFIX + pageNum )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
+	var button = Hud_GetChild( panel, PAGE_BTN_PREFIX + pageNum )
 
 	if ( data.lastPageButtonSelected != null )
 	{
-		data.lastPageButtonSelected.SetSelected( false )
+		Hud_SetSelected( data.lastPageButtonSelected, false )
 	}
 
-	button.SetSelected( true )
+	Hud_SetSelected( button, true )
 	data.lastPageButtonSelected = button
 }
 
-void function Grid_MenuOpened( var menu )
+void function Grid_RegisterPageNavInputs( var menu )
 {
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data = file.menuData[parentPanelName]
@@ -848,7 +874,7 @@ void function Grid_MenuOpened( var menu )
 	}
 }
 
-void function Grid_MenuClosed(  var menu )
+void function Grid_DeregisterPageNavInputs( var menu )
 {
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data = file.menuData[parentPanelName]
@@ -1014,7 +1040,7 @@ void function ReselectLastElementSelected( GridMenuData data, var menu )
 
 	printt( "selecting: " + col + ", " + row )
 
-	focusButton.Show()
+	Hud_Show( focusButton )
 	Hud_SetEnabled( focusButton, true )
 	Hud_SetFocused( focusButton )
 }
@@ -1065,8 +1091,8 @@ void function TransitionPage( var menu, GridMenuData data, int pageNum, int tran
 
 var function Grid_GetButtonAtRowColumn( var menu, int row, int col )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
-	return panel.GetChild( GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
+	return Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
 }
 
 var function Grid_GetButtonForElementNumber( var menu, int elemNum )
@@ -1142,16 +1168,46 @@ void function OnGridButtonClick( var button )
 
 int function Grid_GetRowFromElementNumber( int elemNum, GridMenuData data )
 {
-	int pageNum = Grid_GetPageFromElementNumber( elemNum, data )
+	Assert( data.pageFillDirection == eGridPageFillDirection.DOWN || 
+			data.pageFillDirection == eGridPageFillDirection.RIGHT )
 
-	int rowsBeforeMe = pageNum * data.rows
+	int row
 
-	return ( (elemNum / data.columns) - rowsBeforeMe )
+	if ( data.pageFillDirection == eGridPageFillDirection.RIGHT )
+	{
+		int pageNum = Grid_GetPageFromElementNumber( elemNum, data )
+		int rowsBeforeMe = pageNum * data.rows
+
+		row = (elemNum / data.columns) - rowsBeforeMe
+	}
+	else
+	{
+		row = elemNum % data.rows
+	}
+
+	return row
 }
 
 int function Grid_GetColumnFromElementNumber( int elemNum, GridMenuData data )
 {
-	return (elemNum % data.columns)
+	Assert( data.pageFillDirection == eGridPageFillDirection.DOWN || 
+			data.pageFillDirection == eGridPageFillDirection.RIGHT )
+
+	int col
+
+	if ( data.pageFillDirection == eGridPageFillDirection.RIGHT )
+	{
+		col = elemNum % data.columns
+	}
+	else
+	{
+		int pageNum = Grid_GetPageFromElementNumber( elemNum, data )
+		int columnsBeforeMe = pageNum * data.columns
+
+		col = (elemNum / data.rows) - columnsBeforeMe
+	}
+
+	return col
 }
 
 int function Grid_GetPageFromElementNumber( int elemNum, GridMenuData data )
@@ -1167,6 +1223,9 @@ int function Grid_GetNumPages( GridMenuData data )
 
 	if ( data.numElements % maxPerPage > 0 )
 		numPages += 1
+
+	if ( numPages < 1 )
+		numPages = 1
 
 	return numPages
 }
@@ -1217,23 +1276,23 @@ int function Grid_GetRowsOnCurrentPage( GridMenuData data )
 
 int function Grid_GetPanelWidth( var menu )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
-	int panelWidth = expect int( panel.GetWidth() )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
+	int panelWidth = Hud_GetWidth( panel )
 	return panelWidth
 }
 
 int function Grid_GetPanelHeight( var menu )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
-	int panelHeight = expect int( panel.GetHeight() )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
+	int panelHeight = Hud_GetHeight( panel )
 	return panelHeight
 }
 
 int function Grid_GetMaxWidthForSettings( var menu, GridMenuData data )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 
-	int panelWidth = expect int( panel.GetWidth() )
+	int panelWidth = Hud_GetWidth( panel )
 	int columns = data.columns
 	int padding = ContentScaledXAsInt( data.paddingHorz )
 
@@ -1244,13 +1303,13 @@ int function Grid_GetMaxWidthForSettings( var menu, GridMenuData data )
 	{
 		if ( data.pageType == eGridPageType.VERTICAL )
 		{
-			var pageButton = panel.GetChild( PAGE_BTN_PREFIX + "0" )
-			panelWidth -= expect int( pageButton.GetWidth() ) + padding
+			var pageButton = Hud_GetChild( panel, PAGE_BTN_PREFIX + "0" )
+			panelWidth -= Hud_GetWidth( pageButton ) + padding
 		}
 		else
 		{
-			var pageButton = panel.GetChild( "PageButtonL" )
-			panelWidth -= (expect int( pageButton.GetWidth() ) + padding)*2
+			var pageButton = Hud_GetChild( panel, "PageButtonL" )
+			panelWidth -= ( Hud_GetWidth( pageButton ) + padding ) * 2
 		}
 	}
 
@@ -1260,9 +1319,9 @@ int function Grid_GetMaxWidthForSettings( var menu, GridMenuData data )
 
 int function Grid_GetMaxHeightForSettings( var menu, GridMenuData data )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 
-	int panelHeight = expect int( panel.GetHeight() )
+	int panelHeight = Hud_GetHeight( panel )
 	int rows = data.rows
 	int padding = ContentScaledYAsInt( data.paddingVert )
 
@@ -1273,8 +1332,8 @@ int function Grid_GetMaxHeightForSettings( var menu, GridMenuData data )
 		int numPages = Grid_GetNumPages( data )
 		if ( numPages > 1 )
 		{
-			var pageButton = panel.GetChild( PAGE_BTN_PREFIX + "0" )
-			panelHeight -= expect int(pageButton.GetHeight()) + padding + padding
+			var pageButton = Hud_GetChild( panel, PAGE_BTN_PREFIX + "0" )
+			panelHeight -= Hud_GetHeight( pageButton ) + padding + padding
 		}
 	}
 
@@ -1286,7 +1345,7 @@ void function PageTransition( var menu, GridMenuData data, int alpha, int direct
 {
 	Assert( direction == 1 || direction == -1 )
 
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 
 	float fadeTime = BTN_FADE_TIME
 	float fadeDelay = BTN_FADE_DELAY
@@ -1332,14 +1391,14 @@ void function PageTransition( var menu, GridMenuData data, int alpha, int direct
 
 void function Grid_FadeDefaultElementChildren( var elem, int fadeTarget, float fadeTime )
 {
-	elem.GetChild( "BackgroundNormal" ).FadeOverTime( fadeTarget, fadeTime )
-	elem.GetChild( "ImageNormal" ).FadeOverTime( fadeTarget, fadeTime )
+	Hud_FadeOverTime( Hud_GetChild( elem, "BackgroundNormal" ), fadeTarget, fadeTime )
+	Hud_FadeOverTime( Hud_GetChild( elem, "ImageNormal" ), fadeTarget, fadeTime )
 }
 
 
 void function Grid_AutoTileSettings( var menu, GridMenuData gridData )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 	int panelWidth = Grid_GetPanelWidth( menu ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
 	int panelHeight = Grid_GetPanelHeight( menu ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
 
@@ -1348,8 +1407,8 @@ void function Grid_AutoTileSettings( var menu, GridMenuData gridData )
 		int paddingCount = gridData.columns - 1
 		if ( gridData.pageStyle == eGridPageStyle.BIG )
 		{
-			int lPageButtonWidth = expect int( panel.GetChild( "PageButtonL" ).GetWidth() )
-			int rPageButtonWidth = expect int( panel.GetChild( "PageButtonR" ).GetWidth() )
+			int lPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
+			int rPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonR" ) )
 
 			panelWidth -= lPageButtonWidth
 			panelWidth -= rPageButtonWidth
@@ -1381,7 +1440,7 @@ void function Grid_AutoTileSettings( var menu, GridMenuData gridData )
 
 void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 {
-	var panel = menu.GetChild( GRID_PANEL_NAME )
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
 	int panelWidth = Grid_GetPanelWidth( menu ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
 	int panelHeight = Grid_GetPanelHeight( menu ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
 
@@ -1392,7 +1451,7 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 		float baseWidth = float( gridData.tileWidth )
 		float baseHeight = float( gridData.tileHeight )
 
-		int numPages = Grid_GetNumPages( gridData )
+		//int numPages = Grid_GetNumPages( gridData )
 
 		float tileAspectA = baseHeight / baseWidth
 		float tileAspectB = baseWidth / baseHeight
@@ -1405,8 +1464,8 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 
 		//if ( numPages > 1 )
 		//{
-		//	var pageButton = panel.GetChild( "PageButtonU" )
-		//	panelHeight -= (expect int( pageButton.GetHeight() ) + gridData.paddingVert)*2
+		//	var pageButton = Hud_GetChild( panel, "PageButtonU" )
+		//	panelHeight -= (Hud_GetHeight( pageButton ) + gridData.paddingVert)*2
 		//}
 
 		int tileWidthA = panelWidth / gridData.columns
@@ -1429,8 +1488,8 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 		//int paddingCount = gridData.columns - 1
 		//if ( gridData.pageStyle == eGridPageStyle.BIG )
 		//{
-		//	int lPageButtonWidth = expect int( panel.GetChild( "PageButtonL" ).GetWidth() )
-		//	int rPageButtonWidth = expect int( panel.GetChild( "PageButtonR" ).GetWidth() )
+		//	int lPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
+		//	int rPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonR" ) )
 		//
 		//	panelWidth -= lPageButtonWidth
 		//	panelWidth -= rPageButtonWidth
@@ -1464,8 +1523,8 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 
 		if ( numPages > 1 )
 		{
-			var pageButton = panel.GetChild( "PageButtonU" )
-			panelHeight -= (expect int( pageButton.GetHeight() ) + ContentScaledYAsInt( gridData.paddingVert ) )*2
+			var pageButton = Hud_GetChild( panel, "PageButtonU" )
+			panelHeight -= (Hud_GetHeight( pageButton ) + ContentScaledYAsInt( gridData.paddingVert ) )*2
 		}
 
 		int tileWidthA = panelWidth / gridData.columns
@@ -1529,7 +1588,7 @@ table< int, var > function Grid_GetActivePageButtons( var menu )
 
 int function Grid_GetRowFromButtonName( var button )
 {
-	// panel.GetChild( GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
 	string name = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int row = int( split( rowByCol, GRID_BTN_DELIM )[0] )
@@ -1538,7 +1597,7 @@ int function Grid_GetRowFromButtonName( var button )
 
 int function Grid_GetColFromButtonName( var button )
 {
-	// panel.GetChild( GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
 	string name = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int col = int( split( rowByCol, GRID_BTN_DELIM )[1] )
@@ -1587,4 +1646,80 @@ void function Grid_SetSubText( var menu, string subText, bool isLocked = false )
 	{
 		Hud_SetText( gridData.pagerPanel_subText, subText )
 	}
+}
+
+void function Grid_SetReadyState( var menu, bool ready )
+{
+	string parentPanelName = Hud_GetHudName( menu )
+	GridMenuData data = file.menuData[parentPanelName]
+
+	array<var> buttons = GetElementsByClassname( menu, "GridButtonClass" )
+	array<var> navButtons = GetElementsByClassname( menu, "GridButtonNav" )
+
+	var panel = Hud_GetChild( menu, GRID_PANEL_NAME )
+	var spinner = Hud_GetChild( panel, "Spinner" )
+
+	if ( ready == false )
+	{
+		foreach ( button in buttons )
+			Hud_Hide( button )
+
+		foreach ( button in navButtons )
+			Hud_Hide( button )
+
+		Hud_Show( spinner )
+
+		if ( data.pagerPanel != null )
+			Hud_Hide( data.pagerPanel )
+
+		Grid_DeregisterPageNavInputs( menu )
+	}
+	else
+	{
+		Hud_Hide( spinner )
+
+		if ( Grid_GetNumPages( data ) > 1 )
+		{
+			if ( data.pagerPanel != null )
+				Hud_Show( data.pagerPanel )
+		}
+
+		Grid_RegisterPageNavInputs( menu )
+	}
+}
+
+bool function IsPageRightEdge( int col, GridMenuData data )
+{
+	bool result = false
+	if ( col == data.columns - 1 && data.pageType == eGridPageType.HORIZONTAL && data.currentPage < Grid_GetNumPages( data ) - 1 )
+		result = true
+
+	return result
+}
+
+bool function IsPageLeftEdge( int col, GridMenuData data )
+{
+	bool result = false
+	if ( col == 0 && data.pageType == eGridPageType.HORIZONTAL && data.currentPage > 0 )
+		result = true
+
+	return result
+}
+
+bool function IsPageDownEdge( int row, GridMenuData data )
+{
+	bool result = false
+	if ( row == data.rows - 1 && data.pageType == eGridPageType.VERTICAL && data.currentPage < Grid_GetNumPages( data ) - 1 )
+		result = true
+
+	return result
+}
+
+bool function IsPageUpEdge( int row, GridMenuData data )
+{
+	bool result = false
+	if ( row == 0 && data.pageType == eGridPageType.VERTICAL && data.currentPage > 0 )
+		result = true
+
+	return result
 }

@@ -20,7 +20,7 @@ const string FLAME_WALL_GROUND_MIDDLE_SFX = "flamewall_flame_burn_middle"
 const string FLAME_WALL_GROUND_END_SFX = "flamewall_flame_burn_end"
 
 global const float FLAME_WALL_THERMITE_DURATION = 5.2
-global const float PAS_SCORCH_FIREWALL_DURATION = 7.2
+global const float PAS_SCORCH_FIREWALL_DURATION = 5.2
 global const float SP_FLAME_WALL_DURATION_SCALE = 1.75
 
 void function MpTitanweaponFlameWall_Init()
@@ -126,9 +126,6 @@ bool function CreateThermiteWallSegment( entity projectile, int projectileCount,
 
 	if ( projectile.proj.savedOrigin != < -999999.0, -999999.0, -999999.0 > )
 	{
-		if ( IsRayTouchingSmokescreen( projectile.proj.savedOrigin, pos, owner.GetTeam() ) )
-			return false
-
 		array<string> mods = projectile.ProjectileGetMods()
 		float duration
 		int damageSource

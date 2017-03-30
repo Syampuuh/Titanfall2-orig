@@ -82,8 +82,21 @@ function ClScoreboardMp_Init()
 
 void function ScoreboardFocus( entity player )
 {
-	if ( !level.showingScoreboard )
+	#if MP && DEVSCRIPTS
+	if ( IsDisplayingDpadComms( player ) )
+	{
+		ActivateDpadComms( player, 1 ) // right
 		return
+	}
+	#endif
+
+	if ( !level.showingScoreboard )
+	{
+		#if DEVSCRIPTS
+		EnableDpadComms( player )
+		#endif
+		return
+	}
 
 	EmitSoundOnEntity( player, "menu_click" )
 	file.hasFocus = true
@@ -134,7 +147,7 @@ int function GetEnemyScoreboardTeam()
 int function GetScoreboardDisplaySlotCount()
 {
 	int rawValue = expect int( level.maxTeamSize )
-	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 		rawValue = GetCurrentPlaylistVarInt( "max_players", 8 )
 
 	return minint( MAX_TEAM_SLOTS, rawValue )
@@ -171,7 +184,7 @@ function InitScoreboardMP()
 		score = HudElement( "ScoreboardEnemyTeamScore", scoreboard )
 	}
 
-	if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP)
+	if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP && GameRules_GetGameMode() != PVE_SANDBOX)
 	{
 		string myFaction = GetFactionChoice( localPlayer )
 		ItemDisplayData myDisplayData = GetItemDisplayData( myFaction )
@@ -220,7 +233,7 @@ function InitScoreboardMP()
 	file.header.gametypeAndMap.Show()
 	file.header.gametypeDesc.Show()
 
-	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 	{
 		file.teamElems[myTeam].logo.Hide()
 		file.teamElems[myTeam].score.Hide()
@@ -286,10 +299,16 @@ function ScoreboardFadeOut()
 
 function ShowScoreboardMP()
 {
+	entity localPlayer = GetLocalClientPlayer()
+
+	#if DEVSCRIPTS
+	if ( IsDisplayingDpadComms( localPlayer ) )
+		DisableDpadComms( localPlayer )
+	#endif
+
 	file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
-	entity localPlayer = GetLocalClientPlayer()
 	int myTeam = localPlayer.GetTeam()
 	int enemyTeam = GetEnemyScoreboardTeam()
 
@@ -313,7 +332,7 @@ function ShowScoreboardMP()
 	int teamHeight = SCOREBOARD_TEAM_LOGO_HEIGHT + SCOREBOARD_PLAYER_ROW_OFFSET + ( SCOREBOARD_PLAYER_ROW_HEIGHT + SCOREBOARD_PLAYER_ROW_SPACING ) * numTeamPlayersDisplayed - SCOREBOARD_PLAYER_ROW_SPACING
 	int scoreboardHeight
 
-	if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP)
+	if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP && GameRules_GetGameMode() != PVE_SANDBOX)
 	{
 		scoreboardHeight = SCOREBOARD_TITLE_HEIGHT + SCOREBOARD_SUBTITLE_HEIGHT + SCOREBOARD_TEAM_LOGO_OFFSET + teamHeight + SCOREBOARD_TEAM_LOGO_OFFSET + teamHeight + SCOREBOARD_FOOTER_HEIGHT
 	}
@@ -374,7 +393,7 @@ function ShowScoreboardMP()
 			}
 		}
 
-		if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+		if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 		{
 			teamPlayers[myTeam] = GetSortedPlayers( compareFunc, 0 )
 			teamPlayers[enemyTeam] = []
@@ -424,7 +443,7 @@ function ShowScoreboardMP()
 			}
 		}
 
-		if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP)
+		if ( !IsFFAGame() && GameRules_GetGameMode() != ATCOOP && GameRules_GetGameMode() != PVE_SANDBOX)
 		{
 			RuiSetInt( Hud_GetRui( file.teamElems[winningTeam].score ), "score", teamScore[winningTeam] )
 			RuiSetInt( Hud_GetRui( file.teamElems[losingTeam].score ), "score", teamScore[losingTeam] )
@@ -457,7 +476,7 @@ function ShowScoreboardMP()
 
 				var rui = Hud_GetRui( elemTable.background )
 				bool playerIsAlive = IsAlive( player )
-				if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+				if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 				{
 					if ( !playerIsAlive )
 						RuiSetFloat3( rui, "bgColor", <0.5, 0.5, 0.5> )
@@ -615,7 +634,7 @@ function ShowScoreboardMP()
 			int reservedCount
 			int connectingCount
 			int loadingCount
-			if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+			if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 			{
 				reservedCount = GetTotalPendingPlayersReserved()
 				connectingCount = GetTotalPendingPlayersConnecting()
@@ -660,7 +679,7 @@ function ShowScoreboardMP()
 				RuiSetImage( rui, "playerStatus", $"" )
 				RuiSetFloat3( rui, "bgColor", SCOREBOARD_EMPTY_COLOR )
 				RuiSetFloat( rui, "bgAlpha", SCOREBOARD_EMPTY_BG_ALPHA )
-				if ( (IsFFAGame() || GameRules_GetGameMode() == ATCOOP) && team != myTeam )
+				if ( (IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX) && team != myTeam )
 					RuiSetFloat( rui, "bgAlpha", 0.0 )
 				RuiSetImage( rui, "playerCard", $"" )
 				RuiSetInt( rui, "numScoreColumns", 0 )
@@ -858,7 +877,7 @@ asset function GetPlayerGenIcon( entity player )
 
 int function GetNumTeamPlayers()
 {
-	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP)
+	if ( IsFFAGame() || GameRules_GetGameMode() == ATCOOP || GameRules_GetGameMode() == PVE_SANDBOX)
 		return GetCurrentPlaylistVarInt( "max_players", MAX_TEAM_SLOTS )
 	return GetCurrentPlaylistVarInt( "max_players", MAX_TEAM_SLOTS ) / 2
 }

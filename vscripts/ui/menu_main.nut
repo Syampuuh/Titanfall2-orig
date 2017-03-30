@@ -2,11 +2,13 @@ global function InitMainMenu
 global function EULA_Dialog
 global function UpdateDataCenterFooter
 global function LaunchGamePurchase
+global function SP_Trial_LaunchGamePurchase
 global function LaunchSPNew
 global function LaunchSPContinue
 global function LaunchSPMissionSelect
 global function LaunchMP
 global function LaunchGame
+global function LaunchSPTrialMission
 
 global function GetUserSignInState
 
@@ -179,6 +181,12 @@ bool function IsDataCenterFooterValid()
 	#endif
 }
 
+void function SP_Trial_LaunchGamePurchase()
+{
+	Disconnect()
+	LaunchGamePurchase()
+}
+
 void function LaunchGamePurchase()
 {
 	ShowGamePurchaseStore()
@@ -200,6 +208,12 @@ void function LaunchSPMissionSelect()
 {
 	uiGlobal.launching = eLaunching.SINGLEPLAYER_MISSION_SELECT
 	LaunchGame()
+}
+
+void function LaunchSPTrialMission()
+{
+	uiGlobal.launching = eLaunching.SINGLEPLAYER_MISSION_SELECT
+	SPTrialMission_Start()
 }
 
 void function LaunchMP()

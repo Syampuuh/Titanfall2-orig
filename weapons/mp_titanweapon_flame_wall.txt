@@ -90,12 +90,12 @@ WeaponData
 	"explosion_shake_duration"						"0.75"
 
 	// Ammo
-	"ammo_stockpile_max"							"100"
-	"ammo_clip_size"   								"100"
-	"ammo_default_total"							"100"
-	"ammo_per_shot"                                 "100"
-	"ammo_min_to_fire"								"100"
-	"regen_ammo_refill_rate"						"10"
+	"ammo_stockpile_max"							"200"
+	"ammo_clip_size"   								"200"
+	"ammo_default_total"							"200"
+	"ammo_per_shot"                                 "200"
+	"ammo_min_to_fire"								"200"
+	"regen_ammo_refill_rate"						"20"
 	"regen_ammo_refill_start_delay"					"1"
 	"ammo_display"									"bar"
 	"cooldown_type"                                 "ammo_instant"
@@ -198,7 +198,7 @@ WeaponData
 		}
 		pas_scorch_firewall
 		{
-
+			"regen_ammo_refill_rate"						"25"
 		}
 	}
 }

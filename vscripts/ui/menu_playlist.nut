@@ -150,7 +150,7 @@ void function OnPlaylistMenu_Open()
 
 	UI_SetPresentationType( ePresentationType.NO_MODELS )
 
-	Grid_MenuOpened( menu )
+	Grid_RegisterPageNavInputs( menu )
 
 	thread UpdatePlaylistButtons()
 }
@@ -160,23 +160,24 @@ void function OnPlaylistMenu_Close()
 {
 	file.showColiseumPartyWarning = true
 	var menu = GetMenu( "PlaylistMenu" )
-	Grid_MenuClosed( menu )
+	Grid_DeregisterPageNavInputs( menu )
 
 }
 
 bool function CanPlaylistFitMyParty( string playlistName )
 {
+	int partySize = GetPartySize()
 	int maxPlayers = GetMaxPlayersForPlaylistName( playlistName )
 	int maxTeams = GetMaxTeamsForPlaylistName( playlistName )
 	int maxPlayersPerTeam = int( max( maxPlayers / maxTeams, 1 ) )
 
 	if ( playlistName == "coliseum" )
 	{
-		if ( GetPartySize() == 2 && GetCurrentPlaylistVarInt( "enable_coliseum_updates", 0 ) == 1 )
+		if ( partySize == 2 && GetCurrentPlaylistVarInt( "enable_coliseum_updates", 0 ) == 1 )
 			return true
 	}
 
-	if ( GetPartySize() > maxPlayersPerTeam )
+	if ( partySize > maxPlayersPerTeam )
 		return false
 
 	if ( file.sendOpenInvite && maxPlayersPerTeam == 1 )

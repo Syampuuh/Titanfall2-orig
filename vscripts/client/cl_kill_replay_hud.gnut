@@ -114,6 +114,7 @@ void function KillReplayHud_Activate()
 		RuiSetImage( file.killReplayOverlayRui, "iconImage", CallsignIcon_GetImage( callsignIcon ) )
 		RuiSetInt( file.killReplayOverlayRui, "layoutType", CallingCard_GetLayout( callingCard ) )
 		RuiSetFloat( file.killReplayOverlayRui, "killerHealthFrac", nameOfLastKiller.healthFrac )
+		RuiSetString( file.killReplayOverlayRui, "killerLevel", PlayerXPDisplayGenAndLevel( attacker.GetGen(), attacker.GetLevel() ) )
 
 		//RuiSetString( rui, "killerWeaponName", GetObitFromDamageSourceID( damageHistory.damageSourceId ) )
 		//RuiSetImage( rui, "killerWeaponImage", )
@@ -205,6 +206,7 @@ void function RoundWinningKillReplayClientHud_Activate()
 	RuiSetInt( file.killReplayOverlayRui, "layoutType", CallingCard_GetLayout( callingCard ) )
 	//printt( "Health Frac: " + level.nv.roundWinningKillReplayEntHealthFrac )
 	RuiSetFloat( file.killReplayOverlayRui, "killerHealthFrac", expect float( level.nv.roundWinningKillReplayEntHealthFrac ) )
+	RuiSetString( file.killReplayOverlayRui, "killerLevel", PlayerXPDisplayGenAndLevel( viewEntity.GetGen(), viewEntity.GetLevel() ) )
 }
 
 void function RoundWinningKillReplayClientHud_Deactivate() //Not doing screen fade in here, but might need to?

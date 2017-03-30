@@ -130,13 +130,29 @@ void function InitPersistentData( entity player )
 			AwardRandomItem( player, eUnlockType.FACTION_LEVEL, "faction_apex" )
 	}
 
-	if ( player.GetPersistentVarAsInt( TEMP_NETWORTH_VAR ) == 0 ) // Handle cases for players that played before "netWorth" existed
+	if ( player.GetPersistentVar( "custom_emoji_initialized" ) == false )
 	{
-		int netWorth = player.GetPersistentVarAsInt( "xp" )
-		netWorth +=	GetMaxPlayerXP() * (player.GetPersistentVarAsInt( "gen" ) - 1)
-		netWorth += STARTING_CREDITS
+		player.SetPersistentVar( "custom_emoji_initialized", true )
+		int firstIndex = 0
+		for ( int i=0; i<4; i++ )
+		{
+			int index = player.GetPersistentVarAsInt( "custom_emoji[" + i + "]" )
+			if ( index == 0 )
+			{
+				index = firstIndex + i
+				player.SetPersistentVar( "custom_emoji[" + i + "]", index )
+			}
+		}
+	}
 
-		player.SetPersistentVar( TEMP_NETWORTH_VAR, netWorth )
+	// Handle updating NETWORTH_VAR ("netWorth") having a correct value based on previously used TEMP_NETWORTH_VAR ("activeBCID")
+	if ( player.GetPersistentVarAsInt( TEMP_NETWORTH_VAR ) > 0 )
+	{
+		int tempNetWorth = player.GetPersistentVarAsInt( TEMP_NETWORTH_VAR )
+		int netWorth = player.GetPersistentVarAsInt( NETWORTH_VAR )
+		netWorth += tempNetWorth
+		player.SetPersistentVar( NETWORTH_VAR, netWorth )
+		player.SetPersistentVar( TEMP_NETWORTH_VAR, -tempNetWorth )
 	}
 
 	if ( initializedVersion < 219 )
@@ -149,8 +165,40 @@ void function InitPersistentData( entity player )
 		}
 	}
 
+	if ( initializedVersion < 220 )
+	{
+		player.SetPersistentVar( "hasSeenStore", false )
+	}
+
+	//Vanguard
+	if ( initializedVersion < 220 )
+	{
+		InitDefaultLoadouts() //Repopulate Default loadouts before getting the value for default loadout
+		#if DEVSCRIPTS
+		SetPersistentTitanLoadout( player, 6, GetDefaultTitanLoadout( 6 ) )
+		string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", 6 )
+		if ( enumName != "" )
+		{
+			player.SetPersistentVar( "titanXP[" + enumName + "]", 0 )
+			player.SetPersistentVar( "previousTitanXP[" + enumName + "]", 0 )
+		}
+		#endif
+	}
+	if ( initializedVersion < 221 )
+	{
+		if ( GetPersistentSpawnLoadoutIndex( player, "titan" ) > (NUM_PERSISTENT_TITAN_LOADOUTS - 1) )
+			SetPersistentSpawnLoadoutIndex( player, "titan", 0 )
+	}
+
 	player.SetPersistentVar( "initializedVersion", PERSISTENCE_INIT_VERSION )
 	player.SetPersistentVar( "spawnAsTitan", false )
+
+	int loadoutIndex = 5
+	printt( player.GetPersistentVar( "titanLoadouts[" + loadoutIndex + "].skinIndex" ) )
+	printt( player.GetPersistentVar( "titanLoadouts[" + loadoutIndex + "].camoIndex" ) )
+	printt( player.GetPersistentVar( "titanLoadouts[" + loadoutIndex + "].primarySkinIndex" ) )
+	printt( player.GetPersistentVar( "titanLoadouts[" + loadoutIndex + "].primaryCamoIndex" ) )
+
 #endif // MP
 }
 

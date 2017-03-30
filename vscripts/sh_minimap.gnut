@@ -29,6 +29,8 @@ global enum eMinimapObject_info_hardpoint
 	HARDPOINT_A,
 	HARDPOINT_B,
 	HARDPOINT_C,
+	HARDPOINT_D,
+	HARDPOINT_E,
 	COUNT
 }
 
@@ -49,6 +51,7 @@ global enum eMinimapObject_prop_script
 	LTS_SITE_A,
 	LTS_SITE_B,
 	AT_BANK,
+	FD_HARVESTER,
 	COUNT
 }
 

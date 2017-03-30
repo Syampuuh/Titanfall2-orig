@@ -544,6 +544,10 @@ void function OnOpenInGameSPMenu()
 			Hud_SetText( missionLogDesc, "#MENU_SP_OBJECTIVES_NO_ENTRY" )
 			Hud_SetText( collectiblesFoundDesc, "#MENU_SP_COLLECTIBLE_DESC", 0, 0 )
 		}
+
+		// Make sure trial mode doesn't reveal any spoilers!
+		if ( Script_IsRunningTrialVersion() )
+			Hud_SetText( missionLogDesc, "#MENU_SP_OBJECTIVES_NO_ENTRY" )
 	}
 
 	SPMenu_UpdateReloadCheckpointButton()

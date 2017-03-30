@@ -59,6 +59,7 @@ function MpTitanabilityFusionCore_Init()
 	Shift_Core_Init()
 	FlightCore_Init()
 	SalvoCore_Init()
+	UpgradeCore_Init()
 
 	RegisterSignal( "CoreActivated" )
 	RegisterSignal( "CoreBegin" )

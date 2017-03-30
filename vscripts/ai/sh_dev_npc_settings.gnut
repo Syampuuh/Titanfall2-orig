@@ -91,6 +91,7 @@ void function SetupSpawnAIButtons( var team )
 			continue
 
 		string cmd = "script thread DEV_SpawnNPCWithWeaponAtCrosshair( \"" + baseClass + "\", \"" + aiSettings + "\", " + team + " )"
+		printt( "dev command:", cmd )
 
 		// server command
 		SetupDevCommand( npcTitle, cmd )

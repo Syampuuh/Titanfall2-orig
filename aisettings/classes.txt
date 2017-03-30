@@ -39,6 +39,9 @@ classes
 	import npc_soldier_specialist_militia.txt
 	import npc_soldier_spyglass.txt
 	import npc_soldier_training_sentry.txt
+	import npc_soldier_pve_sandbox.txt
+	import npc_soldier_pve_specialist.txt
+	import npc_soldier_pve_eliteguard.txt
 	import npc_spectre.txt
 	import npc_stalker.txt
 	import npc_stalker_crawling.txt
@@ -54,12 +57,15 @@ classes
 	import npc_titan_atlas.txt
 	import npc_titan_atlas_stickybomb.txt
 	import npc_titan_atlas_tracker.txt
+	import npc_titan_atlas_tracker_mortar.txt
+	import npc_titan_atlas_vanguard.txt
 	import npc_titan_auto.txt
 	import npc_titan_auto_atlas.txt
 	import npc_titan_auto_atlas_rocketeer.txt
 	import npc_titan_auto_atlas_stickybomb.txt
 	import npc_titan_auto_atlas_ion_prime.txt
 	import npc_titan_auto_atlas_tracker.txt
+	import npc_titan_auto_atlas_vanguard.txt
 	import npc_titan_auto_ogre.txt
 	import npc_titan_auto_ogre_fighter.txt
 	import npc_titan_auto_ogre_meteor.txt
@@ -80,6 +86,7 @@ classes
 	import npc_titan_ogre_fighter.txt
 	import npc_titan_ogre_fighter_berserker_core.txt
 	import npc_titan_ogre_meteor.txt
+	import npc_titan_ogre_meteor_nuke.txt
 	import npc_titan_ogre_minigun.txt
 	import npc_titan_proto_stasisgun.txt
 	import npc_titan_sarah.txt
@@ -98,6 +105,7 @@ classes
 	import npc_turret_mega_windup.txt
 	import npc_turret_mega_attrition.txt
 	import npc_turret_mega_fortwar.txt
+	import npc_turret_mega_frontierdefense.txt
 	import npc_turret_sentry.txt
 	import npc_turret_sentry_plasma.txt
 	import npc_turret_sentry_plasma_skyway.txt
@@ -110,6 +118,7 @@ classes
 	import npc_titan_atlas_stickybomb_bounty.txt
 	import npc_titan_atlas_ion_prime_bounty.txt
 	import npc_titan_atlas_tracker_bounty.txt
+	import npc_titan_atlas_vanguard_bounty.txt
 	import npc_titan_stryder_leadwall_bounty.txt
 	import npc_titan_stryder_sniper_bounty.txt
 	import npc_titan_stryder_northstar_prime_bounty.txt

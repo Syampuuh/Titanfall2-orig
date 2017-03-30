@@ -12,6 +12,7 @@ void function GamemodeSpeedballClient_Init()
 {
 	file.flagRui = CreateCockpitRui( $"ui/speedball_flag_marker.rpak", 200 )
 	SPEEDBALL_ClientNotificationsInit()
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function CLSPEEDBALL_RegisterNetworkFunctions()
@@ -54,7 +55,7 @@ void function SPEEDBALL_FlagEntChanged( entity player, entity oldFlag, entity ne
 	//HUD Flag Icon
 	rui = ClGameState_GetRui()
 	RuiSetBool( rui, "isVisible", true )
-	RuiTrackInt( rui, "teamRelation", newFlag, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+	RuiTrackInt( rui, "teamRelation", newFlag, RUI_TRACK_TEAM_RELATION_CLIENTPLAYER )
 	RuiSetBool( rui, "isCarried", newFlag.IsPlayer() )
 }
 
@@ -69,7 +70,7 @@ void function Speedball_EventNotification_FlagPickedUp( entity player, var event
 	{
 		AnnouncementMessageSweep( GetLocalClientPlayer(), "#SPEEDBALL_NOTIFY_YOU_HAVE_FLAG", "", TEAM_COLOR_FRIENDLY )
 	}
-	else if ( team == GetLocalViewPlayer().GetTeam() )
+	else if ( team == GetLocalClientPlayer().GetTeam() )
 	{
 		string text = Localize( "#SPEEDBALL_NOTIFY_PLAYER_HAS_FLAG", player.GetPlayerName() )
 		AnnouncementMessageSweep( GetLocalClientPlayer(), text, "", TEAM_COLOR_FRIENDLY )

@@ -165,14 +165,18 @@ function DeployAmpedWall( entity grenade, vector origin, vector angles )
 	origin = origin - (up * 1.0)
 
 	entity shieldFX = StartParticleEffectInWorld_ReturnEntity( file.index, origin, angles )
-	EffectSetControlPointVector( shieldFX, 1, < BURN_CARD_WEAPON_HUD_COLOR[0], BURN_CARD_WEAPON_HUD_COLOR[1], BURN_CARD_WEAPON_HUD_COLOR[2] > )
 
 	angles = AnglesCompose( angles, <0,180,0> )
 	entity ampedWall = CreatePropDynamic( $"models/fx/pilot_shield_wall_amped.mdl", origin, angles, SOLID_VPHYSICS )
-	ampedWall.kv.contents = (CONTENTS_WINDOW | CONTENTS_APPLYWEAPONMODS)
+	ampedWall.kv.contents = (CONTENTS_WINDOW)
 	ampedWall.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
+	ampedWall.SetPassThroughFlags( PTF_ADDS_MODS | PTF_NO_DMG_ON_PASS_THROUGH )
 	ampedWall.SetBlocksRadiusDamage( true )
 	ampedWall.Hide()
+	ampedWall.SetTakeDamageType( DAMAGE_YES)
+	ampedWall.SetMaxHealth( 1000 )
+	ampedWall.SetHealth( 1000 )
+	ampedWall.EndSignal( "OnDestroy" )
 
 	SetTeam( ampedWall, TEAM_BOTH )
 

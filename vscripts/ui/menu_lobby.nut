@@ -7,6 +7,7 @@ global function InitLobbyMenu
 //global function PrivateMatchSwitchTeams
 global function UICodeCallback_SetupPlayerListGenElements
 global function UpdateAnnouncementDialog
+global function EnableButton
 global function DisableButton
 
 global function LeaveParty
@@ -25,7 +26,6 @@ global function GetTimeToRestartMatchMaking
 global function UpdateTimeToRestartMatchmaking
 
 global function RefreshCreditsAvailable
-global function SetUIPlayerCreditsInfo
 
 global function InviteFriendsIfAllowed
 global function StartPrivateMatch
@@ -36,6 +36,8 @@ global function DLCStoreShouldBeMarkedAsNew
 global function SetNextAutoMatchmakingPlaylist
 global function GetNextAutoMatchmakingPlaylist
 global function Mixtape_ShouldShowSearchSkipPrompt
+
+global function OnDpadCommsButton_Activate
 
 struct
 {
@@ -76,6 +78,7 @@ struct
 	var findGameButton
 	var inviteRoomButton
 	var inviteFriendsButton
+	var pveMenuButton
 
 	var networksMoreButton
 
@@ -96,6 +99,7 @@ struct
 	var storeHeader
 	var browseNetworkButton
 	var faqButton
+	var dpadCommsButton
 
 	var genUpButton
 
@@ -117,6 +121,7 @@ struct
 	string lastMixtapeMatchmakingStatus
 	bool mixtapeSkipEnabled = true
 
+	ComboStruct &lobbyComboStruct
 } file
 
 struct
@@ -300,7 +305,6 @@ void function InitLobbyMenu()
 		string profileText = "#A_BUTTON_VIEW_PROFILE"
 	#endif*/
 
-
 	AddMenuVarChangeHandler( "focus", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isFullyConnected", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isPartyLeader", UpdateFooterOptions )
@@ -322,34 +326,38 @@ void function InitLobbyMenu()
 	RegisterSignal( "LeaveParty" )
 }
 
+#if DEVSCRIPTS
+void function DoClick_OpenPVE( var button )
+{
+	if ( Hud_IsLocked( button ) )
+		return
+
+	OpenPVELobbyMenu()
+}
+#endif
 
 void function SetupComboButtonTest( var menu )
 {
 	ComboStruct comboStruct = ComboButtons_Create( menu )
+	file.lobbyComboStruct = comboStruct
 
 	int headerIndex = 0
 	int buttonIndex = 0
 	file.playHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_PLAY" )
-	var findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
-	file.findGameButton = findGameButton
-	file.lobbyButtons.append( findGameButton )
-	Hud_AddEventHandler( findGameButton, UIE_CLICK, BigPlayButton1_Activate )
+	file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
+	file.lobbyButtons.append( file.findGameButton )
+	Hud_AddEventHandler( file.findGameButton, UIE_CLICK, BigPlayButton1_Activate )
 
-	if ( DoesCurrentCommunitySupportInvites() )
-	{
-		var roomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_ROOM" )
-		file.inviteRoomButton = roomButton
-		Hud_AddEventHandler( roomButton, UIE_CLICK, DoRoomInvite )
-	}
-	else
-	{
-		var roomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_JOIN_NETWORK" )
-		file.inviteRoomButton = roomButton
-		Hud_AddEventHandler( roomButton, UIE_CLICK, DoRoomInvite )
-	}
-	var friendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
-	file.inviteFriendsButton = friendsButton
-	Hud_AddEventHandler( friendsButton, UIE_CLICK, InviteFriendsIfAllowed )
+	file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_ROOM" )
+	Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, DoRoomInviteIfAllowed )
+
+	file.inviteFriendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
+	Hud_AddEventHandler( file.inviteFriendsButton, UIE_CLICK, InviteFriendsIfAllowed )
+
+	#if DEVSCRIPTS
+	file.pveMenuButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_BUTTON_OPEN_PVE" )
+	Hud_AddEventHandler( file.pveMenuButton, UIE_CLICK, DoClick_OpenPVE )
+	#endif
 
 	headerIndex++
 	buttonIndex = 0
@@ -364,6 +372,12 @@ void function SetupComboButtonTest( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+
+	#if DEVSCRIPTS
+	file.dpadCommsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_COMMS" )
+	Hud_AddEventHandler( file.dpadCommsButton, UIE_CLICK, OnDpadCommsButton_Activate )
+	#endif
+
 	//file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
 	//Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
@@ -400,7 +414,11 @@ void function SetupComboButtonTest( var menu )
 	file.lobbyButtons.append( browseButton )
 	Hud_AddEventHandler( browseButton, UIE_CLICK, OnBrowseNetworksButton_Activate )
 	file.browseNetworkButton = browseButton
-
+	#if DEVSCRIPTS
+		var inviteButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#INVITE_FRIENDS" )
+		file.lobbyButtons.append( inviteButton )
+		Hud_AddEventHandler( inviteButton, UIE_CLICK, OnInviteFriendsToNetworkButton_Activate )
+	#endif
 
 	// var networksMoreButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#COMMUNITY_MORE" )
 	// Hud_AddEventHandler( networksMoreButton, UIE_CLICK, OnCommunityButton_Activate )
@@ -409,6 +427,7 @@ void function SetupComboButtonTest( var menu )
 	headerIndex++
 	buttonIndex = 0
 	file.storeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_STORE" )
+	SetComboButtonHeaderTint( GetMenu( "LobbyMenu" ), headerIndex, true )
 	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE_BROWSE" )
 	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 
@@ -475,25 +494,20 @@ void function LeaveMatchAndParty()
 	LeaveMatch()
 }
 
-void function DoRoomInvite( var button )
+void function DoRoomInviteIfAllowed( var button )
 {
+	if ( Hud_IsLocked( button ) )
+		return
+
 	if ( !DoesCurrentCommunitySupportInvites() )
 	{
 		OnBrowseNetworksButton_Activate( button )
 		return
 	}
 
-	if ( GetPartySize() <= 1 )
-	{
-		SendOpenInvite( true )
-		string playlistMenuName = GetPlaylistMenuName()
-		void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( playlistMenuName ) )
-		handlerFunc( button )
-	}
-	else
-	{
-		printt( "You can't invite room if you're in a party" )
-	}
+	SendOpenInvite( true )
+	string playlistMenuName = GetPlaylistMenuName()
+	AdvanceMenu( GetMenu( playlistMenuName ) )
 }
 
 void function CreatePartyAndInviteFriends()
@@ -515,13 +529,9 @@ void function CreatePartyAndInviteFriends()
 
 void function InviteFriendsIfAllowed( var button )
 {
-/*
-	if ( InPendingOpenInvite() )
-	{
-		printt( "not inviting friends - we are in an openInvite" )
+	if ( Hud_IsLocked( button ) )
 		return
-	}
-*/
+
 	#if PC_PROG
 		if ( !Origin_IsOverlayAvailable() )
 		{
@@ -604,22 +614,29 @@ void function OnLobbyMenu_Open()
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		//bool emotesAreEnabled = EmotesEnabled()
+		#if DEVSCRIPTS
+		bool pveMenuEnabled = PVELobbyMenuIsEnabled()
+		if ( pveMenuEnabled )
+			Hud_Show( file.pveMenuButton )
+		else
+			Hud_Hide( file.pveMenuButton )
+		#endif
+
+		bool emotesAreEnabled = EmotesEnabled()
 		// "Customize"
 		{
 			bool anyNewPilotItems = HasAnyNewPilotItems( player )
 			bool anyNewTitanItems = HasAnyNewTitanItems( player )
 			bool anyNewBoosts = HasAnyNewBoosts( player )
-			bool anyNewCommsIcons = false // emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
+			bool anyNewCommsIcons = emotesAreEnabled ? HasAnyNewDpadCommsIcons( player ) : false
 			bool anyNewCustomizeHeader = (anyNewPilotItems || anyNewTitanItems || anyNewBoosts || anyNewCommsIcons)
 
 			RuiSetBool( Hud_GetRui( file.customizeHeader ), "isNew", anyNewCustomizeHeader )
 			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
 			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
 			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
-		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
-
-			/*
+			#if DEVSCRIPTS
+			ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 			if ( !emotesAreEnabled )
 			{
 				Hud_Hide( file.dpadCommsButton )
@@ -629,7 +646,7 @@ void function OnLobbyMenu_Open()
 			{
 				Hud_Show( file.dpadCommsButton )
 			}
-			*/
+			#endif
 		}
 
 		// "Store"
@@ -666,6 +683,7 @@ bool function DLCStoreShouldBeMarkedAsNew()
 {
 	if ( !IsFullyConnected() )
 		return false
+
 	if ( !IsPersistenceAvailable() )
 		return false
 
@@ -682,8 +700,8 @@ void function LobbyMenuUpdate( var menu )
 	{
 		bool inPendingOpenInvite = InPendingOpenInvite()
 		Hud_SetLocked( file.findGameButton, !IsPartyLeader() || inPendingOpenInvite )
-		Hud_SetLocked( file.inviteFriendsButton, inPendingOpenInvite )
 		Hud_SetLocked( file.inviteRoomButton, IsOpenInviteVisible() || GetPartySize() > 1 || inPendingOpenInvite )
+		Hud_SetLocked( file.inviteFriendsButton, inPendingOpenInvite )
 
 		bool canGenUp = false
 		if ( GetUIPlayer() )
@@ -1264,7 +1282,13 @@ void function UpdateAnnouncementDialog()
 
 			int announcementVersion = GetConVarInt( "announcementVersion" )
 			if ( announcementVersion > uiGlobal.announcementVersionSeen )
+			{
 				OpenAnnouncementDialog()
+			}
+			else if ( uiGlobal.activeMenu != "AnnouncementDialog" && ShouldShowEmotesAnnouncement( player ) )
+			{
+				OpenCommsIntroDialog()
+			}
 		}
 
 		WaitFrame()
@@ -1299,21 +1323,47 @@ function UpdateLobbyTitle()
 	}
 }
 
+bool function CurrentMenuIsPVEMenu()
+{
+	var topMenu = GetTopNonDialogMenu()
+	if ( topMenu == null )
+		return false
+
+	return (uiGlobal.menuData[topMenu].isPVEMenu)
+}
+
 void function RefreshCreditsAvailable( int creditsOverride = -1 )
 {
 	int credits = creditsOverride >= 0 ? creditsOverride : GetAvailableCredits( GetLocalClientPlayer() )
+	bool isPVE = CurrentMenuIsPVEMenu()
+	int pveCredits = 0
+	string pveTitle = ""
+	if ( isPVE )
+	{
+		entity player = GetUIPlayer()
+		if ( IsValid( player ) )
+			pveCredits = player.GetPersistentVarAsInt( "pve.currency" )
+		pveTitle = "#PVE_TITLEEXAMPLE"
+	}
 
 	foreach ( elem in file.creditsAvailableElems )
 	{
-		SetUIPlayerCreditsInfo( elem, credits, GetLocalClientPlayer().GetXP(), GetGen(), GetLevel(), GetNextLevel( GetLocalClientPlayer() ) )
+		SetUIPlayerCreditsInfo( elem, credits, GetLocalClientPlayer().GetXP(), GetGen(), GetLevel(), GetNextLevel( GetLocalClientPlayer() ), isPVE, pveCredits, pveTitle )
 	}
 }
 
-void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int gen, int level, int nextLevel )
+void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int gen, int level, int nextLevel, bool isPVE, int pveCredits, string pveTitle )
 {
 	var rui = Hud_GetRui( infoElement )
 	RuiSetInt( rui, "credits", credits )
 	RuiSetString( rui, "nameText", GetPlayerName() )
+
+	RuiSetBool( rui, "isPVE", isPVE )
+	if ( isPVE )
+	{
+		RuiSetInt( rui, "pveCredits", pveCredits )
+		RuiSetString( rui, "pveTitle", pveTitle )
+	}
 
 	if ( xp == GetMaxPlayerXP() && gen < MAX_GEN )
 	{
@@ -1335,14 +1385,14 @@ void function SetUIPlayerCreditsInfo( var infoElement, int credits, int xp, int 
 	RuiSetImage( rui, "callsignIcon", callsignIcon.image )
 }
 
-
 void function BigPlayButton1_Activate( var button )
 {
+	if ( Hud_IsLocked( button ) )
+		return
+
 	SendOpenInvite( false )
 	string playlistMenuName = GetPlaylistMenuName()
-	void functionref( var ) handlerFunc = AdvanceMenuEventHandler( GetMenu( playlistMenuName ) )
-	handlerFunc( button )
-	// Hud_Hide( file.chatroomMenu )
+	AdvanceMenu( GetMenu( playlistMenuName ) )
 }
 
 void function CoopMatchButton_Activate( var button )
@@ -1833,4 +1883,53 @@ void function SetPutPlayerInMatchmakingAfterDelay( bool value )
 void function OnStoreButton_Activate( var button )
 {
 	LaunchGamePurchaseOrDLCStore()
+}
+
+void function OnDpadCommsButton_Activate( var button )
+{
+	AdvanceMenu( GetMenu( "EditDpadCommsMenu" ) )
+}
+
+void function OpenCommsIntroDialog()
+{
+	DialogData dialogData
+	dialogData.menu = GetMenu( "AnnouncementDialog" )
+	dialogData.header = "#DPAD_COMMS_ANNOUNCEMENT_HEADER"
+	dialogData.ruiMessage.message = "#DPAD_COMMS_ANNOUNCEMENT"
+	dialogData.image = $"ui/menu/common/dialog_announcement_1"
+
+	AddDialogButton( dialogData, "#DPAD_COMMS_ANNOUNCEMENT_B1" , OpenDpadCommsMenu )
+	AddDialogButton( dialogData, "#DPAD_COMMS_ANNOUNCEMENT_B2" )
+
+	AddDialogPCBackButton( dialogData )
+	AddDialogFooter( dialogData, "#A_BUTTON_ACCEPT" )
+	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
+
+	OpenDialog( dialogData )
+
+	ClientCommand( "SetCommsIntroSeen" )
+}
+
+void function OpenDpadCommsMenu()
+{
+	OnDpadCommsButton_Activate( null )
+}
+
+bool function ShouldShowEmotesAnnouncement( entity player )
+{
+	if ( !EmotesEnabled() )
+		return false
+
+	if ( player.GetPersistentVarAsInt( "numTimesUsedComms" ) > 2 )
+		return false
+
+	if ( player.GetPersistentVar( "hasBeenIntroducedToComms" ) )
+		return false
+
+	#if !DEV
+	if ( PlayerGetRawLevel( player ) <= 2 )
+		return false
+	#endif
+
+	return true
 }

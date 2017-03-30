@@ -79,6 +79,7 @@ struct
 	var patchButton
 	var statsButton
 	var browseNetworkButton
+	var dpadCommsButton
 
 	var playHeader
 	var customizeHeader
@@ -96,6 +97,7 @@ struct
 
 	bool putPlayerInMatchmakingAfterDelay = false
 
+	ComboStruct &lobbyComboStruct
 } file
 
 struct
@@ -120,6 +122,8 @@ const table<asset> mapImages =
 	mp_crashsite3 = $"loadscreens/mp_crashsite3_lobby",
 	mp_complex3 = $"loadscreens/mp_complex3_lobby",
 	mp_angel_city = $"loadscreens/mp_angle_city_r2_lobby",
+	mp_colony02 = $"loadscreens/mp_colony02_lobby",
+	mp_glitch = $"loadscreens/mp_glitch_lobby",
 }
 
 void function MenuPrivateMatch_Init()
@@ -262,6 +266,7 @@ void function OnSelectModeButton_Activate( var button )
 void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 {
 	ComboStruct comboStruct = ComboButtons_Create( menu )
+	file.lobbyComboStruct = comboStruct
 
 	comboStruct.navUpButton = navUpButton
 	comboStruct.navDownButton = navDownButton
@@ -295,6 +300,8 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+	file.dpadCommsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_COMMS" )
+	Hud_AddEventHandler( file.dpadCommsButton, UIE_CLICK, OnDpadCommsButton_Activate )
 //	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
 //	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )
@@ -423,7 +430,7 @@ void function OnLobbyMenu_Open()
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		//bool emotesAreEnabled = EmotesEnabled()
+		bool emotesAreEnabled = EmotesEnabled()
 		// "Customize"
 		{
 			bool anyNewPilotItems = HasAnyNewPilotItems( player )
@@ -436,9 +443,8 @@ void function OnLobbyMenu_Open()
 			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
 			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
 			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
-		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
+			ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 
-			/*
 			if ( !emotesAreEnabled )
 			{
 				Hud_Hide( file.dpadCommsButton )
@@ -448,7 +454,6 @@ void function OnLobbyMenu_Open()
 			{
 				Hud_Show( file.dpadCommsButton )
 			}
-			*/
 		}
 
 		// "Store"

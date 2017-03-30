@@ -57,6 +57,7 @@ global function ShouldShowSpawnAsTitanHint
 global function ServerCallback_SetAssistInformation
 
 global function GetShieldEffectCurrentColor
+global function ClientPlayerClassChanged
 
 #if DEV
 global function BloodSprayDecals_Toggle
@@ -583,7 +584,13 @@ void function ClientCodeCallback_HUDThink()
 
 		entity clientPlayer = GetLocalClientPlayer()
 		if ( !IsWatchingKillReplay() && clientPlayer.classChanged )
+		{
+			#if DEVSCRIPTS
+			if ( IsDisplayingDpadComms( clientPlayer ) )
+				DisableDpadComms( clientPlayer )
+			#endif
 			ClientPlayerClassChanged( clientPlayer, clientPlayer.GetPlayerClass() )
+		}
 
 		PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink_6 )
 		SmartAmmo_LockedOntoWarningHUD_Update()

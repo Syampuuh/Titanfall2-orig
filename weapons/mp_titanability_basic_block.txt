@@ -66,12 +66,14 @@ WeaponData
 	"charge_cooldown_time"							"1.0"
 	"charge_cooldown_delay"   						"1.0"
 	"charge_end_forces_fire"  						"0"
+	//"charge_allow_melee"							"1"		// can press melee while blocking
+	"charge_allow_melee"							"0"		// re-enable for DLC4, fix anim bugs
 
 	// Behavior
 	"fire_rate"   									"0.9"
 	"zoom_time_in"									"0.125"
 	"zoom_time_out"   								"0.125"
-	"zoom_fov"										"75"
+	"zoom_fov"										"70"
 	"holster_time"									".65"
 	"deploy_time" 									".2"
 	"lower_time"  									".65"

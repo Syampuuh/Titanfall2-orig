@@ -679,6 +679,7 @@ void function UpdateOpenInvites( OpenInvite openInvite, string message, string p
 				SetNamedRuiText( chatroomUI.openInviteUI.openInviteJoinButton, "buttonText", "#OPENINVITE_JOIN" )
 		}
 
+		string myUID = GetPlayerUID()
 		int i = 0
 		foreach ( player in chatroomUI.openInviteUI.openInvitePlayerSlots )
 		{
@@ -693,30 +694,36 @@ void function UpdateOpenInvites( OpenInvite openInvite, string message, string p
 			}
 			else
 			{
-				Hud_Show( player )
-				RuiSetBool( rui, "isEnabled", true )
-
 				CallsignIcon callsignIcon
-				asset playerImage
-				if ( openInvite.amILeader && i == 0 )
+				bool isMe = false
+				// asset playerImage
+
+				if ( i < openInvite.numClaimedSlots )
 				{
-					callsignIcon = PlayerCallsignIcon_GetActive( GetUIPlayer() )
-					RuiSetBool( rui, "isViewPlayer", true )
-					RuiSetImage( rui, "playerImage", callsignIcon.image )
-				}
-				else if ( openInvite.amIInThis && i == 1 && !openInvite.amILeader )
-				{
-					callsignIcon = PlayerCallsignIcon_GetActive( GetUIPlayer() )
-					RuiSetBool( rui, "isViewPlayer", true )
+					PartyMember member = openInvite.members[i]
+					isMe = ( member.uid == myUID )
+					if ( isMe )
+					{
+						if ( GetUIPlayer() != null ) // this can happen sometimes after a resolution/windowed mode change
+							callsignIcon = PlayerCallsignIcon_GetActive( GetUIPlayer() )
+						else
+							callsignIcon = CallsignIcon_GetByRef( "gc_icon_happyface" )
+					}
+					else
+					{
+						CallsignIcon callsignIcon = CallsignIcon_GetByIndex( member.callsignIdx )
+					}
 				}
 				else
 				{
 					callsignIcon = CallsignIcon_GetByRef( "gc_icon_happyface" )
-					RuiSetBool( rui, "isViewPlayer", false )
-					RuiSetImage( rui, "playerImage", callsignIcon.image )
 				}
 
+				Hud_Show( player )
+				RuiSetBool( rui, "isEnabled", true )
+
 				RuiSetBool( rui, "hasPlayer", i < openInvite.numClaimedSlots )
+				RuiSetBool( rui, "isViewPlayer", isMe )
 				RuiSetImage( rui, "playerImage", callsignIcon.image )
 
 				//if ( i < openInvite.numClaimedSlots )

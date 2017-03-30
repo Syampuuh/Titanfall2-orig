@@ -25,6 +25,7 @@ npc_spectre
 	chaseStopDist					300
 	chaseStopDistHeavyArmor			800
 
+	allowCower						0
 	allowUseCover					1
 
 	traverseCostFactor				2.0

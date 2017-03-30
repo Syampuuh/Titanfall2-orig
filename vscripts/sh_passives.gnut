@@ -111,6 +111,20 @@ global enum ePassives
 	PAS_PILOT_HARDCORE_SETTINGS,
 	PAS_TITAN_HARDCORE_SETTINGS,
 	PAS_ANTI_RODEO,
+	PAS_VANGUARD_COREMETER,
+	PAS_VANGUARD_SHIELD,
+	PAS_VANGUARD_REARM,
+	PAS_VANGUARD_DOOM,
+	PAS_VANGUARD_UPGRADE,
+	PAS_VANGUARD_CORE1,
+	PAS_VANGUARD_CORE2,
+	PAS_VANGUARD_CORE3,
+	PAS_VANGUARD_CORE4,
+	PAS_VANGUARD_CORE5,
+	PAS_VANGUARD_CORE6,
+	PAS_VANGUARD_CORE7,
+	PAS_VANGUARD_CORE8,
+	PAS_VANGUARD_CORE9,
 	PAS_NUMBER,
 }
 
@@ -200,6 +214,21 @@ global const _PassiveFromEnum = {
 	[ "pas_legion_siege" ]					= ePassives.PAS_LEGION_SIEGE,
 	[ "pas_legion_chargeshot" ]				= ePassives.PAS_LEGION_CHARGESHOT,
 
+	[ "pas_vanguard_coremeter" ]			= ePassives.PAS_VANGUARD_COREMETER,
+	[ "pas_vanguard_shield" ]				= ePassives.PAS_VANGUARD_SHIELD,
+	[ "pas_vanguard_rearm" ]				= ePassives.PAS_VANGUARD_REARM,
+	[ "pas_vanguard_doom" ]					= ePassives.PAS_VANGUARD_DOOM,
+	[ "pas_vanguard_upgrade" ]				= ePassives.PAS_VANGUARD_UPGRADE,
+	[ "pas_vanguard_core1" ]				= ePassives.PAS_VANGUARD_CORE1,
+	[ "pas_vanguard_core2" ]				= ePassives.PAS_VANGUARD_CORE2,
+	[ "pas_vanguard_core3" ]				= ePassives.PAS_VANGUARD_CORE3,
+	[ "pas_vanguard_core4" ]				= ePassives.PAS_VANGUARD_CORE4,
+	[ "pas_vanguard_core5" ]				= ePassives.PAS_VANGUARD_CORE5,
+	[ "pas_vanguard_core6" ]				= ePassives.PAS_VANGUARD_CORE6,
+	[ "pas_vanguard_core7" ]				= ePassives.PAS_VANGUARD_CORE7,
+	[ "pas_vanguard_core8" ]				= ePassives.PAS_VANGUARD_CORE8,
+	[ "pas_vanguard_core9" ]				= ePassives.PAS_VANGUARD_CORE9,
+
 	[ "pas_pilot_hardcore_settings" ]		= ePassives.PAS_PILOT_HARDCORE_SETTINGS,
 	[ "pas_titan_hardcore_settings" ]		= ePassives.PAS_TITAN_HARDCORE_SETTINGS,
 	[ "pas_anti_rodeo" ]					= ePassives.PAS_ANTI_RODEO,
@@ -265,6 +294,20 @@ function PassivesShared_Init()
 	level.titanPassives[ ePassives.PAS_LEGION_SIEGE ] <- true
 	level.titanPassives[ ePassives.PAS_LEGION_CHARGESHOT ] <- true
 	level.titanPassives[ ePassives.PAS_ANTI_RODEO ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_COREMETER ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_SHIELD ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_REARM ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_DOOM ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_UPGRADE ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE1 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE2 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE3 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE4 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE5 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE6 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE7 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE8 ] <- true
+	level.titanPassives[ ePassives.PAS_VANGUARD_CORE9 ] <- true
 	level.playerSettingsPassiveEnums <- {}
 
 	if ( !( "pilotClass" in level ) )
@@ -286,6 +329,7 @@ function PassivesShared_Init()
 		"pas_dash_recharge",
 		"pas_mobility_dash_capacity",
 		"pas_titan_hardcore_settings"
+		"pas_vanguard_shield"
 	]
 
 	level.passiveEnumFromPassive <- {}

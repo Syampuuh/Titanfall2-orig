@@ -224,14 +224,7 @@ function NavigateToMenu( category, advancing = true )
 	if ( advancing || category == eChallengeCategory.ROOT )
 		chMenu.menuPath.append( { category = category, focus = 0 } )
 
-	local breadCrumbs = GetCurrentBreadCrumbs()
-	foreach ( item in chMenu.menuPath )
-		breadCrumbs.append( GetChallengeCategoryName( expect int( item.category ) ) )
-
-	local title = breadCrumbs.pop()
-	chMenu.menuTitle.SetText( title )
-
-	SetMenuBreadCrumbs( GetMenu( "ChallengesMenu" ), breadCrumbs )
+	//chMenu.menuTitle.SetText( title )
 
 	if ( advancing )
 		Hud_SetFocused( chMenu.challengeCategoryButtons[0] )

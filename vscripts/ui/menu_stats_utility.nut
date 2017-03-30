@@ -18,86 +18,60 @@ global function SetMedalStatBoxDisplay
 
 void function SetPieChartData( var menu, string panelName, string titleString, PieChartData data )
 {
-	int maxSlices = 8
-
-	Assert( data.entries.len() <= maxSlices )
-
-	array backgroundColor = [ 190, 190, 190, 255 ]
-
-	local colors = []
-	colors.append( [ 192, 94, 75, 255 ] )
-	colors.append( [ 194, 173, 76, 255 ] )
-	colors.append( [ 88, 172, 67, 255 ] )
-	colors.append( [ 46, 188, 180, 255 ] )
-	colors.append( [ 77, 127, 196, 255 ] )
-	colors.append( [ 166, 91, 191, 255 ] )
-	colors.append( [ 200, 40, 40, 255 ] )
-	colors.append( [ 128, 90, 55, 255 ] )
-
-	if ( data.colorShift > 0 )
-	{
-		for ( int i = 0; i < data.colorShift; i++ )
-		{
-			colors.append( colors[0] )
-			colors.remove(0)
-		}
-	}
-
-	Assert( colors.len() == maxSlices )
+	Assert( data.entries.len() <= 8 )
 
 	// Get nested panel
 	var piePanel = GetElem( menu, panelName )
 
 	// Create background
 	var background = Hud_GetChild( piePanel, "BarBG" )
-	background.SetBarProgress( 1.0 )
-	background.SetColor( backgroundColor )
+	Hud_SetBarProgress( background, 1.0 )
+	Hud_SetColor( background, [190, 190, 190, 255] )
 
 	// Calculate total of all values combined
 	foreach ( entry in data.entries )
 		data.sum += entry.numValue
 
 	// Calculate bar fraction for each value
-	array<float> valueFractions
 	foreach ( entry in data.entries )
 	{
 		if ( data.sum > 0 )
-			valueFractions.append( entry.numValue / data.sum )
+			entry.fracValue = entry.numValue / data.sum
 		else
-			valueFractions.append( 0.0 )
+			entry.fracValue = 0.0
 	}
 
 	// Set slice sizes and text data
 	var titleLabel = Hud_GetChild( piePanel, "Title" )
 	Hud_SetText( titleLabel, titleString )
-	titleLabel.SetColor( data.labelColor )
+	Hud_SetColor( titleLabel, data.labelColor )
 
 	var noDataLabel = Hud_GetChild( piePanel, "NoData" )
 
-	if ( valueFractions.len() > 0 )
+	if ( data.entries.len() > 0 )
 	{
 		Hud_Hide( noDataLabel )
 
 		float combinedFrac = 0.0
 		int largestTextWidth = 0
 
-		foreach ( index, frac in valueFractions )
+		foreach ( index, entry in data.entries )
 		{
 			var barColorGuide = Hud_GetChild( piePanel, "BarColorGuide" + index )
-			barColorGuide.SetColor( colors[ index ] )
+			Hud_SetColor( barColorGuide, entry.color )
 			Hud_Show( barColorGuide )
 
 			var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
 			Hud_Show( barColorGuideFrame )
 
-			string percent = GetPercent( frac, 1.0, 0, true )
+			string percent = GetPercent( entry.fracValue, 1.0, 0, true )
 			var barName = Hud_GetChild( piePanel, "BarName" + index )
-			barName.SetColor( data.labelColor )
+			Hud_SetColor( barName, data.labelColor )
 
 			if ( data.timeBased )
-				Hud_SetText( barName, PieChartHoursToTimeString( data.entries[ index ].numValue, data.entries[ index ].displayName, percent ) )
+				Hud_SetText( barName, PieChartHoursToTimeString( entry.numValue, entry.displayName, percent ) )
 			else
-				Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", data.entries[ index ].displayName, percent )
+				Hud_SetText( barName, "#STATS_TEXT_AND_PERCENTAGE", entry.displayName, percent )
 
 			int currentTextWidth = Hud_GetTextWidth( barName )
 			if ( currentTextWidth > largestTextWidth )
@@ -105,10 +79,10 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 
 			Hud_Show( barName )
 
-			combinedFrac += frac
+			combinedFrac += entry.fracValue
 			var bar = Hud_GetChild( piePanel, "Bar" + index )
 			Hud_SetBarProgress( bar, combinedFrac )
-			bar.SetColor( colors[ index ] )
+			Hud_SetColor( bar, entry.color )
 			Hud_Show( bar )
 		}
 
@@ -142,10 +116,10 @@ function SetStatsBarValues( menu, panelName, titleString, startValue, endValue, 
 	float frac = GraphCapped( currentValue, startValue, endValue, 0.0, 1.0 )
 
 	var barFill = Hud_GetChild( panel, "BarFill" )
-	barFill.SetScaleX( frac )
+	Hud_SetScaleX( barFill, frac )
 
 	var barFillShadow = Hud_GetChild( panel, "BarFillShadow" )
-	barFillShadow.SetScaleX( frac )
+	Hud_SetScaleX( barFillShadow, frac )
 }
 
 void function SetStatsValueInfo( var menu, valueID, labelText, textString )

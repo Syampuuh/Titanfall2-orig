@@ -113,7 +113,7 @@ void function FireArcBall( entity weapon, vector pos, vector dir, bool shouldPre
 {
 	entity owner = weapon.GetWeaponOwner()
 
-	float speed = 800.0
+	float speed = 500.0
 
 	if ( isCharged )
 		speed = 350.0

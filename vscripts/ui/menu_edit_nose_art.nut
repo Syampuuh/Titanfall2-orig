@@ -105,7 +105,7 @@ void function OnNoseArtSelectMenu_Open()
 	file.gridData.numElements = visibleElems.len()
 	file.gridData.currentPage = 0
 	Grid_InitPage( file.menu, file.gridData )
-	Grid_MenuOpened( file.menu )
+	Grid_RegisterPageNavInputs( file.menu )
 
 	Hud_SetFocused( Grid_GetButtonForElementNumber( file.menu, 0 ) )
 
@@ -116,7 +116,7 @@ void function OnNoseArtSelectMenu_Open()
 
 void function OnNoseArtSelectMenu_Close()
 {
-	Grid_MenuClosed( file.menu )
+	Grid_DeregisterPageNavInputs( file.menu )
 
 	entity player = GetUIPlayer()
 	if ( !IsValid( player ) )
@@ -179,7 +179,7 @@ bool function NoseArtButton_Init( var button, int elemNum )
 
 	Hud_SetSelected( button, isActiveIndex )
 
-	if ( isActiveIndex )
+	if ( IsControllerModeActive() && isActiveIndex )
 		Hud_SetFocused( button )
 
 	int subItemType = GetSubitemType( titanRef, item.ref )

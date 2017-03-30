@@ -2,11 +2,11 @@ WeaponData
 {
 	MP_BASE
 	{
-		"npc_damage_near_distance"						"1200"
-		"npc_damage_far_distance" 						"2400"
+		"npc_damage_near_distance"						"1000"
+		"npc_damage_far_distance" 						"1500"
 
 		"npc_damage_near_value"   						"25"
-		"npc_damage_far_value"							"10"
+		"npc_damage_far_value"							"5"
 		"npc_damage_near_value_titanarmor"				"100"
 		"npc_damage_far_value_titanarmor" 				"100"
 

@@ -326,6 +326,7 @@ function UpdateViewStatsOverviewMenu()
 	totalTitanExecutions += GetPlayerStatInt( player, "kills_stats", "titanExocutionRonin" )
 	totalTitanExecutions += GetPlayerStatInt( player, "kills_stats", "titanExocutionTone" )
 	totalTitanExecutions += GetPlayerStatInt( player, "kills_stats", "titanExocutionLegion" )
+	totalTitanExecutions += GetPlayerStatInt( player, "kills_stats", "titanExocutionVanguard" )
 
 	Hud_SetText( GetElem( file.menu, "KillsAsTitanValue0" ), string( GetPlayerStatInt( player, "kills_stats", "pilotKillsAsTitan" ) ) )
 	Hud_SetText( GetElem( file.menu, "KillsAsTitanValue1" ), string( GetPlayerStatInt( player, "kills_stats", "titanKillsAsTitan" ) ) )

@@ -6,8 +6,8 @@ WeaponData
 	"shortprintname"								"#WPN_TITAN_SALVO_ROCKETS"
 	"longdesc"										"#WPN_TITAN_SALVO_ROCKETS_LONGDESC"
 
-	"menu_icon"										"ui/temp"
-	"hud_icon"										"ui/temp"
+	"menu_icon"										"rui/titan_loadout/ordnance/multilock_rockets_menu"
+	"hud_icon"										"rui/titan_loadout/ordnance/multilock_rockets"
 
 	"weaponClass" 									"titan"
 	"weaponType"									"shoulder"
@@ -38,8 +38,6 @@ WeaponData
 	"viewmodel"   									"models/weapons/titan_bt_rocket_pod/atpov_titan_bt_rocket_pod_right.mdl"
 	"projectilemodel" 								"models/weapons/bullets/projectile_rocket_large.mdl"
 
-	"gesture_attack_anim"							"0"
-
 	"aimassist_disable_hipfire"						"0"
 	"aimassist_disable_ads"							"0"
 	"aimassist_disable_hipfire_humansonly"			"1"
@@ -60,7 +58,7 @@ WeaponData
 	"fx_muzzle_flash_world"							"P_muzzleflash_predator"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
-	"damage_type" 									"bullet"
+	"damage_type" 									"burn"
 	"critical_hit"									"0"
 
 	// Sound
@@ -76,16 +74,19 @@ WeaponData
 	"ammo_stockpile_max"							"120"
 	"ammo_clip_size"   								"120"
 	"ammo_default_total"							"120"
-	"ammo_per_shot"									"10"
 	"ammo_min_to_fire"								"120"
-
-	"cooldown_type"                                 "ammo_instant"
-
+	"cooldown_type"                                 "ammo_per_shot"
 	"reload_enabled"								"0"
 
 	// Regen Ammo
 	"regen_ammo_refill_rate"						"12.0"
 	"regen_ammo_refill_start_delay"					"1.0"
+
+	"charge_time" 									"0.01"
+	"charge_cooldown_time"							"0.0"
+	"charge_cooldown_delay"   						"0.0"
+	"charge_end_forces_fire"  						"1"
+	"charge_require_input"							"1"
 
 	"play_offhand_charging_anim"  					"1"
 	"play_offhand_start_end_anim"					"1"
@@ -95,6 +96,8 @@ WeaponData
 	MP_BASE
 	{
 		// Damage - When Used by Players
+		"ammo_per_shot"									"20"
+		"burst_fire_count"								"6"
 		"damage_near_distance"							"800"
 		"damage_far_distance" 							"1200"
 		"damage_near_value"   							"250"
@@ -108,6 +111,8 @@ WeaponData
 	SP_BASE
 	{
 		// Damage - When Used by Players
+		"ammo_per_shot"									"10"
+		"burst_fire_count"								"12"
 		"damage_near_distance"							"800"
 		"damage_far_distance" 							"1200"
 		"damage_near_value"   							"250"
@@ -120,15 +125,14 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"12"
-	"burst_fire_count"								"12"
-	"burst_fire_delay"								"0.5"
+	"burst_fire_delay"								"0.7"
 	"zoom_time_in"									"0.01"
 	"zoom_time_out"   								"0.01"
 	"zoom_fov"										"50"
 	"reload_time" 									"0"
-	"holster_time"									"0.1"
+	"holster_time"									"0.65"
 	"deploy_time" 									"0.1"
-	"lower_time"  									"0.1"
+	"lower_time"  									"0.65"
 	"raise_time"  									"0.1"
 	"vortex_refire_behavior"  						"rocket"
 	"allow_empty_fire"								"0"
@@ -203,7 +207,7 @@ WeaponData
 	"sway_gain"   									"15.0"
 
 	// Crosshair
-	"red_crosshair_range" 							"4000"
+	"red_crosshair_range" 							"3000"
 
 	"scripted_projectile_max_timestep"				"0.2"
 
@@ -228,7 +232,7 @@ WeaponData
 			"explosion_damage"							"*1.2"
 			"explosion_damage_heavy_armor"				"*1.2"
 
-			"burst_fire_count"							"24" //was 12
+			//"burst_fire_count"							"24" //was 12
 
 			"is_burn_mod"		"1"
 		}
@@ -241,26 +245,6 @@ WeaponData
 			"explosion_inner_radius"						"250"
 			"explosionradius" 								"400" //"150"
 			"impact_effect_table" 							"exp_rocket_shoulder_large"
-		}
-		sur_level_0
-		{
-			"burst_fire_count"							"4--"
-			"burst_fire_delay"							"*1.25"
-		}
-		sur_level_1
-		{
-			"burst_fire_count"							"4++"
-			"burst_fire_delay"							"*0.8"
-		}
-		sur_level_2
-		{
-			"burst_fire_count"							"4++"
-			"burst_fire_delay"							"*0.8"
-		}
-		sur_level_3
-		{
-			"burst_fire_count"							"4++"
-			"burst_fire_delay"							"*0.8"
 		}
 		scripted_no_damage
 		{
@@ -287,6 +271,12 @@ WeaponData
 			"projectile_trail_effect_0" 					"P_FlightCore_trail"
 			"impact_effect_table" 							"none"
 			"projectile_lifetime"							"1.0"
+		}
+		missile_racks
+		{
+			"ammo_per_shot"									"10"
+			"burst_fire_count"								"12"
+			"hud_icon"										"rui/titan_loadout/passive/vanguard_core1"
 		}
 	}
 

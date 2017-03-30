@@ -25,6 +25,8 @@ global struct ClGlobals
 	array<void functionref( entity )>  onLocalViewPlayerSpawnedCallbacks
 	array<void functionref( entity )>  onLocalClientPlayerSpawnedCallbacks
 	array<void functionref( entity )>  onMinimapEntSpawnedCallbacks
+	array<void functionref( entity )>  onUseEntGainFocusCallbacks
+	array<void functionref( entity )>  onUseEntLoseFocusCallbacks
 	array<void functionref( entity )> addPlayerFuncs
 	table< int, array<void functionref( float, vector, int, int, entity ) > > onLocalPlayerTookDamageCallback
 	array<void functionref( entity, entity, vector, int ) > onLocalPlayerDidDamageCallback
@@ -59,6 +61,7 @@ global struct ClGlobals
 	VisGroup menuVisGroup
 
 	bool isMenuOpen = false
+	bool isSoloDialogMenuOpen = false
 	bool mapSupportsMenuModels = false
 	bool initializedMenuModels = false
 

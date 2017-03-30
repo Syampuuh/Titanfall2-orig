@@ -32,6 +32,15 @@ global const TITAN_PASSIVE2_DESC = "Passive2Desc"
 global const TITAN_PASSIVE3_TYPE = "Passive3Type"
 global const TITAN_PASSIVE3_NAME = "Passive3Name"
 global const TITAN_PASSIVE3_DESC = "Passive3Desc"
+global const TITAN_PASSIVE4_TYPE = "Passive4Type"
+global const TITAN_PASSIVE4_NAME = "Passive4Name"
+global const TITAN_PASSIVE4_DESC = "Passive4Desc"
+global const TITAN_PASSIVE5_TYPE = "Passive5Type"
+global const TITAN_PASSIVE5_NAME = "Passive5Name"
+global const TITAN_PASSIVE5_DESC = "Passive5Desc"
+global const TITAN_PASSIVE6_TYPE = "Passive6Type"
+global const TITAN_PASSIVE6_NAME = "Passive6Name"
+global const TITAN_PASSIVE6_DESC = "Passive6Desc"
 
 global const TITAN_CORE_HINT = "CoreHint"
 global const TITAN_SPECIAL_HINT = "SpecialHint"
@@ -82,6 +91,7 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 	foreach ( button in buttons )
 		UpdateTitanItemButton( button, loadout )
 
+	string titanRef = loadout.titanClass
 	array<var> imageElems = GetElementsByClassname( menu, "TitanLoadoutPanelImageClass" )
 	foreach ( elem in imageElems )
 	{
@@ -95,8 +105,6 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 		RuiSetImage( rui, "buttonImage", image )
 	}
 
-	string titanRef = loadout.titanClass
-
 	if ( ItemDefined( titanRef ) )
 	{
 		ItemData itemData = GetItemData( titanRef )
@@ -108,6 +116,30 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 
 		foreach ( element in menu.classElements[TITAN_PASSIVE3_TYPE] )
 			Hud_SetText( element, "#HUD_TITLE_COLON", GetDisplayNameFromItemType( expect int( itemData.i.passive3Type ) ) )
+
+		foreach ( element in menu.classElements[TITAN_PASSIVE4_TYPE] )
+		{
+			if ( ShouldDisplayIfVanguardPassive( titanRef, "passive4") )
+				Hud_SetText( element, "#HUD_TITLE_COLON", GetDisplayNameFromItemType( expect int( itemData.i.passive4Type ) ) )
+			else
+				Hud_SetText( element, "" )
+		}
+
+		foreach ( element in menu.classElements[TITAN_PASSIVE5_TYPE] )
+		{
+			if ( ShouldDisplayIfVanguardPassive( titanRef, "passive5") )
+				Hud_SetText( element, "#HUD_TITLE_COLON", GetDisplayNameFromItemType( expect int( itemData.i.passive5Type ) ) )
+			else
+				Hud_SetText( element, "" )
+		}
+
+		foreach ( element in menu.classElements[TITAN_PASSIVE6_TYPE] )
+		{
+			if ( ShouldDisplayIfVanguardPassive( titanRef, "passive6") )
+				Hud_SetText( element, "#HUD_TITLE_COLON", GetDisplayNameFromItemType( expect int( itemData.i.passive6Type ) ) )
+			else
+				Hud_SetText( element, "" )
+		}
 	}
 
 	foreach ( element in menu.classElements[TITAN_PASSIVE1_NAME] )
@@ -118,6 +150,30 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 
 	foreach ( element in menu.classElements[TITAN_PASSIVE3_NAME] )
 		SetTextFromItemName( element, loadout.passive3 )
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE4_NAME] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive4") )
+			SetTextFromItemName( element, loadout.passive4 )
+		else
+			Hud_SetText( element, "" )
+	}
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE5_NAME] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive5") )
+			SetTextFromItemName( element, loadout.passive5 )
+		else
+			Hud_SetText( element, "" )
+	}
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE6_NAME] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive6") )
+			SetTextFromItemName( element, loadout.passive6 )
+		else
+			Hud_SetText( element, "" )
+	}
 
 	foreach ( element in menu.classElements[TITAN_PRIMARY_NAME] )
 		SetTextFromItemName( element, loadout.primary )
@@ -142,6 +198,30 @@ void function UpdateTitanLoadoutPanel( var loadoutPanel, TitanLoadoutDef loadout
 
 	foreach ( element in menu.classElements[TITAN_PASSIVE3_DESC] )
 		SetTextFromItemDescription( element, loadout.passive3 )
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE4_DESC] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive4") )
+			SetTextFromItemDescription( element, loadout.passive4 )
+		else
+			Hud_SetText( element, "" )
+	}
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE5_DESC] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive5") )
+			SetTextFromItemDescription( element, loadout.passive5 )
+		else
+			Hud_SetText( element, "" )
+	}
+
+	foreach ( element in menu.classElements[TITAN_PASSIVE6_DESC] )
+	{
+		if ( ShouldDisplayIfVanguardPassive( titanRef, "passive6") )
+			SetTextFromItemDescription( element, loadout.passive6 )
+		else
+			Hud_SetText( element, "" )
+	}
 
 	foreach ( element in menu.classElements[TITAN_PRIMARY_DESC] )
 		SetTextFromItemDescription( element, loadout.primary )
@@ -228,6 +308,16 @@ void function AddDefaultTitanElementsToTitanLoadoutMenu( var menu )
 	AddMenuElementsByClassname( menu, TITAN_PASSIVE3_NAME )
 	AddMenuElementsByClassname( menu, TITAN_PASSIVE3_DESC )
 
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE4_TYPE )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE4_NAME )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE4_DESC )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE5_TYPE )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE5_NAME )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE5_DESC )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE6_TYPE )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE6_NAME )
+	AddMenuElementsByClassname( menu, TITAN_PASSIVE6_DESC )
+
 	AddMenuElementsByClassname( menu, TITAN_CORE_HINT )
 	AddMenuElementsByClassname( menu, TITAN_SPECIAL_HINT )
 	AddMenuElementsByClassname( menu, TITAN_ORDNANCE_HINT )
@@ -237,6 +327,11 @@ void function AddDefaultTitanElementsToTitanLoadoutMenu( var menu )
 void function UpdateTitanItemButton( var button, TitanLoadoutDef loadout )
 {
 	string propertyName = Hud_GetScriptID( button )
+	if ( !ShouldDisplayIfVanguardPassive( loadout.titanClass, propertyName ) )
+		DisableButton( button )
+	else
+		EnableButton( button )
+
 	string itemRef = GetTitanLoadoutValue( loadout, propertyName )
 	IsTitanLoadoutPrime( loadout )
 	string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
@@ -336,4 +431,21 @@ string function GetTitanButtonBind( string ability )
 	}
 
 	return ability
+}
+
+bool function ShouldDisplayIfVanguardPassive( string titanClass, string propertyName )
+{
+	if ( titanClass == "vanguard" )
+		return true
+
+	if ( propertyName == "passive4" )
+		return false
+
+	if ( propertyName == "passive5" )
+		return false
+
+	if ( propertyName == "passive6" )
+		return false
+
+	return true
 }

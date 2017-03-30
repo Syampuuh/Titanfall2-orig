@@ -476,7 +476,7 @@ function CycleChallengeViewInternal()
 
 function EOGChallenges_FooterData( footerData )
 {
-	footerData.gamepad.append( { label = "#B_BUTTON_BACK" } )
+	/*footerData.gamepad.append( { label = "#B_BUTTON_BACK" } )
 	footerData.pc.append( { label = "#BACK", func = OldPCBackButton_Activate } )
 
 	string nextView = GetNextChallengeView()
@@ -502,7 +502,7 @@ function EOGChallenges_FooterData( footerData )
 			footerData.gamepad.append( { label = "#Y_BUTTON_EOG_CHALLENGES_SHOW_TRACKED" } )
 			footerData.pc.append( { label = "#EOG_CHALLENGES_SHOW_TRACKED", func = CycleChallengeView } )
 		}
-	}
+	}*/
 }
 
 function EOGChallengeButton_GotFocus( button )

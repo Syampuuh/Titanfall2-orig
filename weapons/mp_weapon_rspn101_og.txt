@@ -6,8 +6,8 @@ WeaponData
 	"description" 									"#WPN_RSPN101_OG_DESC"
 	"longdesc"										"#WPN_RSPN101_OG_LONGDESC"
 
-	"menu_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_r102"
-	"hud_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_r102"
+	"menu_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_r101_aog"
+	"hud_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_r101_aog"
 
 	"weaponClass" 									"human"
 	"weaponSubClass"								"rifle"
@@ -105,7 +105,7 @@ WeaponData
 
 		"aimassist_adspull_weaponclass"					"precise"
 
-		"damage_flags"									"DF_BULLET | DF_INSTANT"
+		"damage_flags"									"DF_BULLET | DF_INSTANT | DF_DISMEMBERMENT"
 
 		"damage_near_value"   							"25"//33
 		"damage_far_value"								"17"//15

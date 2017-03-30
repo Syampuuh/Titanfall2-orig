@@ -325,7 +325,7 @@ void function Init_SPTitanLoadoutButtons( var menu, var leftFocus, var rightFocu
 		if ( rightFocus != null )
 			item.SetNavRight( rightFocus )
 
-		SetButtonRuiText( item, GetSPTitanLoadoutForIndex_Title( idx ) )
+		SetButtonRuiText( item, Localize( GetSPTitanLoadoutForIndex_Title( idx ) ) )
 
 		bool isEnabled = IsBTLoadoutUnlocked( idx )
 		Hud_SetEnabled( item, isEnabled )

@@ -383,6 +383,12 @@ WeaponData
 			"fire_rate"   					"*1.5"
 		}
 
+		coop_mortar_titan
+		{
+			"impact_effect_table" 							"exp_rocket_mortar_titan_rocket_launcher"
+			"projectile_trail_effect_0" 					"P_Rocket_Mortar"
+		}
+
 		RocketCore_RocketStream
 		{
 			"fire_rate"   					"*1.75"

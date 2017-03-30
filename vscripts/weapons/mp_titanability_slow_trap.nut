@@ -108,7 +108,7 @@ function DeploySlowTrap( entity projectile )
 	if ( owner.IsNPC() )
 	{
 		owner.SetSecondaryEnemy( tower )
-		tower.EnableAttackableByAI( AI_PRIORITY_NO_THREAT )		// don't let other AI target this
+		tower.EnableAttackableByAI( AI_PRIORITY_NO_THREAT, 0, AI_AP_FLAG_NONE )		// don't let other AI target this
 	}
 
 	EmitSoundOnEntity( tower, "incendiary_trap_land" )
@@ -421,9 +421,6 @@ bool function CreateSlowTrapSegment( entity projectile, int projectileCount, ent
 
 	if ( projectile.proj.savedOrigin != < -999999.0, -999999.0, -999999.0 > )
 	{
-		if ( IsRayTouchingSmokescreen( projectile.proj.savedOrigin, pos, owner.GetTeam() ) )
-			return false
-
 		float duration = FLAME_WALL_THERMITE_DURATION
 
 		if ( GAMETYPE == GAMEMODE_SP )

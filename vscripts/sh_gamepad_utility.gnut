@@ -172,7 +172,6 @@ bool function ChangeCustomGamepadButtonIndexToCommandIndex_( int newButtonIndex,
 	arr[oldButtonIndex] = oldCommandIndex
 
 	string newValue = IntArrayToCSS( arr )
-	printt( "ZZZZZZZ", convarName, newValue )
 	SetConVarString( convarName, newValue )
 	return true
 }

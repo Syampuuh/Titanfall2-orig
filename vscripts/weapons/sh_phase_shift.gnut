@@ -5,9 +5,9 @@ global function MpAbilityShifter_Init
 global function PhaseShift
 global function CodeCallback_EnterPhaseShift
 global function CodeCallback_ExitPhaseShift
+global function CancelPhaseShift
 
 #if SERVER
-global function CancelPhaseShift
 global function PlayPhaseShiftDisappearFX
 #endif
 
@@ -65,6 +65,16 @@ void function CodeCallback_ExitPhaseShift( entity ent )
 #endif
 }
 
+void function CancelPhaseShift( entity ent )
+{
+	ent.PhaseShiftCancel()
+
+#if SERVER
+	ent.Signal( "ForceStopPhaseShift" )
+	PlayPhaseShiftAppearFX( ent )
+#endif //
+}
+
 
 void function MpAbilityShifter_Init()
 {
@@ -85,6 +95,8 @@ void function MpAbilityShifter_Init()
 	PrecacheParticleSystem( SHIFTER_PERSONAL_FX )
 	PrecacheParticleSystem( SHIFTER_SCREEN_FX )
 	PrecacheParticleSystem( SHIFTER_SCREEN_FX_START )
+
+	MpAbilityShifterWeapon_Init()
 
 	RegisterSignal( "StartPhaseShift" )
 	RegisterSignal( "StopPhaseShift" )
@@ -400,13 +412,6 @@ void function PhaseShiftDisappearEffectCleanup( entity ent, entity fx, float dur
 		bufferTime = 0.0
 
 	wait max( duration - bufferTime, 0.0 )
-}
-
-void function CancelPhaseShift( entity ent )
-{
-	ent.PhaseShiftCancel()
-	ent.Signal( "ForceStopPhaseShift" )
-	PlayPhaseShiftAppearFX( ent )
 }
 
 entity function PlayPhaseShiftAppearFX( entity ent )

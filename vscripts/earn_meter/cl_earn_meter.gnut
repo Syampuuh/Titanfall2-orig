@@ -291,8 +291,16 @@ void function EarnMeter_Update()
 			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
 			RuiTrackFloat( file.earnMeterRui, "ownedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
 			RuiTrackFloat( file.earnMeterRui, "rewardFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_REWARDFRAC ) )
-			RuiSetImage( file.earnMeterRui, "goalBuildingIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "core_building_icon" ) )
-			RuiSetImage( file.earnMeterRui, "goalReadyIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "core_ready_icon" ) )
+			if ( settingsName == "titan_atlas_vanguard" )
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetVanguardCoreIcon( player ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetVanguardCoreIcon( player ) )
+			}
+			else
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "core_building_icon" ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "core_ready_icon" ) )
+			}
 
 			EarnObject earnReward = PlayerEarnMeter_GetReward( player )
 			RuiSetImage( file.earnMeterRui, "rewardBuildingIcon", earnReward.buildingImage )
@@ -351,6 +359,45 @@ void function EarnMeter_Update()
 	RuiSetInt( file.earnMeterRui, "meterMode", PlayerEarnMeter_GetMode( player ) )
 
 	Cl_EarnMeter_UpdateHint( player )
+}
+
+asset function GetVanguardCoreIcon( entity player )
+{
+	Assert( player.IsTitan() )
+
+	if ( !IsConnected() ) //Persistence isn't available when we disconnect
+		return $""
+
+	if ( player != GetLocalClientPlayer() ) //Client Persistence doesn't know about other players.
+		return Dev_GetPlayerSettingAssetByKeyField_Global( "titan_atlas_vanguard", "core_building_icon" )
+
+	#if MP
+	int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "titan" )
+	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
+
+	entity soul = player.GetTitanSoul()
+	if ( !IsValid( soul ) )
+		return $""
+
+	if ( soul.GetTitanSoulNetInt( "upgradeCount" ) == 0 && loadout.passive4 != "" )
+	{
+		return GetItemImage( loadout.passive4 )
+	}
+	else if ( soul.GetTitanSoulNetInt( "upgradeCount" ) == 1 && loadout.passive5 != "" )
+	{
+		return GetItemImage( loadout.passive5 )
+	}
+	else if ( soul.GetTitanSoulNetInt( "upgradeCount" ) == 2 && loadout.passive6 != "" )
+	{
+		return GetItemImage( loadout.passive6 )
+	}
+	else
+	{
+		return Dev_GetPlayerSettingAssetByKeyField_Global( "titan_atlas_vanguard", "core_building_icon" )
+	}
+	#endif
+
+	return $""
 }
 
 void function Cl_EarnMeter_UpdateHint( entity player )

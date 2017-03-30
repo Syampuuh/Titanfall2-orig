@@ -26,20 +26,26 @@ bool function InPendingOpenInvite()
 
 void function LeaveOpenInviteButton( var button )
 {
-	ClientCommand( "leaveopeninvite" )
+	LeaveOpenInvite()
 }
 
 void function LeaveOpenInvite()
 {
+	EmitUISound( "UI_Networks_Invitation_Canceled" )
 	ClientCommand( "leaveopeninvite" )
 }
 
 void function JoinOpenInvite( var button )
 {
 	if ( CanJoinOpenInvite() )
+	{
+		EmitUISound( "UI_Networks_Invitation_Accepted" )
 		ClientCommand( "joinopeninvite" )
+	}
 	else if ( CanLeaveOpenInvite() )
-		ClientCommand( "leaveopeninvite" )
+	{
+		LeaveOpenInvite()
+	}
 }
 
 void function JoinOpenInvite_OnClick( var button )

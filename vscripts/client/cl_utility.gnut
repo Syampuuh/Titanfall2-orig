@@ -177,6 +177,18 @@ void function AddCallback_MinimapEntSpawned( void functionref( entity ) callback
 	clGlobal.onMinimapEntSpawnedCallbacks.append( callbackFunc )
 }
 
+void function AddCallback_UseEntGainFocus( void functionref( entity objectOfFocus) callbackFunc )
+{
+	Assert( !clGlobal.onUseEntGainFocusCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_UseEntGainFocus" )
+	clGlobal.onUseEntGainFocusCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_UseEntLoseFocus( void functionref( entity objectOfFocus) callbackFunc )
+{
+	Assert( !clGlobal.onUseEntLoseFocusCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_UseEntLoseFocus" )
+	clGlobal.onUseEntLoseFocusCallbacks.append( callbackFunc )
+}
+
 void function AddCallback_LocalViewPlayerSpawned( void functionref( entity ) callbackFunc )
 {
 	Assert( !clGlobal.onLocalViewPlayerSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddLocalViewPlayerSpawnedCallback" )

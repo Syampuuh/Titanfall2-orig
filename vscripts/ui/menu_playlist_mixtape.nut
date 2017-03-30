@@ -9,6 +9,7 @@ global function GetChecklistPlaylistsArray
 global function GetMixtapeMatchmakingVersion
 global function IsMixtapeVersionNew
 global function GetMixtapeExternalCheckedOnPlaylists
+global function PrintPlaylistAvailability
 
 //script_ui AdvanceMenu( GetMenu( "PlaylistMixtapeMenu" ) )
 
@@ -1047,4 +1048,14 @@ string function ConvertStringArrayToCSS( array<string> strArray )
 	return result
 }
 
-
+void function PrintPlaylistAvailability()
+{
+	printt( "!!!!!!!!!!!!!!!!!!!!!!! PrintPlaylistAvailability() called with party size", GetPartySize() )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     aitdm:", CanPlaylistFitMyParty( "aitdm" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     at:   ", CanPlaylistFitMyParty( "at" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     cp:   ", CanPlaylistFitMyParty( "cp" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     lts:  ", CanPlaylistFitMyParty( "lts" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     ctf:  ", CanPlaylistFitMyParty( "ctf" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     ps:   ", CanPlaylistFitMyParty( "ps" ) )
+	printt( "!!!!!!!!!!!!!!!!!!!!!!!     ffa:  ", CanPlaylistFitMyParty( "ffa" ) )
+}

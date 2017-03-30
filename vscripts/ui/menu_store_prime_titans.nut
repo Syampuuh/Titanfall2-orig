@@ -5,7 +5,7 @@ global function EntitlementsChanged_PrimeTitans
 
 struct
 {
-	var[NUM_PERSISTENT_TITAN_LOADOUTS] primeTitanButtons
+	var[MAX_STORE_PRIME_TITANS] primeTitanButtons
 	var titanPreview
 	int entitlementToBuy
 } file
@@ -18,32 +18,30 @@ void function InitStoreMenuPrimeTitans()
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenStoreMenuPrimeTitans )
 
-	for ( int i = 0; i < NUM_PERSISTENT_TITAN_LOADOUTS; i++ )
+	for ( int i = 0; i < MAX_STORE_PRIME_TITANS; i++ )
 	{
-		var activateButton = Hud_GetChild( menu, "Button" + i )
-		activateButton.s.rowIndex <- i
-		Hud_SetVisible( activateButton, true )
-		if ( i < 2 )
-			Hud_AddEventHandler( activateButton, UIE_CLICK, OnPrimeButton_Activate )
-		Hud_AddEventHandler( activateButton, UIE_GET_FOCUS, OnPrimeButton_Focused )
-		file.primeTitanButtons[i] = activateButton
+		var button = Hud_GetChild( menu, "Button" + i )
+		Hud_SetVisible( button, true )
+		if ( i < 4 )
+		{
+			Hud_AddEventHandler( button, UIE_CLICK, OnPrimeButton_Activate )
+			button.s.comingSoon <- false
+		}
+		else
+		{
+			RuiSetBool( Hud_GetRui( button ), "isComingSoon", true )
+			button.s.comingSoon <- true
+		}
+		Hud_AddEventHandler( button, UIE_GET_FOCUS, OnPrimeButton_Focused )
+		file.primeTitanButtons[i] = button
 	}
 
-	var button = Hud_GetChild( menu, "Button2" )
-	var rui = Hud_GetRui( button )
-	RuiSetBool( rui, "isComingSoon", true )
-
-	button = Hud_GetChild( menu, "Button3" )
-	rui = Hud_GetRui( button )
-	RuiSetBool( rui, "isComingSoon", true )
-
-	button = Hud_GetChild( menu, "Button4" )
-	rui = Hud_GetRui( button )
-	RuiSetBool( rui, "isComingSoon", true )
-
-	button = Hud_GetChild( menu, "Button5" )
-	rui = Hud_GetRui( button )
-	RuiSetBool( rui, "isComingSoon", true )
+	Hud_GetChild( menu, "Button0" ).s.loadoutIndex <- 0
+	Hud_GetChild( menu, "Button1" ).s.loadoutIndex <- 1
+	Hud_GetChild( menu, "Button2" ).s.loadoutIndex <- 2
+	Hud_GetChild( menu, "Button3" ).s.loadoutIndex <- 5
+	Hud_GetChild( menu, "Button4" ).s.loadoutIndex <- 3
+	Hud_GetChild( menu, "Button5" ).s.loadoutIndex <- 4
 
 	file.titanPreview = Hud_GetChild( menu, "TitanPreview" )
 
@@ -53,7 +51,7 @@ void function InitStoreMenuPrimeTitans()
 
 void function OnOpenStoreMenuPrimeTitans()
 {
-	UI_SetPresentationType( ePresentationType.TITAN )
+	UI_SetPresentationType( ePresentationType.STORE_PRIME_TITANS )
 	RunMenuClientFunction( "UpdateTitanModel", 0, TITANMENU_NO_CUSTOMIZATION  | TITANMENU_FORCE_PRIME )
 	var rui = Hud_GetRui( file.titanPreview )
 	RuiSetImage( rui, "titanPreview", $"" )
@@ -66,12 +64,12 @@ void function UpdateStoreMenuPrimeTitanButtons()
 	if ( player == null )
 		return
 
-	foreach ( index, button in file.primeTitanButtons )
+	foreach ( button in file.primeTitanButtons )
 	{
-		TitanLoadoutDef loadout = GetCachedTitanLoadout( index )
+		TitanLoadoutDef loadout = GetCachedTitanLoadout( expect int( button.s.loadoutIndex ) )
 		var rui = Hud_GetRui( button )
 
-		if ( index >= 2 )
+		if ( button.s.comingSoon )
 			RuiSetString( rui, "buttonText", GetTitanLoadoutName( loadout ) + " %$rui/menu/common/item_locked%" )
 		else
 			RuiSetString( rui, "buttonText", GetTitanLoadoutName( loadout ) )
@@ -79,27 +77,38 @@ void function UpdateStoreMenuPrimeTitanButtons()
 		switch ( loadout.primeTitanRef )
 		{
 			case "ion_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/ion_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/ion_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/ion_store_icon_hl" )
 				break
 
 			case "scorch_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/scorch_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/scorch_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/scorch_store_icon_hl" )
 				break
 
 			case "northstar_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/northstar_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/northstar_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/northstar_store_icon_hl" )
 				break
 
 			case "ronin_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/ronin_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/ronin_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/ronin_store_icon_hl" )
 				break
 
 			case "tone_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/tone_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/tone_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/tone_store_icon_hl" )
 				break
 
 			case "legion_prime":
-				RuiSetImage( rui, "primeImage", $"rui/menu/store/legion_icon" )
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/legion_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/legion_store_icon_hl" )
+				break
+
+			case "vanguard_prime":
+				RuiSetImage( rui, "primeImage", $"rui/menu/store/tone_store_icon" )
+				RuiSetImage( rui, "focusedImage", $"rui/menu/store/tone_store_icon_hl" )
 				break
 		}
 
@@ -109,7 +118,10 @@ void function UpdateStoreMenuPrimeTitanButtons()
 		array<int> entitlementIds = GetEntitlementIds( loadout.primeTitanRef )
 		Assert( entitlementIds.len() <= 2 )
 		entitlementIds.removebyvalue( ET_DELUXE_EDITION )
-		button.s.hasEntitlement <- LocalPlayerHasEntitlement( entitlementIds[ 0 ] ) || LocalPlayerHasEntitlement( ET_DELUXE_EDITION )
+		button.s.hasEntitlement <- LocalPlayerHasEntitlement( entitlementIds[ 0 ] )
+
+		if ( ( entitlementIds[ 0 ] == ET_DLC1_PRIME_ION || entitlementIds[ 0 ] == ET_DLC1_PRIME_SCORCH ) && LocalPlayerHasEntitlement( ET_DELUXE_EDITION ) )
+			button.s.hasEntitlement = true
 	}
 
 	RefreshEntitlements()
@@ -117,15 +129,10 @@ void function UpdateStoreMenuPrimeTitanButtons()
 
 void function OnPrimeButton_Focused( var button )
 {
-	int index = expect int( button.s.rowIndex )
+	int index = expect int( button.s.loadoutIndex )
 	var rui = Hud_GetRui( file.titanPreview )
 
-	if ( index < 2 )
-	{
-		RunMenuClientFunction( "UpdateTitanModel", index, TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_PRIME )
-		RuiSetImage( rui, "titanPreview", $"" )
-	}
-	else
+	if ( button.s.comingSoon )
 	{
 		RunMenuClientFunction( "UpdateTitanModel", -1, TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_PRIME )
 
@@ -140,16 +147,14 @@ void function OnPrimeButton_Focused( var button )
 			case "tone":
 				RuiSetImage( rui, "titanPreview", $"rui/menu/store/tone_prime" )
 				break
-
-			case "northstar":
-				RuiSetImage( rui, "titanPreview", $"rui/menu/store/northstar_prime" )
-				break
-
-			case "legion":
-				RuiSetImage( rui, "titanPreview", $"rui/menu/store/legion_prime" )
-				break
 		}
 	}
+	else
+	{
+		RunMenuClientFunction( "UpdateTitanModel", index, TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_PRIME )
+		RuiSetImage( rui, "titanPreview", $"" )
+	}
+	RunMenuClientFunction( "UpdateStorePrimeBg", index )
 }
 
 void function OnPrimeButton_Activate( var button )
@@ -160,18 +165,19 @@ void function OnPrimeButton_Activate( var button )
 #if PC_PROG
 	if ( !Origin_IsOverlayAvailable() )
 	{
-		DialogData dialogData
-		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
-		AddDialogButton( dialogData, "#OK" )
-
-		OpenDialog( dialogData )
+		PopUpOriginOverlayDisabledDialog()
 		return
 	}
 #endif
 
 	file.entitlementToBuy = expect int ( button.s.entitlementId )
 
-	if ( !LocalPlayerHasEntitlement( file.entitlementToBuy ) && !LocalPlayerHasEntitlement( ET_DELUXE_EDITION ) )
+	array<string> prices = GetEntitlementPricesAsStr( [ file.entitlementToBuy ] )
+	Assert( prices.len() == 1 )
+
+	bool isOwnedByEntitlement = ( ( file.entitlementToBuy == ET_DLC1_PRIME_ION || file.entitlementToBuy == ET_DLC1_PRIME_SCORCH ) && LocalPlayerHasEntitlement( ET_DELUXE_EDITION ) )
+
+	if ( !LocalPlayerHasEntitlement( file.entitlementToBuy ) && !isOwnedByEntitlement && prices[ 0 ] != "" )
 	{
 		DialogData dialogData
 
@@ -183,6 +189,14 @@ void function OnPrimeButton_Activate( var button )
 
 			case ET_DLC1_PRIME_SCORCH:
 				dialogData.header = "#STORE_BUY_SCORCH_PRIME"
+				break
+
+			case ET_DLC3_PRIME_NORTHSTAR:
+				dialogData.header = "#STORE_BUY_NORTHSTAR_PRIME"
+				break
+
+			case ET_DLC3_PRIME_LEGION:
+				dialogData.header = "#STORE_BUY_LEGION_PRIME"
 				break
 
 			default:
@@ -213,24 +227,29 @@ void function EntitlementsChanged_PrimeTitans()
 
 void function RefreshEntitlements()
 {
-	foreach ( index, button in file.primeTitanButtons )
+	foreach ( button in file.primeTitanButtons )
 	{
-		TitanLoadoutDef loadout = GetCachedTitanLoadout( index )
+		TitanLoadoutDef loadout = GetCachedTitanLoadout( expect int( button.s.loadoutIndex ) )
 
 		array<int> entitlementIds = GetEntitlementIds( loadout.primeTitanRef )
 		Assert( entitlementIds.len() <= 2 )
 		entitlementIds.removebyvalue( ET_DELUXE_EDITION )
-		array<string> prices = GetEntitlementPrices( entitlementIds )
+		array<string> prices = GetEntitlementPricesAsStr( entitlementIds )
 		Assert( prices.len() == 1 )
 
 		var rui = Hud_GetRui( button )
 		RuiSetString( rui, "price", prices[ 0 ] )
-		bool hasEntitlement = LocalPlayerHasEntitlement( entitlementIds[ 0 ] ) || LocalPlayerHasEntitlement( ET_DELUXE_EDITION )
+		RuiSetBool( rui, "priceAvailable", ( prices[ 0 ] != "" ) )
+		bool hasEntitlement = LocalPlayerHasEntitlement( entitlementIds[ 0 ] )
+
+		if ( LocalPlayerHasEntitlement( ET_DELUXE_EDITION ) && ( entitlementIds[ 0 ] == ET_DLC1_PRIME_ION || entitlementIds[ 0 ] == ET_DLC1_PRIME_SCORCH ) )
+			hasEntitlement = true
+
 		RuiSetBool( rui, "isOwned", hasEntitlement )
 
 		if ( !button.s.hasEntitlement && hasEntitlement )
 		{
-			ClientCommand( "StoreSetNewItemStatus StoreMenu_PrimeTitans " + loadout.primeTitanRef )
+			ClientCommand( "StoreSetNewItemStatus" + uiGlobal.entitlementId + " " + loadout.primeTitanRef )
 		}
 
 		button.s.entitlementId <- entitlementIds[ 0 ]

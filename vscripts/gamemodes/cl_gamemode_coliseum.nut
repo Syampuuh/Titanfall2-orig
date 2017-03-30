@@ -29,13 +29,18 @@ void function ServerCallback_ColiseumIntro( int enemyWinStreak, int enemyWins, i
 
 void function ClGamemodeColiseum_ColiseumIntro_Internal( int enemyWinStreak, int enemyWins, int enemyLosses )
 {
+	if ( GetGameStartTime() <= Time() + 3.0 )
+		return
+
 	var rui = RuiCreate( $"ui/gamemode_coliseum_intro.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 5000 )
 	RuiSetGameTime( rui, "startTime", Time() )
-	RuiSetGameTime( rui, "endTime", Time() + 5.0 )
+	RuiSetGameTime( rui, "endTime", GetGameStartTime() - 1.0 )
 
 	array<entity> players = GetPlayerArray()
 
 	entity player = GetLocalViewPlayer()
+
+	EmitSoundOnEntity( player, "UI_InGame_ColiseumIntro" )
 
 	CallingCard callingCard = PlayerCallingCard_GetActive( player )
 	CallsignIcon callsignIcon = PlayerCallsignIcon_GetActive( player )

@@ -9,6 +9,7 @@ struct
 {
 	var menu
 	var buyButton
+	var label
 	array<string> customizationRefs
 	int loadoutIndex
 	bool hasEntitlement
@@ -18,12 +19,14 @@ void function InitStoreMenuCustomizationPreview()
 {
 	file.menu = GetMenu( "StoreMenu_CustomizationPreview" )
 	file.buyButton = Hud_GetChild( file.menu, "BuyButton" )
+	file.label = Hud_GetChild( file.menu, "Label" )
+
 	Hud_AddEventHandler( file.buyButton, UIE_CLICK, OnBuyButton_Activate )
 
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnOpenStoreMenuCustomizationPreview )
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_NAVIGATE_BACK, OnStoreMenuCustomizationPreview_NavigateBack )
 
-	for ( int i = 0; i < NUM_PERSISTENT_TITAN_LOADOUTS; i++ )
+	for ( int i = 0; i < NUM_CUSTOMIZATIONS; i++ )
 	{
 		var button = Hud_GetChild( file.menu, "CustomizationPreview" + i )
 		button.s.rowIndex <- i
@@ -48,52 +51,52 @@ void function OnOpenStoreMenuCustomizationPreview()
 
 	file.hasEntitlement = LocalPlayerHasEntitlement( uiGlobal.entitlementId )
 
-	file.customizationRefs.clear()
+	file.customizationRefs = Store_GetCustomizationRefs( uiGlobal.entitlementId )
 
 	string menuTitle
 
 	switch ( uiGlobal.entitlementId )
 	{
 		case ET_DLC1_ION:
+		case ET_DLC3_ION:
 			menuTitle = "#CUSTOMIZATION_PACK_ION"
 			file.loadoutIndex = 0
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "ion" ) )
 			break
 
 		case ET_DLC1_SCORCH:
+		case ET_DLC3_SCORCH:
 			menuTitle = "#CUSTOMIZATION_PACK_SCORCH"
 			file.loadoutIndex = 1
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "scorch" ) )
 			break
 
 		case ET_DLC1_NORTHSTAR:
+		case ET_DLC3_NORTHSTAR:
 			menuTitle = "#CUSTOMIZATION_PACK_NORTHSTAR"
 			file.loadoutIndex = 2
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "northstar" ) )
 			break
 
 		case ET_DLC1_RONIN:
+		case ET_DLC3_RONIN:
 			menuTitle = "#CUSTOMIZATION_PACK_RONIN"
 			file.loadoutIndex = 3
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "ronin" ) )
 			break
 
 		case ET_DLC1_TONE:
+		case ET_DLC3_TONE:
 			menuTitle = "#CUSTOMIZATION_PACK_TONE"
 			file.loadoutIndex = 4
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "tone" ) )
 			break
 
 		case ET_DLC1_LEGION:
+		case ET_DLC3_LEGION:
 			menuTitle = "#CUSTOMIZATION_PACK_LEGION"
 			file.loadoutIndex = 5
-			file.customizationRefs.extend( Store_GetCustomizationRefs( "legion" ) )
 			break
 	}
 
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( file.loadoutIndex )
 
-	for ( int i = 0; i < 6; i++ )
+	for ( int i = 0; i < NUM_CUSTOMIZATIONS; i++ )
 	{
 		var button = Hud_GetChild( file.menu, "CustomizationPreview" + i )
 		var rui = Hud_GetRui( button )
@@ -112,8 +115,13 @@ void function OnCustomizationPreviewButton_Focused( var button )
 	int elemNum = expect int( button.s.rowIndex )
 	TitanLoadoutDef loadout = GetCachedTitanLoadout( file.loadoutIndex )
 
+	var rui
+	rui = Hud_GetRui( file.label )
+	RuiSetString( rui, "itemName", GetItemName( file.customizationRefs[ elemNum ] ) )
+
 	if ( elemNum < 5 )
 	{
+		RuiSetString( rui, "itemType", "#ITEM_TYPE_TITAN_NOSE_ART" )
 		UI_SetPresentationType( ePresentationType.TITAN_NOSE_ART )
 		RunMenuClientFunction( "UpdateTitanModel", file.loadoutIndex, TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_NON_PRIME )
 		RunMenuClientFunction( "ClearAllTitanPreview" )
@@ -122,6 +130,7 @@ void function OnCustomizationPreviewButton_Focused( var button )
 	}
 	else
 	{
+		RuiSetString( rui, "itemType", "#ITEM_TYPE_TITAN_WARPAINT" )
 		UI_SetPresentationType( ePresentationType.TITAN_LOADOUT_EDIT )
 		RunMenuClientFunction( "UpdateTitanModel", file.loadoutIndex, TITANMENU_NO_CUSTOMIZATION | TITANMENU_FORCE_NON_PRIME )
 		RunMenuClientFunction( "ClearTitanDecalPreview" )
@@ -140,42 +149,45 @@ void function OnBuyButton_Activate( var button )
 #if PC_PROG
 	if ( !Origin_IsOverlayAvailable() )
 	{
-		DialogData dialogData
-		dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
-		AddDialogButton( dialogData, "#OK" )
-
-		OpenDialog( dialogData )
+		PopUpOriginOverlayDisabledDialog()
 		return
 	}
 #endif
 
-	if ( !LocalPlayerHasEntitlement( uiGlobal.entitlementId ) )
+	string price = GetEntitlementPricesAsStr( [ uiGlobal.entitlementId ] )[ 0 ]
+	if ( !LocalPlayerHasEntitlement( uiGlobal.entitlementId ) && price != "" )
 	{
 		DialogData dialogData
 
 		switch ( uiGlobal.entitlementId )
 		{
 			case ET_DLC1_ION:
+			case ET_DLC3_ION:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_ION"
 				break
 
 			case ET_DLC1_SCORCH:
+			case ET_DLC3_SCORCH:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_SCORCH"
 				break
 
 			case ET_DLC1_NORTHSTAR:
+			case ET_DLC3_NORTHSTAR:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_NORTHSTAR"
 				break
 
 			case ET_DLC1_RONIN:
+			case ET_DLC3_RONIN:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_RONIN"
 				break
 
 			case ET_DLC1_TONE:
+			case ET_DLC3_TONE:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_TONE"
 				break
 
 			case ET_DLC1_LEGION:
+			case ET_DLC3_LEGION:
 				dialogData.header = "#STORE_BUY_CUSTOMIZATION_PACK_LEGION"
 				break
 		}
@@ -207,12 +219,14 @@ void function RefreshEntitlements()
 	bool hasEntitlement = LocalPlayerHasEntitlement( uiGlobal.entitlementId )
 
 	var rui = Hud_GetRui( file.buyButton )
-	RuiSetString( rui, "price", GetEntitlementPrices( [ uiGlobal.entitlementId ] )[ 0 ] )
+	string price = GetEntitlementPricesAsStr( [ uiGlobal.entitlementId ] )[ 0 ]
+	RuiSetString( rui, "price", price )
+	RuiSetBool( rui, "priceAvailable", ( price != "" ) )
 	RuiSetBool( rui, "isOwned", hasEntitlement )
 
 	if ( !file.hasEntitlement && hasEntitlement )
 	{
 		TitanLoadoutDef loadout = GetCachedTitanLoadout( file.loadoutIndex )
-		ClientCommand( "StoreSetNewItemStatus StoreMenu_CustomizationPreview " + loadout.titanClass )
+		ClientCommand( "StoreSetNewItemStatus " + uiGlobal.entitlementId + " " + loadout.titanClass )
 	}
 }

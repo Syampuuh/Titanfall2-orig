@@ -9,6 +9,8 @@ struct {
 	var appearanceLabel
 	var descriptionBox
 	var hintIcon
+	var upgradeIcon
+	var upgradeDesc
 	var hintBox
 	var weaponCamoButton
 	var camoSkinButton
@@ -70,13 +72,17 @@ void function InitEditTitanLoadoutMenu()
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_VIEW_TITAN_BRIEFING", "#VIEW_TITAN_BRIEFING", PlayMeetTitanVideo, IsLobby )
+	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_VIEW_TITAN_BRIEFING", "#VIEW_TITAN_BRIEFING", PlayMeetTitanVideo, IsLobbyAndTitanClassHasVideo )
 
 	file.appearanceLabel = Hud_GetChild( file.loadoutPanel, "LabelAppearance" )
 	file.descriptionBox = Hud_GetChild( file.loadoutPanel, "LabelDetails" )
 	file.hintIcon = Hud_GetChild( file.loadoutPanel, "HintIcon" )
+	file.upgradeIcon = Hud_GetChild( file.loadoutPanel, "UpgradeIcon" )
+	var rui = Hud_GetRui( file.upgradeIcon )
+	RuiSetImage( rui, "basicImage", $"rui/titan_loadout/core/titan_core_vanguard" )
+	file.upgradeDesc = Hud_GetChild( file.loadoutPanel, "UpgradeDescription" )
 
-	var rui = Hud_GetRui( file.hintIcon )
+	rui = Hud_GetRui( file.hintIcon )
 	RuiSetImage( rui, "basicImage", $"rui/menu/common/bulb_hint_icon" )
 
 	file.hintBox = Hud_GetChild( file.loadoutPanel, "HintBackground" )
@@ -113,6 +119,17 @@ void function OnOpenEditTitanLoadoutMenu()
 	Hud_SetText( file.appearanceLabel, "" )
 
 	RefreshCreditsAvailable()
+
+	if ( loadout.titanClass == "vanguard" )
+	{
+		Hud_Show( file.upgradeIcon )
+		Hud_Show( file.upgradeDesc )
+	}
+	else
+	{
+		Hud_Hide( file.upgradeIcon )
+		Hud_Hide( file.upgradeDesc )
+	}
 }
 
 void function UpdateTitanCosmeticButtons()
@@ -257,10 +274,10 @@ void function OnEditTitanCamoSkinButton_LoseFocus( var button )
 void function OnEditTitanCamoSkinButton_Focus( var button )
 {
 	string desc
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 	switch ( Hud_GetHudName( button ) )
 	{
 		case "ButtonCamoSkin":
-			TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
 			if ( IsTitanLoadoutPrime( loadout ) )
 				desc = "#ITEM_TYPE_CAMO_SKIN_PRIME_TITAN_CHOICE"
 			else
@@ -270,10 +287,18 @@ void function OnEditTitanCamoSkinButton_Focus( var button )
 			desc = "#ITEM_TYPE_CAMO_SKIN_CHOICE"
 		break
 	}
-	var rui = Hud_GetRui( file.descriptionBox )
-	RuiSetString( rui, "messageText", desc )
-	Hud_Show( file.hintIcon )
-	Hud_Show( file.hintBox )
+	if ( ShouldShowHintBox( loadout.titanClass ) )
+	{
+		var rui = Hud_GetRui( file.descriptionBox )
+		RuiSetString( rui, "messageText", desc )
+		Hud_Show( file.hintIcon )
+		Hud_Show( file.hintBox )
+	}
+	else if ( loadout.titanClass == "vanguard" )
+	{
+		Hud_Show( file.upgradeIcon )
+		Hud_Show( file.upgradeDesc )
+	}
 }
 
 void function OnEditTitanNoseArtButton_Focus( var button )
@@ -284,10 +309,18 @@ void function OnEditTitanNoseArtButton_Focus( var button )
 
 	desc = "#ITEM_TYPE_TITAN_NOSE_ART_CHOICE"
 
-	var rui = Hud_GetRui( file.descriptionBox )
-	RuiSetString( rui, "messageText", desc )
-	Hud_Show( file.hintIcon )
-	Hud_Show( file.hintBox )
+	if ( ShouldShowHintBox( loadout.titanClass ) )
+	{
+		var rui = Hud_GetRui( file.descriptionBox )
+		RuiSetString( rui, "messageText", desc )
+		Hud_Show( file.hintIcon )
+		Hud_Show( file.hintBox )
+	}
+	else if ( loadout.titanClass == "vanguard" )
+	{
+		Hud_Show( file.upgradeIcon )
+		Hud_Show( file.upgradeDesc )
+	}
 }
 
 void function OnPrimeTitanButton_Focus( var button )
@@ -317,11 +350,18 @@ void function OnPrimeTitanButton_Focus( var button )
 
 	}
 
-
-	var rui = Hud_GetRui( file.descriptionBox )
-	RuiSetString( rui, "messageText", desc )
-	Hud_Show( file.hintIcon )
-	Hud_Show( file.hintBox )
+	if ( ShouldShowHintBox( loadout.titanClass ) )
+	{
+		var rui = Hud_GetRui( file.descriptionBox )
+		RuiSetString( rui, "messageText", desc )
+		Hud_Show( file.hintIcon )
+		Hud_Show( file.hintBox )
+	}
+	else if ( loadout.titanClass == "vanguard" )
+	{
+		Hud_Show( file.upgradeIcon )
+		Hud_Show( file.upgradeDesc )
+	}
 }
 
 void function OnEditTitanWeaponSkinButton_Activate( var button )
@@ -428,12 +468,20 @@ void function OnTitanLoadoutButton_Focus( var button )
 	string propertyName = Hud_GetScriptID( button )
 	string itemRef = GetTitanLoadoutValue( loadout, propertyName )
 	string nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( loadout.titanClass, false )
-	int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, nonPrimeSetFile )
-	string desc = GetItemDescription( itemRef )
-	var rui = Hud_GetRui( file.descriptionBox )
-	RuiSetString( rui, "messageText", desc )
-	Hud_Show( file.hintIcon )
-	Hud_Show( file.hintBox )
+	//int itemType = GetItemTypeFromTitanLoadoutProperty( propertyName, nonPrimeSetFile )
+	if ( ShouldShowHintBox( loadout.titanClass ) )
+	{
+		string desc = GetItemDescription( itemRef )
+		var rui = Hud_GetRui( file.descriptionBox )
+		RuiSetString( rui, "messageText", desc )
+		Hud_Show( file.hintIcon )
+		Hud_Show( file.hintBox )
+	}
+	else if ( loadout.titanClass == "vanguard" )
+	{
+		Hud_Show( file.upgradeIcon )
+		Hud_Show( file.upgradeDesc )
+	}
 }
 
 void function OnTitanLoadoutButton_LoseFocus( var button )
@@ -454,6 +502,9 @@ void function OnEditTitanSlotButton_Activate( var button )
 		case "passive1":
 		case "passive2":
 		case "passive3":
+		case "passive4":
+		case "passive5":
+		case "passive6":
 			AdvanceMenu( GetMenu( "PassiveSelectMenu" ) )
 			break
 
@@ -479,4 +530,22 @@ void function RefreshPrimeTitanToggleDisplay()
 		return
 
 	OnPrimeTitanButton_Focus( file.primeTitanButton )
+}
+
+bool function ShouldShowHintBox( string titanClass )
+{
+	if ( titanClass == "vanguard" )
+		return false
+
+	return true
+}
+
+bool function IsLobbyAndTitanClassHasVideo()
+{
+	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.editingLoadoutIndex )
+
+	if ( loadout.titanClass == "vanguard" )
+		return false
+
+	return IsLobby()
 }

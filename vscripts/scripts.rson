@@ -38,6 +38,7 @@ Scripts:
 When: "(SERVER || CLIENT) && MP"
 Scripts:
 [
+	//gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 ]
 
@@ -83,6 +84,7 @@ Scripts:
 	sh_calling_cards.gnut
 	_persistentdata.gnut
 	gamemodes/sh_gamemodes.gnut
+	//gamemodes/sh_dev_gamemodes.gnut // DEVSCRIPTS REMOVE
 	mp/sh_challenges_content.nut
 	sh_loadouts.nut
 	sh_mp_utility_all.gnut
@@ -174,6 +176,7 @@ Scripts:
 When: "(SERVER || CLIENT) && MP"
 Scripts:
 [
+    //_dev_remote_functions_mp.gnut // DEVSCRIPTS REMOVE
 	_remote_functions_mp.gnut
 ]
 
@@ -256,6 +259,7 @@ Scripts:
 	weapons/mp_titanability_ammo_swap.nut
 	weapons/mp_titanability_rocketeer_ammo_swap.nut
 	weapons/mp_titanability_sonar_pulse.nut
+	weapons/mp_titanability_rearm.nut
 	weapons/mp_titancore_amp_core.nut
 	weapons/mp_titancore_flame_wave.nut
 	weapons/mp_titancore_flight_core.nut
@@ -263,6 +267,7 @@ Scripts:
 	weapons/mp_titancore_salvo_core.nut
 	weapons/mp_titancore_shift_core.nut
 	weapons/mp_titancore_dash_core.nut
+	weapons/mp_titancore_upgrade.nut
 	weapons/mp_titancore_siege_mode.nut
 	weapons/mp_titanweapon_40mm.nut
 	weapons/mp_titanweapon_arc_wave.nut
@@ -285,6 +290,7 @@ Scripts:
 	weapons/mp_titanweapon_xo16.nut
 	weapons/mp_titanweapon_heat_shield.nut
 	weapons/mp_titanweapon_sword.nut
+	weapons/mp_titanweapon_stun_laser.nut
 	weapons/mp_weapon_arc_launcher.nut
 	weapons/mp_weapon_defender.nut
 	weapons/mp_weapon_deployable_cover.nut
@@ -378,18 +384,12 @@ Scripts:
 	gamemodes/sh_capture_point.gnut
     gamemodes/sh_riff_floor_is_lava.nut
     gamemodes/sh_gamemode_at.nut
-    gamemodes/sh_gamemode_fw.nut
-    gamemodes/sh_gamemode_hunted.nut
-    gamemodes/sh_gamemode_don.nut
 	gamemodes/sh_gamemode_cp.nut
 	gamemodes/sh_gamemode_cp_dialogue.nut
-
 	gamemodes/sh_gamemode_ctf.nut
-	gamemodes/sh_gamemode_raid.nut
 	gamemodes/sh_gamemode_ctf_dialogue.nut
 	gamemodes/sh_gamemode_mfd.nut
 	gamemodes/sh_gamemode_mfd_dialogue.nut
-
 	gamemodes/sh_gamemode_lts.nut
 	gamemodes/sh_gamemode_ps.nut
 	gamemodes/sh_gamemode_tdm.nut
@@ -400,10 +400,10 @@ Scripts:
 	gamemodes/sh_gamemode_bomb_dialogue.nut
 	gamemodes/sh_gamemode_ffa.nut
 	gamemodes/sh_gamemode_ffa_dialogue.nut
-	gamemodes/sh_gamemode_atcoop.nut
 
 	weapons/mp_ability_burncardweapon.nut
 	weapons/mp_ability_turretweapon.nut
+	weapons/mp_ability_pathchooser.nut
 
 	sh_ping.gnut
 
@@ -563,7 +563,6 @@ Scripts:
 	lobby/_lobby.gnut
 
 	_harvester.gnut
-	_harvester_fw.nut
     sh_loadouts_mp.nut
 	mp/_ai_mp.gnut
 	_ping.gnut
@@ -600,12 +599,7 @@ Scripts:
 	gamemodes/_ai_gamemodes.gnut
 	gamemodes/_ai_frontline.gnut
 	gamemodes/_gamemode_at.nut
-	gamemodes/_gamemode_fw.nut
-	gamemodes/_gamemode_hunted.nut
-	gamemodes/_gamemode_don.nut
 	gamemodes/_gamemode_speedball.nut
-	gamemodes/_gamemode_raid.nut
-	gamemodes/_gamemode_atcoop.nut
 	burnmeter/_burnmeter.gnut
 	gamemodes/_gamemode_coliseum.nut
 	gamemodes/_gamemode_cp.nut
@@ -710,13 +704,8 @@ Scripts:
 	//cinematic_mp/_ai_skits_clientdebugging.nut
 	//cinematic_mp/_cinematic_mp_client.nut
 	gamemodes/cl_gamemode_at.nut
-	gamemodes/cl_gamemode_fw.nut
 	gamemodes/cl_gamemode_cp.nut
-	gamemodes/cl_gamemode_hunted.nut
-	gamemodes/cl_gamemode_don.nut
 	gamemodes/cl_gamemode_speedball.nut
-	gamemodes/cl_gamemode_raid.nut
-    gamemodes/cl_gamemode_atcoop.nut
 	gamemodes/cl_gamemode_aitdm.nut
 	gamemodes/cl_gamemode_coliseum.nut
 	gamemodes/cl_gamemode_ctf.nut
@@ -729,7 +718,6 @@ Scripts:
 
 	gamemodes/cl_riff_floor_is_lava.nut
 	gamemodes/cl_riff_floor_is_lava_dialogue.nut
-
 
 
 	mp/cl_classic_mp.gnut
@@ -768,6 +756,7 @@ Scripts:
 	client/cl_screenfade.gnut
 	client/cl_titan_cockpit.nut
 	client/cl_titan_cockpit_sounds.gnut
+	client/cl_spectator_mode_audio.gnut
 	client/cl_utility_menu.gnut
 	client/cl_utility_splash.gnut
 	client/cl_vdu.gnut
@@ -841,6 +830,7 @@ Scripts:
 	ui/_loadout_shared.nut
 	ui/_menu_utility.nut
 	ui/_menus.nut
+	ui/_friends.nut
 	ui/notifications.nut
 	ui/openinvites.nut
 	ui/chatroom.nut
@@ -854,6 +844,7 @@ Scripts:
 	ui/menu_test.nut
 	ui/menu_dialog.nut
 	ui/menu_eula_dialog.nut
+	ui/menu_pathchooser_dialog.nut
 	ui/menu_review_terms_dialog.nut
 	ui/menu_registration_dialog.nut
 	ui/menu_advocate_gift_dialog.nut
@@ -881,6 +872,8 @@ Scripts:
 	ui/menu_gamepad_layout.nut
 	ui/menu_generation_respawn.nut
 	ui/menu_ingame.nut
+	ui/menu_invite_friends_to_network.nut
+	//ui/menu_invite_friends_to_party.nut
 	ui/menu_play_video.nut
 	ui/menu_lobby.nut
 	ui/menu_private_match.nut
@@ -906,7 +899,9 @@ Scripts:
 	ui/menu_store_customization.nut
 	ui/menu_store_customization_preview.nut
 	ui/menu_store_camo.nut
+	ui/menu_store_camo_preview.nut
 	ui/menu_store_callsign.nut
+	ui/menu_store_callsign_preview.nut
 	ui/menu_advanced_hud.nut
 	ui/menu_inbox.nut
 	ui/menu_stats_misc.nut
@@ -958,3 +953,72 @@ Scripts:
 	test\mp_ab_test.nut
 ]
 */
+
+// DEVSCRIPTS CONTENT
+/*
+When: "(SERVER || CLIENT) && MP"
+Scripts:
+[
+	sh_matchcandy.gnut
+
+	gamemodes/sh_gamemode_atcoop.nut
+	gamemodes/sh_gamemode_raid.nut
+    gamemodes/sh_gamemode_fw.nut
+    gamemodes/sh_gamemode_hunted.nut
+    gamemodes/sh_gamemode_don.nut
+    gamemodes/sh_gamemode_fd.nut
+	gamemodes/sh_gamemode_pve_sandbox.nut
+	gamemodes/sh_gamemode_cq.nut
+
+	gamemodes/sh_gamemode_cq_dialogue.nut
+]
+
+
+When: "SERVER && MP"
+Scripts:
+[
+	_harvester_fw.nut
+
+	gamemodes/_gamemode_atcoop.nut
+	gamemodes/_gamemode_raid.nut
+	gamemodes/_gamemode_fw.nut
+	gamemodes/_gamemode_hunted.nut
+	gamemodes/_gamemode_don.nut
+    gamemodes/_gamemode_fd.nut
+	gamemodes/_gamemode_pve_sandbox.nut
+	gamemodes/_gamemode_cq.nut
+]
+
+When: "CLIENT && MP"
+Scripts:
+[
+    gamemodes/cl_gamemode_atcoop.nut
+	gamemodes/cl_gamemode_raid.nut
+	gamemodes/cl_gamemode_fw.nut
+	gamemodes/cl_gamemode_hunted.nut
+	gamemodes/cl_gamemode_don.nut
+	gamemodes/cl_gamemode_fd.nut
+	gamemodes/cl_gamemode_pve_sandbox.nut
+    gamemodes/cl_gamemode_cq.nut
+
+	conversation/cl_dpad_comms.gnut
+]
+
+When: "UI"
+Scripts:
+[
+	ui/menu_pvelobby.nut
+
+	ui/menu_edit_dpad_comms.nut
+	ui/menu_select_dpad_comms.nut
+]
+
+
+When: "MP || UI"
+Scripts:
+[
+	conversation/sh_dpad_comms.gnut
+]
+*/
+
+// END DEVSCRIPTS CONTENT

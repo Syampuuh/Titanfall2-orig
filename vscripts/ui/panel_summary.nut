@@ -3,6 +3,7 @@ global function GetPGPanels
 global function PGDisplay
 global function PostGame_ClearDisplay
 global function InitSummaryRuis
+global function IsPostGameDataModePVE
 #if DEV
 global function PostGame_FakeLevel
 global function PostGame_FakeNextLevel
@@ -731,7 +732,27 @@ void function DisplayPlayerLevelUp( int lastGen, int lastLevel )
 	PostGame_InitLevelDisplay( file.progressData.playerLevelData[file.progressData.levelIndex] )
 }
 
+bool function IsPostGameDataModePVE( entity player )
+{
+	int latestGameModeIndex = player.GetPersistentVarAsInt( "postGameData.gameMode" )
+	if ( latestGameModeIndex < 0 )
+		return false
 
+	string storedModeString = PersistenceGetEnumItemNameForIndex( "gameModes", latestGameModeIndex )
+	if ( storedModeString == PVE_SANDBOX )
+		return true
+
+	return false
+}
+
+void function PGDisplay_PVE( entity player )
+{
+	int pveCredits = player.GetPersistentVarAsInt( "pve.currency" )
+	int pveCreditsLastMatch = player.GetPersistentVarAsInt( "pve.currencyInLatestMatch" )
+	RuiSetBool( file.meritBar, "isPVE", true )
+	RuiSetInt( file.meritBar, "pveCredits", pveCredits )
+	RuiSetInt( file.meritBar, "pveCreditsLastMatch", pveCreditsLastMatch )
+}
 
 var function PGDisplay()
 {
@@ -752,6 +773,13 @@ var function PGDisplay()
 	if ( !player )
 		return
 
+	if ( IsPostGameDataModePVE( player ) )
+	{
+		PGDisplay_PVE( player )
+		return
+	}
+	RuiSetBool( file.meritBar, "isPVE", false )
+
 	file.previousPlayerXP = player.GetPersistentVarAsInt( "previousXP" )
 	file.playerXP = player.GetPersistentVarAsInt( "xp" )
 
@@ -766,10 +794,12 @@ var function PGDisplay()
 	#endif
 
 	// JFS hax for detecting random unlocks from coliseum
-	string lastModeName = PersistenceGetEnumItemNameForIndex( "gameModes", player.GetPersistentVarAsInt( "postGameData.gameMode" ) )
-	if ( lastModeName == "coliseum" && player.GetPersistentVarAsInt( "matchWin" ) )
+	int latestGameModeIndex = player.GetPersistentVarAsInt( "postGameData.gameMode" )
+	if ( latestGameModeIndex >= 0 )
 	{
-		file.totalRandomUnlocks++
+		string lastModeName = PersistenceGetEnumItemNameForIndex( "gameModes", latestGameModeIndex )
+		if ( (lastModeName == "coliseum") && player.GetPersistentVarAsInt( "matchWin" ) )
+			file.totalRandomUnlocks++
 	}
 
 	int totalEarnedXP = file.playerXP - file.previousPlayerXP

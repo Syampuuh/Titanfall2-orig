@@ -24,6 +24,16 @@ global function CodeCallback_OnWeaponReload
 global function SetCallback_OnPlayerReload
 #endif
 
+#if SP
+#if CLIENT
+global function ClientCodeCallback_OnPickup_MatchCandy
+#endif // CLIENT
+#if SERVER
+global function CodeCallback_ClaimClientSidePickup_MatchCandy
+#endif // SERVER
+#endif
+
+
 #if SERVER
 struct
 {
@@ -401,6 +411,22 @@ void function CodeCallback_OnUseReleased( entity player )
 	if ( player.Lunge_IsActive() )
 		player.Lunge_ClearTarget()
 }
+
+#if SP
+#if CLIENT
+void function ClientCodeCallback_OnPickup_MatchCandy( int points, int CSPUFLAGflags )
+{
+	Assert( 0, "Unexpected usage." )
+}
+#endif // CLIENT
+#if SERVER
+void function CodeCallback_ClaimClientSidePickup_MatchCandy( entity player, int amount, int flags, int recieptID )
+{
+	Assert( 0, "Unexpected usage." )
+}
+#endif // SERVER
+#endif
+
 
 #if CLIENT
 void function CodeCallback_OnTurretCancelPressed( entity player )

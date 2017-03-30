@@ -541,6 +541,18 @@ void function UpdateSPButtons()
 
 	if ( Script_IsRunningTrialVersion() )
 	{
+		if ( HasStartedGameEver() )
+			AddSPButton( buttonIndex, TrainingModeSelect, "#SP_TRIAL_MENU_TRAINING" )
+		else
+			AddSPButton( buttonIndex, LaunchSPNew, "#SP_TRIAL_MENU_TRAINING" )
+		buttonIndex++
+
+		if ( HasStartedGameEver() )
+		{
+			AddSPButton( buttonIndex, TrialMissionSelect, "#SP_TRIAL_MENU_MISSION" )
+			buttonIndex++
+		}
+
 		AddSPButton( buttonIndex, LaunchGamePurchase, "#MENU_GET_THE_FULL_GAME" )
 		buttonIndex++
 	}

@@ -106,6 +106,8 @@ bool function IsPostGamePanelValid( var panel )
 					value = true
 				else if ( player.GetPersistentVarAsInt( "xp") == GetMaxPlayerXP() )
 					value = true
+				else if ( IsPostGameDataModePVE( player ) )
+					value = true
 			}
 			break
 

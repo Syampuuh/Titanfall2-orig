@@ -117,7 +117,7 @@ void function InitCamoForRefs( array<ItemDisplayData> itemDisplayDataList )
 	}
 
 	GridMenuInit( file.menu, file.gridData )
-	Grid_MenuOpened( file.menu )
+	Grid_RegisterPageNavInputs( file.menu )
 }
 
 
@@ -244,7 +244,7 @@ void function OnCamoSelectMenu_Open()
 
 void function OnCamoSelectMenu_Close()
 {
-	Grid_MenuClosed( file.menu )
+	Grid_DeregisterPageNavInputs( file.menu )
 
 	entity player = GetUIPlayer()
 	if ( !IsValid( player ) )

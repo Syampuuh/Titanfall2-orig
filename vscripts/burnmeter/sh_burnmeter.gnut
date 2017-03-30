@@ -1,11 +1,11 @@
 global function ShBurnMeter_Init
-global function BurnMeterEnabled
 global function BurnReward_GetById
 global function BurnReward_GetByRef
 global function BurnReward_GetRandom
 global function GetSelectedBurnCardRef
 global function GetBoostSkin
 #if SERVER || CLIENT
+global function BurnMeterEnabled
 global function CanUseWeaponAsBurnCard
 global function TryUsingBurnCardWeapon
 global function TryUsingBurnCardWeaponInCriticalSection
@@ -105,10 +105,12 @@ void function ShBurnMeter_Init()
 	#endif
 }
 
+#if SERVER || CLIENT
 bool function BurnMeterEnabled()
 {
-	return ( GetCurrentPlaylistVarInt( "burn_meter_enabled", 0 ) == 1 )
+	return Riff_BoostAvailability() != eBoostAvailability.Disabled
 }
+#endif
 
 BurnReward function BurnReward_GetById( int id )
 {

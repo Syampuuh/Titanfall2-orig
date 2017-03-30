@@ -54,7 +54,7 @@ void function DeployCloakfield( entity projectile )
 void function CreateCloakBeacon( entity owner, vector origin, vector angles )
 {
 	entity tower = CreatePropScript( DEPLOYABLE_CLOAKFIELD_MODEL, origin, angles, 2 )
-	// tower.EnableAttackableByAI( 10 )
+	// tower.EnableAttackableByAI( 10, 0, AI_AP_FLAG_NONE )
 	SetTeam( tower, owner.GetTeam() )
 	tower.SetMaxHealth( DEPLOYABLE_CLOAKFIELD_HEALTH )
 	tower.SetHealth( DEPLOYABLE_CLOAKFIELD_HEALTH )

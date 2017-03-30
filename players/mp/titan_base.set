@@ -109,8 +109,6 @@
 		grapple_detachLengthMin				60
 		grapple_detachLengthMax				100
 		grapple_detachAwaySpeed				500
-		grapple_maxLength					3000
-		grapple_maxLengthVert				3000
 		grapple_gravityFracMin				1
 		grapple_gravityFracMax				1
 		grapple_detachVerticalBoost			0
@@ -122,8 +120,6 @@
 		grapple_detachLowSpeedGroundTime	3.6
 		grapple_impactVerticalBoost			0
 		grapple_impactVerticalMaxSpeed		10
-		grapple_power_required				100
-		grapple_power_use_rate				200
 		grapple_power_regen_delay			3
 		grapple_power_regen_rate			10
 		grapple_airSpeedMax					10

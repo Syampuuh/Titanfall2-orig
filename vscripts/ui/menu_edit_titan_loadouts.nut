@@ -187,6 +187,13 @@ void function UpdateTitanXP( var panel, int loadoutIndex, bool useWeaponHints = 
 		RuiSetImage( rui, "basicImage", GetItemImage( titanClass ) )
 	}
 
+	if ( Hud_HasChild( panel, "UpgradeIcon" ) )
+	{
+		elem = Hud_GetChild( panel, "UpgradeIcon" )
+		rui = Hud_GetRui( elem )
+		RuiSetImage( rui, "basicImage", $"rui/titan_loadout/core/titan_core_vanguard" )
+	}
+
 	if ( Hud_HasChild( panel, "TitanDurabilityDisplay" ) )
 	{
 		elem = Hud_GetChild( panel, "TitanDurabilityDisplay" )

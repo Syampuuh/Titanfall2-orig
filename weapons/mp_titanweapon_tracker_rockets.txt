@@ -69,7 +69,6 @@ WeaponData
 	"ammo_stockpile_max"							"200"
 	"ammo_clip_size"   								"200"
 	"ammo_default_total"							"200"
-	"ammo_per_shot"									"200"
 	"ammo_min_to_fire"								"200"
 
 	"reload_enabled"								"0"
@@ -80,6 +79,8 @@ WeaponData
 
 	MP_BASE
 	{
+		"ammo_per_shot"									"200"
+		"burst_fire_count"								"6"
 		"damage_near_value"   							"350"
 		"damage_far_value"								"350"
 
@@ -93,6 +94,8 @@ WeaponData
 
 	SP_BASE
 	{
+		"ammo_per_shot"									"200"
+		"burst_fire_count"								"6"
 		"damage_near_value"   							"350"
 		"damage_far_value"								"350"
 
@@ -111,8 +114,7 @@ WeaponData
 	"owner_muzzle_index"							"1"
 
 	"fire_rate"   									"14"
-	"burst_fire_count"								"6"
-	"burst_fire_delay"								"0.5"
+	"burst_fire_delay"								"0.7"
 	"holster_time"									"0.2"
 	"deploy_time" 									"0.25"
 	"lower_time"  									"0.2"

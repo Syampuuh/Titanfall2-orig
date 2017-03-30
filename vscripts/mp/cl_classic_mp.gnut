@@ -252,7 +252,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	RegisterButtonPressedCallback( BUTTON_Y, UseDoubleXP )
 	RegisterButtonPressedCallback( KEY_ENTER, UseDoubleXP )
-	if ( GameRules_GetGameMode() != COLISEUM && GameRules_GetGameMode() != HUNTED ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
+	if ( BurnMeterEnabled() )
 	{
 		RegisterButtonPressedCallback( BUTTON_X, OpenBoostMenu )
 		RegisterButtonPressedCallback( KEY_SPACE, OpenBoostMenu )
@@ -264,7 +264,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
 	{
-		if ( GameRules_GetGameMode() == COLISEUM || GameRules_GetGameMode() == HUNTED )
+		if ( !BurnMeterEnabled() )
 			file.loadoutsRUI = null //RuiCreate( $"ui/dropship_intro_coliseum_loadouts.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
 		else
 			file.loadoutsRUI = RuiCreate( $"ui/dropship_intro_pilot_loadouts.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1 )
@@ -326,7 +326,7 @@ void function CreateCountdown( entity player, float gameStartTime )
 
 	DeregisterButtonPressedCallback( BUTTON_Y, UseDoubleXP )
 	DeregisterButtonPressedCallback( KEY_ENTER, UseDoubleXP )
-	if ( GameRules_GetGameMode() != COLISEUM && GameRules_GetGameMode() != HUNTED ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
+	if ( BurnMeterEnabled() )
 	{
 		DeregisterButtonPressedCallback( BUTTON_X, OpenBoostMenu )
 		DeregisterButtonPressedCallback( KEY_SPACE, OpenBoostMenu )
@@ -347,13 +347,12 @@ void function RefreshIntroLoadoutDisplay( entity player, int pilotLoadoutIndex, 
 
 	RuiSetString( file.loadoutsRUI, "pilotLoadoutName", player.GetPersistentVar( "pilotLoadouts[" + pilotLoadoutIndex + "].name" ) )
 	RuiSetString( file.loadoutsRUI, "titanLoadoutName", player.GetPersistentVar( "titanLoadouts[" + titanLoadoutIndex + "].name" ) )
-	if ( GameRules_GetGameMode() != COLISEUM ) //JFS: No boosts or earning Titans in coliseum. Find a better way to turn this off next game
+	if ( BurnMeterEnabled() )
 	{
 		RuiSetFloat( file.loadoutsRUI, "burnCardAlpha", 1.0 )
 		BurnReward burnCard = BurnReward_GetByRef( GetSelectedBurnCardRef( player ) )
 		RuiSetString( file.loadoutsRUI, "burnCard", burnCard.localizedName )
 		RuiSetImage( file.loadoutsRUI, "burnCardImage", burnCard.image )
-
 	}
 	else
 	{

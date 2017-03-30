@@ -20,6 +20,7 @@ global function OpenAnnouncementDialog
 global function ShowPrivateMatchConnectDialog
 global function ShowMatchConnectDialog
 global function LeaveDialog
+global function Disconnect
 
 global function AddDialogButton
 global function AddDialogFooter

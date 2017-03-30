@@ -41,10 +41,10 @@ void function UpdateViewStatsTimeMenu()
 	array<PieChartEntry> classes
 
 	if ( hoursAsPilot > 0 )
-		AddPieChartEntry( classes, "#STATS_HEADER_PILOT", hoursAsPilot )
+		AddPieChartEntry( classes, "#STATS_HEADER_PILOT", hoursAsPilot, [61, 117, 193, 255] )
 
 	if ( hoursAsTitan > 0 )
-		AddPieChartEntry( classes, "#STATS_HEADER_TITAN", hoursAsTitan )
+		AddPieChartEntry( classes, "#STATS_HEADER_TITAN", hoursAsTitan, [223, 94, 0, 255] )
 
 	classes.sort( ComparePieChartEntryValues )
 
@@ -64,26 +64,30 @@ void function UpdateViewStatsTimeMenu()
 	float hoursAsRonin = GetPlayerStatFloat( player, "time_stats", "hours_as_titan_ronin" )
 	float hoursAsTone = GetPlayerStatFloat( player, "time_stats", "hours_as_titan_tone" )
 	float hoursAsLegion = GetPlayerStatFloat( player, "time_stats", "hours_as_titan_legion" )
+	float hoursAsMonarch = GetPlayerStatFloat( player, "time_stats", "hours_as_titan_vanguard" )
 
 	array<PieChartEntry> titans
 
 	if ( hoursAsIon > 0 )
-		AddPieChartEntry( titans, "#TITAN_ION", hoursAsIon )
+		AddPieChartEntry( titans, "#TITAN_ION", hoursAsIon, [200, 40, 40, 255] )
 
 	if ( hoursAsScorch > 0 )
-		AddPieChartEntry( titans, "#TITAN_SCORCH", hoursAsScorch )
+		AddPieChartEntry( titans, "#TITAN_SCORCH", hoursAsScorch, [223, 94, 0, 255] )
 
 	if ( hoursAsNorthstar > 0 )
-		AddPieChartEntry( titans, "#TITAN_NORTHSTAR", hoursAsNorthstar )
+		AddPieChartEntry( titans, "#TITAN_NORTHSTAR", hoursAsNorthstar, [61, 117, 193, 255] )
 
 	if ( hoursAsRonin > 0 )
-		AddPieChartEntry( titans, "#TITAN_RONIN", hoursAsRonin )
+		AddPieChartEntry( titans, "#TITAN_RONIN", hoursAsRonin, [207, 191, 59, 255] )
 
 	if ( hoursAsTone > 0 )
-		AddPieChartEntry( titans, "#TITAN_TONE", hoursAsTone )
+		AddPieChartEntry( titans, "#TITAN_TONE", hoursAsTone, [88, 172, 67, 255] )
 
 	if ( hoursAsLegion > 0 )
-		AddPieChartEntry( titans, "#TITAN_LEGION", hoursAsLegion )
+		AddPieChartEntry( titans, "#TITAN_LEGION", hoursAsLegion, [46, 188, 180, 255] )
+
+	if ( hoursAsMonarch > 0 )
+		AddPieChartEntry( titans, "#TITAN_VANGUARD", hoursAsMonarch, [151, 71, 175, 255] )
 
 	titans.sort( ComparePieChartEntryValues )
 
@@ -91,7 +95,6 @@ void function UpdateViewStatsTimeMenu()
 	chassisTimeData.entries = titans
 	chassisTimeData.labelColor = [ 255, 255, 255, 255 ]
 	chassisTimeData.timeBased = true
-	//chassisTimeData.colorShift = 2
 	SetPieChartData( file.menu, "ChassisPieChart", "#STATS_HEADER_TIME_BY_CHASSIS", chassisTimeData )
 
 	//#########################################
@@ -106,7 +109,7 @@ void function UpdateViewStatsTimeMenu()
 		string gameModePlaysVar = GetStatVar( "game_stats", "mode_played", modeName )
 		int playCount = player.GetPersistentVarAsInt( gameModePlaysVar )
 		if ( playCount > 0 )
-			AddPieChartEntry( modes, GAMETYPE_TEXT[ modeName ], float( playCount ) )
+			AddPieChartEntry( modes, GameMode_GetName( modeName ), float( playCount ), GameMode_GetColor( modeName ) )
 	}
 
 	if ( modes.len() > 0 )
@@ -120,7 +123,7 @@ void function UpdateViewStatsTimeMenu()
 				otherValue += modes[i].numValue
 
 			modes.resize( MAX_MODE_ROWS-1 )
-			AddPieChartEntry( modes, "#GAMEMODE_OTHER", otherValue )
+			AddPieChartEntry( modes, "#GAMEMODE_OTHER", otherValue, [127, 127, 127, 255] )
 		}
 	}
 
@@ -138,11 +141,12 @@ void function UpdateViewStatsTimeMenu()
 	SetStatBoxDisplay( Hud_GetChild( file.menu, "Stat2" ), Localize( "#STATS_HEADER_TIME_WALLRUNNING" ), 	StatToTimeString( "time_stats", "hours_wallrunning" ) )
 }
 
-void function AddPieChartEntry( array<PieChartEntry> entries, string displayName, float numValue )
+void function AddPieChartEntry( array<PieChartEntry> entries, string displayName, float numValue, array<int> color )
 {
 	PieChartEntry newEntry
 	newEntry.displayName = displayName
 	newEntry.numValue = numValue
+	newEntry.color = color
 
 	entries.append( newEntry )
 }

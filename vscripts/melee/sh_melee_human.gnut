@@ -57,10 +57,17 @@ function HumanUnsyncedMelee( entity player, bool movestunBlocked )
 			{
 				if ( player.Lunge_SetTargetEntity( lungeTarget, true ) )
 				{
-					if ( player.IsOnGround() )
-						player.Lunge_LockPitch( true )
 					if ( lungeTarget.IsTitan() )
+					{
 						player.Lunge_EnableFlying()
+						vector oldOffset = player.Lunge_GetEndPositionOffset()
+						player.Lunge_SetEndPositionOffset( oldOffset + <0, 0, 128> )
+					}
+					else
+					{
+						if ( player.IsOnGround() )
+							player.Lunge_LockPitch( true )
+					}
 				}
 			}
 		}
@@ -79,12 +86,18 @@ function HumanUnsyncedMelee( entity player, bool movestunBlocked )
 
 	//player.Weapon_StartCustomActivity( meleeActivity1p, false )
 	player.SetSelectedOffhandToMelee()
+}
 
-#if SERVER
-		print( "SERVER: Called SetSelectedOffhandToMelee() for " + player + "\n" )
-#else
-		print( "CLIENT: Called SetSelectedOffhandToMelee() for " + player + "\n"  )
-#endif
+function DoReactionForTitanHit( entity player, entity titan )
+{
+	player.Lunge_SetTargetEntity( titan, true )
+	if ( player.Lunge_IsLungingToEntity() )
+		player.Lunge_EnableFlying()
+
+	vector titanCenter = titan.EyePosition()
+	vector delta = (player.EyePosition() - titanCenter)
+	vector dir = Normalize( delta )
+	player.Lunge_SetEndPositionOffset( dir * 350 )
 }
 
 function HumanMeleeAttack( entity player )
@@ -124,6 +137,9 @@ function HumanMeleeAttack( entity player )
 	player.PlayerMelee_SetAttackHitEntity( hitEnt )
 	if ( !hitEnt.IsWorld() )
 		player.PlayerMelee_SetAttackRecoveryShouldBeQuick( true )
+
+	if ( hitEnt.IsTitan() )
+		DoReactionForTitanHit( player, hitEnt )
 
 	if ( hitEnt.IsBreakableGlass() )
 	{

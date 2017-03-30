@@ -74,6 +74,11 @@ void function ClientCodeCallback_BodyGroupChanged( entity ent, int bodyGroupInde
 
 void function ClientCodeCallback_UseEntGainedFocus( entity ent )
 {
+	foreach ( callbackFunc in clGlobal.onUseEntGainFocusCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
 	DestroyPickupFlyout()
 
 	int neededType = eFlyoutType.STANDARD_WEAPON
@@ -170,6 +175,11 @@ void function ClientCodeCallback_UseEntGainedFocus( entity ent )
 
 void function ClientCodeCallback_UseEntLostFocus( entity ent )
 {
+	foreach ( callbackFunc in clGlobal.onUseEntLoseFocusCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
 	DestroyPickupFlyout()
 
 	if ( file.lastWeaponRuiSet != null )

@@ -220,6 +220,9 @@ WeaponData
 	"zoom_fov"										"50"
 	"reload_time" 									"1.03"
 	"reloadempty_time"								"2.2"
+	"reloadsegment_time_loop"						"0.53"
+	"reloadsegment_time_end"						"0.67"
+	"reloadsegmentempty_time_end"					"0.67"
 	"holster_time"									"0.5"
 	"deploy_time" 									"0.8"
 	"lower_time"  									"0.25"
@@ -487,7 +490,7 @@ WeaponData
 		}
 		pro_screen
 		{
-			"ui8_enable"		"1"		
+			"ui8_enable"		"1"
 			"bodygroup6_set"	"1"
 		}
 		pas_run_and_gun
@@ -512,6 +515,10 @@ WeaponData
 			"reload_time_late1"					"*0.7"
 			"reloadempty_time"					"*0.7"
 			"reloadempty_time_late1"			"*0.7"
+			"reloadsegment_time_loop"			"*0.7"
+			"reloadsegment_time_end"			"*0.7"
+			"reloadsegmentempty_time_end"		"*0.7"
+
 		}
 		burn_mod_mastiff
 		{
@@ -597,7 +604,7 @@ WeaponData
 			clipCount					weapon_stockpileClipCount
 		}
 	}
-	
+
 	"ui8_enable"		"0"
 	UiData8
 	{
@@ -608,7 +615,7 @@ WeaponData
 			proValue							proscreen_int0
 			proOwnedByPlayer			proscreen_owner_is_player
 		}
-	}	
+	}
 
 	active_crosshair_count				"1"
 	rui_crosshair_index					"0"

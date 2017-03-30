@@ -1,6 +1,9 @@
 
 global function StimShared_Init
 global function StimPlayer
+global function EndlessStimBegin
+global function EndlessStimEnd
+
 
 global int COCKPIT_STIM_FX
 global int PILOT_STIM_HLD_FX
@@ -16,20 +19,34 @@ void function StimShared_Init()
 	#endif
 
 	RegisterSignal( "EndStim" )
+	RegisterSignal( "StopEndlessStim" )
+}
+
+void function EndlessStimBegin( entity player, float effectSeverity )
+{
+	StimPlayer_Internal( player, USE_TIME_INFINITE, effectSeverity )
+}
+void function EndlessStimEnd( entity player )
+{
+	player.Signal( "StopEndlessStim" )
 }
 
 void function StimPlayer( entity player, float duration )
 {
 	const float EFFECT_SEVERITY = 0.4	// assuming 'movement_speedboost_extraScale' is 2.0
+	StimPlayer_Internal( player, duration, EFFECT_SEVERITY )
+}
 
+void function StimPlayer_Internal( entity player, float duration, float effectSeverity )
+{
 	int endlessStatusEffectHandle = 0
 	if ( duration == USE_TIME_INFINITE )
 	{
-		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, EFFECT_SEVERITY )
+		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, effectSeverity )
 	}
 	else
 	{
-		StatusEffect_AddTimed( player, eStatusEffect.speed_boost, EFFECT_SEVERITY, duration + 0.5, 0.25 ) // sound is slightly off
+		StatusEffect_AddTimed( player, eStatusEffect.speed_boost, effectSeverity, duration + 0.5, 0.25 ) // sound is slightly off
 		StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
 	}
 
@@ -49,6 +66,8 @@ void function StimThink( entity player, float duration, int endlessStatusEffectH
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnChangedPlayerClass" )
+	if ( endlessStatusEffectHandle != 0 )
+		player.EndSignal( "StopEndlessStim" )
 
 	EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_stimpack_loop_1P" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "pilot_stimpack_loop_3P" )

@@ -38,6 +38,10 @@ void function MpTitanweapon40mm_Init()
 		PrecacheModel( TITAN_40MM_SHELL_EJECT )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_titanweapon_sticky_40mm, Tracker40mm_DamagedTarget )
 	#endif
+
+	RegisterSignal("TrackerRocketsFired")
+	RegisterSignal("DisembarkingTitan")
+
 }
 
 void function OnWeaponDeactivate_titanweapon_40mm( entity weapon )
@@ -215,6 +219,56 @@ void function ApplyTrackerMark( entity owner, entity hitEnt )
 //			EmitSoundOnEntityOnlyToPlayer( hitEnt, hitEnt, "HUD_40mm_TrackerBeep_Locked" )
 		if ( owner.IsPlayer() )
 			EmitSoundOnEntityOnlyToPlayer( owner, owner, "HUD_40mm_TrackerBeep_Locked" )
+
+		int statusEffectID
+
+		if (hitEnt.IsPlayer())
+		{
+			int statusEffectID = StatusEffect_AddTimed( hitEnt, eStatusEffect.lockon_detected_titan, 1.0, TRACKER_LIFETIME, TRACKER_LIFETIME )
+			if (hitEnt in trackerRockets.w.targetLockEntityStatusEffectID)
+				trackerRockets.w.targetLockEntityStatusEffectID[hitEnt] = statusEffectID
+			else
+				trackerRockets.w.targetLockEntityStatusEffectID[hitEnt] <- statusEffectID
+
+			thread OnOwnerDeathOrDisembark(owner, hitEnt, statusEffectID )
+
+			entity soul = hitEnt.GetTitanSoul()
+			int statusEffectIDSoul = StatusEffect_AddTimed( soul, eStatusEffect.lockon_detected_titan, 1.0, TRACKER_LIFETIME, TRACKER_LIFETIME )
+			if (soul in trackerRockets.w.targetLockEntityStatusEffectID)
+				trackerRockets.w.targetLockEntityStatusEffectID[soul] = statusEffectIDSoul
+			else
+				trackerRockets.w.targetLockEntityStatusEffectID[soul] <- statusEffectIDSoul
+
+
+			thread OnOwnerDeathOrDisembark(owner, soul, statusEffectIDSoul )
+		}
+		else if (hitEnt.IsNPC())
+		{
+			entity soul = hitEnt.GetTitanSoul()
+
+			if (soul != null)
+			{
+				int statusEffectID = StatusEffect_AddTimed( soul, eStatusEffect.lockon_detected_titan, 1.0, TRACKER_LIFETIME, TRACKER_LIFETIME )
+				if ( soul in trackerRockets.w.targetLockEntityStatusEffectID )
+					trackerRockets.w.targetLockEntityStatusEffectID[soul] = statusEffectID
+				else
+					trackerRockets.w.targetLockEntityStatusEffectID[soul] <- statusEffectID
+
+				thread OnOwnerDeathOrDisembark( owner, soul, statusEffectID )
+			}
+			else
+			{
+				int statusEffectID = StatusEffect_AddTimed( hitEnt, eStatusEffect.lockon_detected_titan, 1.0, TRACKER_LIFETIME, TRACKER_LIFETIME )
+				if (hitEnt in trackerRockets.w.targetLockEntityStatusEffectID)
+					trackerRockets.w.targetLockEntityStatusEffectID[hitEnt] = statusEffectID
+				else
+					trackerRockets.w.targetLockEntityStatusEffectID[hitEnt] <- statusEffectID
+
+				thread OnOwnerDeathOrDisembark(owner, hitEnt, statusEffectID )
+			}
+		}
+
+
 	}
 	else if ( count == 2 )
 	{
@@ -229,6 +283,45 @@ void function ApplyTrackerMark( entity owner, entity hitEnt )
 //			EmitSoundOnEntityOnlyToPlayer( hitEnt, hitEnt, "HUD_40mm_TrackerBeep_Hit" )
 		if ( owner.IsPlayer() )
 			EmitSoundOnEntityOnlyToPlayer( owner, owner, "HUD_40mm_TrackerBeep_Hit" )
+	}
+}
+
+void function OnOwnerDeathOrDisembark(entity owner, entity hitEnt, int statusEffectID)
+{
+	owner.EndSignal("OnDeath")
+	owner.EndSignal("TrackerRocketsFired")
+	owner.EndSignal("DisembarkingTitan")
+
+	bool trackedEntIsAlive = IsAlive(hitEnt)
+
+	OnThreadEnd(
+		function () : ( hitEnt, statusEffectID, trackedEntIsAlive )
+		{
+			if(hitEnt != null && IsAlive(hitEnt))
+				StatusEffect_Stop( hitEnt, statusEffectID )
+		}
+	)
+
+	float timeWaitedWhileLocked = 0
+
+	while(trackedEntIsAlive)
+	{
+		if(IsAlive(owner))
+		{
+			wait 0.1
+			timeWaitedWhileLocked = timeWaitedWhileLocked + 0.1
+
+			trackedEntIsAlive = IsAlive(hitEnt)
+
+			if (timeWaitedWhileLocked >= TRACKER_LIFETIME)
+				return
+		}
+		else
+		{
+			if(hitEnt != null && IsAlive(hitEnt))
+				StatusEffect_Stop( hitEnt, statusEffectID )
+			return
+		}
 	}
 }
 
@@ -256,20 +349,27 @@ bool function OnWeaponChargeLevelIncreased_titanweapon_sticky_40mm( entity weapo
 	int level = weapon.GetWeaponChargeLevel()
 	int ammo = weapon.GetWeaponPrimaryClipCount()
 
-	if ( level > 1 && ammo >= level )
-		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
+	if ( ammo >= level )
+	{
+		if ( level == 2 )
+			weapon.EmitWeaponSound( "weapon_40mm_burstloader_leveltick_2" ) //Middle Sound
+		else if ( level == 3 )
+			weapon.EmitWeaponSound( "weapon_40mm_burstloader_leveltick_3" ) //Final Sound
+	}
 
 	return true
 }
 
+//First sound
 void function OnWeaponStartZoomIn_titanweapon_sticky_40mm( entity weapon )
 {
 	if ( weapon.HasMod( "pas_tone_burst") && weapon.IsReadyToFire() )
-		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
+		weapon.EmitWeaponSound( "weapon_40mm_burstloader_leveltick_1" )
 }
 
+//First Sound
 void function OnWeaponReadyToFire_titanweapon_sticky_40mm( entity weapon )
 {
 	if ( weapon.HasMod( "pas_tone_burst") && weapon.IsWeaponInAds() && weapon.GetWeaponPrimaryClipCount() > 0 )
-		weapon.EmitWeaponSound( "Weapon_Titan_Sniper_LevelTick_Final" )
+		weapon.EmitWeaponSound( "weapon_40mm_burstloader_leveltick_1" )
 }

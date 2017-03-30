@@ -549,6 +549,8 @@ string function ScoreEventForNPCKilled( entity npc, var damageInfo )
 			return "KillProwler"
 
 		case "npc_drone":
+			if ( GetDroneType( npc ) == "drone_type_marvin" )
+				return ""
 			return "KillDrone"
 
 		case "npc_turret_mega":

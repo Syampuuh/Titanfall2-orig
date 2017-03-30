@@ -8,6 +8,8 @@ global function IsRefValid
 global function IsUnlockValid
 global function SubitemDefined
 
+global function IsDisabledRef
+
 global function GetItemData
 global function GetItemType
 global function GetItemMenuAnimClass
@@ -115,6 +117,7 @@ global function ClearNewStatus
 global function HasAnyNewPilotItems
 global function HasAnyNewTitanItems
 global function HasAnyNewBoosts
+global function HasAnyNewDpadCommsIcons
 global function HasAnyNewFactions
 global function HasAnyNewCallsignBanners
 global function HasAnyNewCallsignPatches
@@ -399,29 +402,30 @@ void function InitItems()
 	}
 
 	#if DEV
-	ValidateDataTableCRC( $"datatable/burn_meter_rewards.rpak", 12, 965785631 )
-	ValidateDataTableCRC( $"datatable/calling_cards.rpak", 264, 841130784 )
-	ValidateDataTableCRC( $"datatable/callsign_icons.rpak", 114, 275257147 )
-	ValidateDataTableCRC( $"datatable/camo_skins.rpak", 100, -293390605 )
-	ValidateDataTableCRC( $"datatable/faction_leaders.rpak", 6, -1616900606 )
-	ValidateDataTableCRC( $"datatable/features_mp.rpak", 17, -10180849 )
-	ValidateDataTableCRC( $"datatable/pilot_abilities.rpak", 14, 1221190881 )
-	ValidateDataTableCRC( $"datatable/pilot_executions.rpak", 5, -267475204 )
-	ValidateDataTableCRC( $"datatable/pilot_passives.rpak", 8, 981112716 )
-	ValidateDataTableCRC( $"datatable/pilot_properties.rpak", 7, -1114320894 )
-	ValidateDataTableCRC( $"datatable/pilot_weapon_features.rpak", 4, 439636371 )
-	//ValidateDataTableCRC( $"datatable/pilot_weapon_mods.rpak", 232, 873404256 )
-	ValidateDataTableCRC( $"datatable/pilot_weapon_mods_common.rpak", 25, -761470088 )
-	ValidateDataTableCRC( $"datatable/pilot_weapons.rpak", 30, 898244819 )
-	ValidateDataTableCRC( $"datatable/playlist_items.rpak", 14, 372847624 )
-	ValidateDataTableCRC( $"datatable/titan_nose_art.rpak", 90, 600579411 )
-	ValidateDataTableCRC( $"datatable/titan_passives.rpak", 32, -1974259711 )
-	ValidateDataTableCRC( $"datatable/titan_primary_mods.rpak", 0, 0 )
-	ValidateDataTableCRC( $"datatable/titan_primary_mods_common.rpak", 0, 0 )
-	ValidateDataTableCRC( $"datatable/titan_properties.rpak", 8, -1270130815 )
-	ValidateDataTableCRC( $"datatable/titan_skins.rpak", 25, -585552901 )
-	ValidateDataTableCRC( $"datatable/titan_voices.rpak", 7, 2136398406 )
-	ValidateDataTableCRC( $"datatable/titans_mp.rpak", 6, -899769064 )
+	// Updated after DLC2, staging cl 248467
+	ValidateDataTableCRC( $"datatable/burn_meter_rewards.rpak",			12,		965785631 )		//dlc1: 12,		965785631 )		//launch: 12, 965785631 )
+	ValidateDataTableCRC( $"datatable/calling_cards.rpak",				371,	1021725032 )	//dlc1: 287,	-764843449 )	//launch: 264, 841130784 )
+	ValidateDataTableCRC( $"datatable/callsign_icons.rpak",				155,	552400935 )		//dlc1: 135,	-359427829 )	//launch: 114, 275257147 )
+	ValidateDataTableCRC( $"datatable/camo_skins.rpak",					140,	-320502469 )	//dlc1: 120,	-910542692 )	//launch: 100, -293390605 )
+	ValidateDataTableCRC( $"datatable/faction_leaders.rpak",			6,		-1616900606 )	//dlc1: 6,		-1616900606 )	//launch: 6, -1616900606 )
+	ValidateDataTableCRC( $"datatable/features_mp.rpak",				18,		1879135085 )	//dlc1: 18,		1879135085 )	//launch: 17, -10180849 )
+	ValidateDataTableCRC( $"datatable/pilot_abilities.rpak",			15,		2112045689 )	//dlc1: 14,		1221190881 )	//launch: 14, 1221190881 )
+	ValidateDataTableCRC( $"datatable/pilot_executions.rpak",			8,		-175733609 )	//dlc1: 6,		-1503396322 )	//launch: 5, -267475204 )
+	ValidateDataTableCRC( $"datatable/pilot_passives.rpak",				8,		981112716 )		//dlc1: 8,		981112716 )		//launch: 8, 981112716 )
+	ValidateDataTableCRC( $"datatable/pilot_properties.rpak",			7,		-1114320894 )	//dlc1: 7,		-1114320894 )	//launch: 7, -1114320894 )
+	ValidateDataTableCRC( $"datatable/pilot_weapon_features.rpak",		4,		439636371 )		//dlc1: 4,		439636371 )		//launch: 4, 439636371 )
+	//ValidateDataTableCRC( $"datatable/pilot_weapon_mods.rpak",		249,	2010060417 )	//dlc1: 239,	-135206753 )	//launch: 232, 873404256 )
+	ValidateDataTableCRC( $"datatable/pilot_weapon_mods_common.rpak",	25,		-761470088 )	//dlc1: 25,		-761470088 )	//launch: 25, -761470088 )
+	ValidateDataTableCRC( $"datatable/pilot_weapons.rpak",				32,		1625188373 )	//dlc1: 31,		-1733342055 )	//launch: 30, 898244819 )
+	ValidateDataTableCRC( $"datatable/playlist_items.rpak",				19,		-1360623070 )	//dlc1: 16,		-1771593651 )	//launch: 14, 372847624 )
+	ValidateDataTableCRC( $"datatable/titan_nose_art.rpak",				150,	1922555441 )	//dlc1: 120,	31164948 )		//launch: 90, 600579411 )
+	ValidateDataTableCRC( $"datatable/titan_passives.rpak",				38,		1313385146 )	//dlc1: 38,		1313385146 )	//launch: 32, -1974259711 )
+	ValidateDataTableCRC( $"datatable/titan_primary_mods.rpak",			0,		0 )				//dlc1: 0,		0 )				//launch: 0, 0 )
+	ValidateDataTableCRC( $"datatable/titan_primary_mods_common.rpak", 	0,		0 )				//dlc1: 0,		0 )				//launch: 0, 0 )
+	ValidateDataTableCRC( $"datatable/titan_properties.rpak",			8,		-1270130815 )	//dlc1: 8,		-1270130815 )	//launch: 8, -1270130815 )
+	ValidateDataTableCRC( $"datatable/titan_skins.rpak",				37,		570740359 )		//dlc1: 31,		-297540117 )	//launch: 25, -585552901 )
+	ValidateDataTableCRC( $"datatable/titan_voices.rpak",				7,		2136398406 )	//dlc1: 7,		2136398406 )	//launch: 7, 2136398406 )
+	ValidateDataTableCRC( $"datatable/titans_mp.rpak",					6,		-899769064 )	//dlc1: 6,		-899769064 )	//launch: 6, -899769064 )
 	#endif
 
 	var dataTable
@@ -866,12 +870,20 @@ void function InitItems()
 		int cost			= GetDataTableInt( titansMpDataTable, i, GetDataTableColumnByName( titansMpDataTable, "cost" ) )
 		asset image			= GetDataTableAsset( titansMpDataTable, i, GetDataTableColumnByName( titansMpDataTable, "image" ) )
 		asset coreIcon		= GetDataTableAsset( titansMpDataTable, i, GetDataTableColumnByName( titansMpDataTable, "coreIcon" ) )
+
+		if ( IsDisabledRef( titanRef ) )
+		    continue
+
 		CreateTitanData( i, titanRef, cost, image, coreIcon )
+
 
 		ItemData itemData = GetItemData( titanRef )
 		int passive1Type = expect int( itemData.i.passive1Type )
 		int passive2Type = expect int( itemData.i.passive2Type )
 		int passive3Type = expect int( itemData.i.passive3Type )
+		int passive4Type = expect int( itemData.i.passive4Type )
+		int passive5Type = expect int( itemData.i.passive5Type )
+		int passive6Type = expect int( itemData.i.passive6Type )
 
 		{
 			array<ItemData> items = GetAllItemsOfType( passive1Type )
@@ -897,6 +909,24 @@ void function InitItems()
 			{
 				CreateGenericSubItemData( passive3Type, titanRef, item.ref, GetItemCost( item.ref ) )
 			}
+		}
+
+		array<ItemData> passive4items = GetAllItemsOfType( passive4Type )
+		foreach ( item in passive4items )
+		{
+			CreateGenericSubItemData( passive4Type, titanRef, item.ref, GetItemCost( item.ref ) )
+		}
+
+		array<ItemData> passive5items = GetAllItemsOfType( passive5Type )
+		foreach ( item in passive5items )
+		{
+			CreateGenericSubItemData( passive5Type, titanRef, item.ref, GetItemCost( item.ref ) )
+		}
+
+		array<ItemData> passive6items = GetAllItemsOfType( passive6Type )
+		foreach ( item in passive6items )
+		{
+			CreateGenericSubItemData( passive6Type, titanRef, item.ref, GetItemCost( item.ref ) )
 		}
 
 		{
@@ -945,6 +975,9 @@ void function InitItems()
 	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "legion_prime", "legion", true )
 	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "ronin_prime", "ronin", true )
 	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "northstar_prime", "northstar", true )
+	#if DEVSCRIPTS
+	CreatePrimeTitanData( eItemTypes.PRIME_TITAN, "vanguard_prime", "vanguard", true )
+	#endif
 
 
 	dataTable = GetDataTable( $"datatable/titan_nose_art.rpak" )
@@ -956,6 +989,9 @@ void function InitItems()
 		asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, "image" ) )
 		string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "name" ) )
 		int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
+
+		if ( IsDisabledRef( titanRef ) )
+		    continue
 
 		if ( !( titanRef in decalIndexTable ) )
 			decalIndexTable[titanRef] <- 0
@@ -985,6 +1021,9 @@ void function InitItems()
 		int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
 		int skinIndex = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "skinIndex" ) )
 		int datatableIndex = row
+
+		if ( IsDisabledRef( titanRef ) )
+		    continue
 
 		CreateSkinData( datatableIndex, eItemTypes.TITAN_WARPAINT, false, ref, name, image, skinIndex )
 		CreateGenericSubItemData( eItemTypes.TITAN_WARPAINT, titanRef, ref, cost, { skinIndex = skinIndex } )
@@ -1044,6 +1083,27 @@ void function InitItems()
 			GetItemData( iconRef ).imageAtlas = IMAGE_ATLAS_CALLINGCARD
 		}
 	}
+
+	#if DEVSCRIPTS
+	{
+		var dataTable = GetDataTable( $"datatable/dpad_comm_custom_phrases.rpak" )
+		for ( int row = 0; row < GetDatatableRowCount( dataTable ); row++ )
+		{
+			string iconRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "phrase" ) )
+			string name = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "displayName" ) )
+			asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, "icon" ) )
+			int cost = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "cost" ) )
+
+			string desc = ""
+			string longdesc = ""
+
+			int datatableIndex = row
+
+			ItemData item = CreateGenericItem( datatableIndex, eItemTypes.COMMS_ICON, iconRef, name, desc, longdesc, image, cost, false )
+			item.imageAtlas = IMAGE_ATLAS_COMMS
+		}
+	}
+	#endif
 
 	/////////////////////
 	// NON-LOADOUT WEAPONS
@@ -1130,6 +1190,10 @@ void function InitItems()
 	file.globalItemRefsOfType[eItemTypes.TITAN_TONE_PASSIVE].sort( SortByUnlockLevel )
 	file.globalItemRefsOfType[eItemTypes.TITAN_SCORCH_PASSIVE].sort( SortByUnlockLevel )
 	file.globalItemRefsOfType[eItemTypes.TITAN_LEGION_PASSIVE].sort( SortByUnlockLevel )
+	file.globalItemRefsOfType[eItemTypes.TITAN_VANGUARD_PASSIVE].sort( SortByUnlockLevel )
+	file.globalItemRefsOfType[eItemTypes.TITAN_UPGRADE1_PASSIVE].sort( SortByUnlockLevel )
+	file.globalItemRefsOfType[eItemTypes.TITAN_UPGRADE2_PASSIVE].sort( SortByUnlockLevel )
+	file.globalItemRefsOfType[eItemTypes.TITAN_UPGRADE3_PASSIVE].sort( SortByUnlockLevel )
 
 	#if !UI
 		// Non-player weapons
@@ -1187,9 +1251,16 @@ void function InitUnlocks()
 			{
 				if ( unlock != "" )
 				{
-					InitUnlock( unlock, "", eUnlockType.PLAYER_LEVEL, row + 1 )
 					if ( unlock != "random" && !ItemDefined( unlock ) )
+					{
+                        #if DEV && DEVSCRIPTS
 						CodeWarning( unlock + " does not appear to be a valid eItemType" )
+						#else
+						continue
+						#endif
+					}
+
+					InitUnlock( unlock, "", eUnlockType.PLAYER_LEVEL, row + 1 )
 				}
 			}
 		}
@@ -1203,6 +1274,12 @@ void function InitUnlocks()
 		string titanRef = GetDataTableString( dataTable, 0, column )
 		if ( titanRef == "END" )
 			break
+
+		if ( IsDisabledRef( titanRef ) )
+		{
+		    column++
+		    continue
+        }
 
 		for ( int row = 1; row < numRows; row++ )
 		{
@@ -1255,6 +1332,9 @@ void function InitUnlocks()
 	for ( int i = 0; i < numRows; i++ )
 	{
 		string titanRef        = GetDataTableString( titansMpDataTable, i, GetDataTableColumnByName( titansMpDataTable, "titanRef" ) )
+
+		if ( IsDisabledRef( titanRef ) )
+		    continue
 
 		int propertyRow = GetDataTableRowMatchingStringValue( titanPropertiesDataTable, GetDataTableColumnByName( titanPropertiesDataTable, "titanRef" ), titanRef )
 
@@ -1527,20 +1607,15 @@ void function InitUnlocks()
 
 //	InitUnlock( "callsign_14_col_gold", "", eUnlockType.PERSISTENT_ITEM, 0 )
 
-	InitUnlock( "gc_icon_balance", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_boot", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_bt_eye", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_peace", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_srs", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_starline", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_thumbdown", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_thumbup", "", eUnlockType.PERSISTENT_ITEM, 0 )
-	InitUnlock( "gc_icon_vanguard", "", eUnlockType.PERSISTENT_ITEM, 0 )
 	InitUnlock( "gc_icon_deuce", "", eUnlockType.PERSISTENT_ITEM, 0 )
 
 	for ( int i = 0; i < titanClassEnumCount; i++ )
 	{
 		string titanClass = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
+
+		if ( IsDisabledRef( titanClass ) )
+		    continue
+
 		if ( titanClass != "" )
 		{
 			InitUnlock( "titan_camo_skin09", titanClass, eUnlockType.PERSISTENT_ITEM, 0 )
@@ -1630,6 +1705,7 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "execution_telefrag", "", 50, "kills_stats", "pilotExecutePilot" )
 	InitUnlockForStatInt( "execution_stim", "", 10, "kills_stats", "pilotExecutePilotUsing_execution_telefrag" )
 	InitUnlockForStatInt( "execution_grapple", "", 75, "kills_stats", "pilotExecutePilot" )
+	InitUnlockForStatInt( "execution_random", "", 0, "kills_stats", "pilotExecutePilot" )
 
 	//Distance
 	InitUnlockForStatFloat( "pilot_camo_skin56", "", 100.0, "distance_stats", "asPilot" )
@@ -2390,6 +2466,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "titan_camo_skin64", "scorch", 250, "titan_stats", "titansTotal", "scorch" )
 	InitUnlockForStatInt( "titan_camo_skin63", "scorch", 500, "titan_stats", "titansTotal", "scorch" )
 
+	InitUnlockForStatInt( "titan_camo_skin67", "vanguard", 10, "titan_stats", "titansTotal", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin65", "vanguard", 50, "titan_stats", "titansTotal", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin66", "vanguard", 100, "titan_stats", "titansTotal", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin64", "vanguard", 250, "titan_stats", "titansTotal", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin63", "vanguard", 500, "titan_stats", "titansTotal", "vanguard" )
+
 	InitUnlockForStatInt( "titan_camo_skin67", "northstar", 10, "titan_stats", "titansTotal", "northstar" )
 	InitUnlockForStatInt( "titan_camo_skin65", "northstar", 50, "titan_stats", "titansTotal", "northstar" )
 	InitUnlockForStatInt( "titan_camo_skin66", "northstar", 100, "titan_stats", "titansTotal", "northstar" )
@@ -2425,6 +2507,11 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "titan_camo_skin62", "scorch", 200, "titan_stats", "pilots", "scorch"  )
 	InitUnlockForStatInt( "titan_camo_skin59", "scorch", 500, "titan_stats", "pilots", "scorch"  )
 
+	InitUnlockForStatInt( "titan_camo_skin60", "vanguard", 20, "titan_stats", "pilots", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin61", "vanguard", 100,"titan_stats", "pilots", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin62", "vanguard", 200, "titan_stats", "pilots", "vanguard"  )
+	InitUnlockForStatInt( "titan_camo_skin59", "vanguard", 500, "titan_stats", "pilots", "vanguard"  )
+
 	InitUnlockForStatInt( "titan_camo_skin60", "northstar", 20, "titan_stats", "pilots", "northstar" )
 	InitUnlockForStatInt( "titan_camo_skin61", "northstar", 100,"titan_stats", "pilots", "northstar" )
 	InitUnlockForStatInt( "titan_camo_skin62", "northstar", 200, "titan_stats", "pilots", "northstar" )
@@ -2456,6 +2543,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "titan_camo_skin55", "scorch", 1500000, "titan_stats", "titanDamage", "scorch" )
 	InitUnlockForStatInt( "titan_camo_skin57", "scorch", 3000000, "titan_stats", "titanDamage", "scorch" )
 	InitUnlockForStatInt( "titan_camo_skin91", "scorch", 5000000, "titan_stats", "titanDamage", "scorch" )
+
+	InitUnlockForStatInt( "titan_camo_skin56", "vanguard", 300000, "titan_stats", "titanDamage", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin58", "vanguard", 600000, "titan_stats", "titanDamage", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin55", "vanguard", 1500000, "titan_stats", "titanDamage", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin57", "vanguard", 3000000, "titan_stats", "titanDamage", "vanguard" )
+	InitUnlockForStatInt( "titan_camo_skin91", "vanguard", 5000000, "titan_stats", "titanDamage", "vanguard" )
 
 	InitUnlockForStatInt( "titan_camo_skin56", "northstar", 300000, "titan_stats", "titanDamage", "northstar" )
 	InitUnlockForStatInt( "titan_camo_skin58", "northstar", 600000, "titan_stats", "titanDamage", "northstar" )
@@ -2489,6 +2582,10 @@ void function InitUnlocks()
 	InitUnlockForStatFloat( "titan_camo_skin07", "scorch", 50,  "distance_stats", "asTitan_scorch" )
 	InitUnlockForStatFloat( "titan_camo_skin87", "scorch", 150, "distance_stats", "asTitan_scorch" )
 
+	InitUnlockForStatFloat( "titan_camo_skin13", "vanguard", 15, "distance_stats", "asTitan_vanguard" )
+	InitUnlockForStatFloat( "titan_camo_skin07", "vanguard", 50,  "distance_stats", "asTitan_vanguard" )
+	InitUnlockForStatFloat( "titan_camo_skin87", "vanguard", 150, "distance_stats", "asTitan_vanguard" )
+
 	InitUnlockForStatFloat( "titan_camo_skin13", "northstar", 15, "distance_stats", "asTitan_northstar" )
 	InitUnlockForStatFloat( "titan_camo_skin07", "northstar", 50,  "distance_stats", "asTitan_northstar" )
 	InitUnlockForStatFloat( "titan_camo_skin87", "northstar", 150, "distance_stats", "asTitan_northstar" )
@@ -2514,6 +2611,10 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "titan_camo_skin94", "scorch", 10, "kills_stats", "titanExocutionScorch" )
 	InitUnlockForStatInt( "titan_camo_skin85", "scorch", 25, "kills_stats", "titanExocutionScorch" )
 
+	InitUnlockForStatInt( "titan_camo_skin93", "vanguard", 3, "kills_stats", "titanExocutionVanguard" )
+	InitUnlockForStatInt( "titan_camo_skin94", "vanguard", 10, "kills_stats", "titanExocutionVanguard" )
+	InitUnlockForStatInt( "titan_camo_skin85", "vanguard", 25, "kills_stats", "titanExocutionVanguard" )
+
 	InitUnlockForStatInt( "titan_camo_skin93", "northstar", 3, "kills_stats", "titanExocutionNorthstar" )
 	InitUnlockForStatInt( "titan_camo_skin94", "northstar", 10, "kills_stats", "titanExocutionNorthstar" )
 	InitUnlockForStatInt( "titan_camo_skin85", "northstar", 25, "kills_stats", "titanExocutionNorthstar" )
@@ -2536,6 +2637,10 @@ void function InitUnlocks()
 
 	InitUnlockForStatInt( "scorch_skin_01", "scorch", 30, "kills_stats", "killingSpressAs_scorch" )
 	InitUnlockForStatInt( "scorch_skin_02", "scorch", 100, "kills_stats", "killingSpressAs_scorch" )
+
+	InitUnlockForStatInt( "vanguard_skin_01", "vanguard", 30, "kills_stats", "killingSpressAs_vanguard" )
+	InitUnlockForStatInt( "vanguard_skin_02", "vanguard", 100, "kills_stats", "killingSpressAs_vanguard" )
+	InitUnlockForStatInt( "vanguard_skin_03", "vanguard", 100, "kills_stats", "killingSpressAs_vanguard" )
 
 	InitUnlockForStatInt( "northstar_skin_01", "northstar", 30, "kills_stats", "killingSpressAs_northstar" )
 	InitUnlockForStatInt( "northstar_skin_02", "northstar", 65, "kills_stats", "killingSpressAs_northstar" )
@@ -2568,6 +2673,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin66", "scorch", 30, "weapon_kill_stats", "titansTotal", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin64", "scorch", 75, "weapon_kill_stats", "titansTotal", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin63", "scorch", 150, "weapon_kill_stats", "titansTotal", "mp_titanweapon_meteor" )
+
+	InitUnlockForStatInt( "camo_skin67", "vanguard", 5, "weapon_kill_stats", "titansTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin65", "vanguard", 15, "weapon_kill_stats", "titansTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin66", "vanguard", 30, "weapon_kill_stats", "titansTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin64", "vanguard", 75, "weapon_kill_stats", "titansTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin63", "vanguard", 150, "weapon_kill_stats", "titansTotal", "mp_titanweapon_xo16_vanguard" )
 
 	InitUnlockForStatInt( "camo_skin67", "northstar", 5, "weapon_kill_stats", "titansTotal", "mp_titanweapon_sniper" )
 	InitUnlockForStatInt( "camo_skin65", "northstar", 15, "weapon_kill_stats", "titansTotal", "mp_titanweapon_sniper" )
@@ -2605,6 +2716,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin59", "scorch", 100,  "weapon_kill_stats", "pilots", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin87", "scorch", 250, "weapon_kill_stats", "pilots", "mp_titanweapon_meteor" )
 
+	InitUnlockForStatInt( "camo_skin60", "vanguard", 10, "weapon_kill_stats", "pilots", "mp_titanweapon_xo16_vanguard")
+	InitUnlockForStatInt( "camo_skin61", "vanguard", 25, "weapon_kill_stats", "pilots", "mp_titanweapon_xo16_vanguard")
+	InitUnlockForStatInt( "camo_skin62", "vanguard", 50, "weapon_kill_stats", "pilots", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin59", "vanguard", 100,  "weapon_kill_stats", "pilots", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin87", "vanguard", 250, "weapon_kill_stats", "pilots", "mp_titanweapon_xo16_vanguard" )
+
 	InitUnlockForStatInt( "camo_skin60", "northstar", 10,  "weapon_kill_stats", "pilots", "mp_titanweapon_sniper")
 	InitUnlockForStatInt( "camo_skin61", "northstar", 25, "weapon_kill_stats", "pilots", "mp_titanweapon_sniper")
 	InitUnlockForStatInt( "camo_skin62", "northstar", 50, "weapon_kill_stats", "pilots", "mp_titanweapon_sniper" )
@@ -2640,6 +2757,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin55", "scorch", 30, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin57", "scorch", 75, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin91", "scorch", 150, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_meteor" )
+
+	InitUnlockForStatInt( "camo_skin56", "vanguard", 5, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin58", "vanguard", 15, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin55", "vanguard", 30, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin57", "vanguard", 75, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin91", "vanguard", 150, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_xo16_vanguard" )
 
 	InitUnlockForStatInt( "camo_skin56", "northstar", 5, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_sniper" )
 	InitUnlockForStatInt( "camo_skin58", "northstar", 15, "weapon_kill_stats", "assistsTotal", "mp_titanweapon_sniper" )
@@ -2677,6 +2800,12 @@ void function InitUnlocks()
 	InitUnlockForStatInt( "camo_skin13", "scorch", 250000, "weapon_stats", "titanDamage", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin07", "scorch", 500000, "weapon_stats", "titanDamage", "mp_titanweapon_meteor" )
 	InitUnlockForStatInt( "camo_skin85", "scorch", 1000000, "weapon_stats", "titanDamage", "mp_titanweapon_meteor" )
+
+	InitUnlockForStatInt( "camo_skin93", "vanguard", 50000,  "weapon_stats", "titanDamage", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin94", "vanguard", 100000,"weapon_stats", "titanDamage", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin13", "vanguard", 250000, "weapon_stats", "titanDamage", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin07", "vanguard", 500000, "weapon_stats", "titanDamage", "mp_titanweapon_xo16_vanguard" )
+	InitUnlockForStatInt( "camo_skin85", "vanguard", 1000000, "weapon_stats", "titanDamage", "mp_titanweapon_xo16_vanguard" )
 
 	InitUnlockForStatInt( "camo_skin93", "northstar", 50000,  "weapon_stats", "titanDamage", "mp_titanweapon_sniper" )
 	InitUnlockForStatInt( "camo_skin94", "northstar", 100000,"weapon_stats", "titanDamage", "mp_titanweapon_sniper" )
@@ -2766,6 +2895,9 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "tone_prime", "", ET_DLC5_PRIME_TONE )
 	InitUnlockAsEntitlement( "scorch_prime", "", ET_DLC1_PRIME_SCORCH )
 	InitUnlockAsEntitlement( "ronin_prime", "", ET_DLC5_PRIME_RONIN )
+	#if DEVSCRIPTS
+	InitUnlockAsEntitlement( "vanguard_prime", "", ET_DLC5_PRIME_TONE )
+	#endif
 
 	InitUnlockAsEntitlement( "ion_nose_art_17", "ion", ET_DLC1_ION )
 	InitUnlockAsEntitlement( "ion_nose_art_18", "ion", ET_DLC1_ION )
@@ -2809,6 +2941,13 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "legion_nose_art_21", "legion", ET_DLC1_LEGION )
 	InitUnlockAsEntitlement( "legion_skin_07", "legion", ET_DLC1_LEGION )
 
+	InitUnlockAsEntitlement( "vanguard_nose_art_17", "vanguard", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_18", "vanguard", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_19", "vanguard", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_20", "vanguard", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_21", "vanguard", ET_DLC1_LEGION )
+	InitUnlockAsEntitlement( "vanguard_skin_07", "vanguard", ET_DLC1_LEGION )
+
 	InitUnlockAsEntitlement( "callsign_106_col", "", ET_DLC1_CALLSIGN )
 	InitUnlockAsEntitlement( "callsign_107_col", "", ET_DLC1_CALLSIGN )
 	InitUnlockAsEntitlement( "callsign_108_col", "", ET_DLC1_CALLSIGN )
@@ -2850,6 +2989,7 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "gc_icon_super_spectre", "", ET_DLC1_CALLSIGN )
 	InitUnlockAsEntitlement( "gc_icon_vinson", "", ET_DLC1_CALLSIGN )
 	InitUnlockAsEntitlement( "gc_icon_wonyeon", "", ET_DLC1_CALLSIGN )
+
 
 	for ( int i = 101; i <= 120; i++ )
 	{
@@ -2918,6 +3058,34 @@ void function InitUnlocks()
 	InitUnlockAsEntitlement( "legion_nose_art_25", "legion", ET_DLC3_LEGION )
 	InitUnlockAsEntitlement( "legion_nose_art_26", "legion", ET_DLC3_LEGION )
 	InitUnlockAsEntitlement( "legion_skin_08", "legion", ET_DLC3_LEGION )
+
+	InitUnlockAsEntitlement( "vanguard_nose_art_22", "vanguard", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_23", "vanguard", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_24", "vanguard", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_25", "vanguard", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "vanguard_nose_art_26", "vanguard", ET_DLC3_LEGION )
+	InitUnlockAsEntitlement( "vanguard_skin_08", "vanguard", ET_DLC3_LEGION )
+
+	InitUnlockAsEntitlement( "gc_icon_balance", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_boot", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_bt_eye", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_buzzsaw", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_crossed_lighting", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_flying_bullet", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_hammer2", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_keyboard", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_lightbulb", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_narwhal", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_peace", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_pilot2", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_robot_eye", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_srs", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_starline", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_taco", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_thumbdown", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_thumbup", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_treble", "", ET_DLC3_CALLSIGN )
+	InitUnlockAsEntitlement( "gc_icon_vanguard", "", ET_DLC3_CALLSIGN )
 
 	for ( int i = 121; i <= 140; i++ )
 	{
@@ -2988,7 +3156,47 @@ void function InitUnlocks()
 									 "titanos_northstar",
 									 "titanos_tone",
 									 "titanos_legion",
-									 "varietypack" ]
+									 "titanos_vanguard",
+									 "varietypack",
+									 "mp_titanweapon_stun_laser",
+									 "mp_titanability_rearm",
+									 "mp_titancore_upgrade",
+			"ronin.pas_vanguard_core8",
+			"ronin.pas_vanguard_core9",
+			"ronin.pas_vanguard_core2",
+			"ronin.pas_vanguard_core5",
+			"ronin.pas_vanguard_core3",
+			"ronin.pas_vanguard_core6",
+			"ion.pas_vanguard_core8",
+			"ion.pas_vanguard_core6",
+			"ion.pas_vanguard_core9",
+			"ion.pas_vanguard_core2",
+			"ion.pas_vanguard_core5",
+			"ion.pas_vanguard_core3",
+			"legion.pas_vanguard_core8",
+			"legion.pas_vanguard_core9",
+			"legion.pas_vanguard_core2",
+			"legion.pas_vanguard_core5",
+			"legion.pas_vanguard_core6",
+			"legion.pas_vanguard_core3",
+			"scorch.pas_vanguard_core8",
+			"scorch.pas_vanguard_core6",
+			"scorch.pas_vanguard_core9",
+			"scorch.pas_vanguard_core2",
+			"scorch.pas_vanguard_core5",
+			"scorch.pas_vanguard_core3",
+			"tone.pas_vanguard_core8",
+			"tone.pas_vanguard_core9",
+			"tone.pas_vanguard_core2",
+			"tone.pas_vanguard_core5",
+			"tone.pas_vanguard_core6",
+			"tone.pas_vanguard_core3",
+			"northstar.pas_vanguard_core8",
+			"northstar.pas_vanguard_core9",
+			"northstar.pas_vanguard_core2",
+			"northstar.pas_vanguard_core5",
+			"northstar.pas_vanguard_core3",
+			"northstar.pas_vanguard_core6",		]
 
 		foreach ( item in file.itemData )
 		{
@@ -3006,6 +3214,9 @@ void function InitUnlocks()
 				foreach ( subItem in item.subitems )
 				{
 					if ( subItem.ref in file.unlocks[ item.ref ].child || IsItemInRandomUnlocks( subItem.ref, item.ref ) || IsItemInEntitlementUnlock( subItem.ref, item.ref ) )
+						continue
+
+					if ( ignoreList.contains( item.ref + "." + subItem.ref ) )
 						continue
 
 					CodeWarning( "Not in unlocks " + item.ref + "." + subItem.ref )
@@ -3157,6 +3368,9 @@ void function InitTitanWeaponDataMP()
 		string itemRef        = GetDataTableString( dataTable, i, TITAN_PRIMARY_COLUMN )
 		bool hidden            = GetDataTableBool( dataTable, i, TITAN_PRIMARY_HIDDEN_COLUMN )
 
+		if ( IsDisabledRef( itemRef ) )
+		    continue
+
 		CreateWeaponData( i, eItemTypes.TITAN_PRIMARY, hidden, itemRef, true, 0 )
 	}
 
@@ -3168,6 +3382,9 @@ void function InitTitanWeaponDataMP()
 		int itemType        = eItemTypes[ GetDataTableString( dataTable, i, TITAN_ABILITY_TYPE_COLUMN ) ]
 		bool isDamageSource    = GetDataTableBool( dataTable, i, TITAN_ABILITY_DAMAGESOURCE_COLUMN )
 		bool hidden            = GetDataTableBool( dataTable, i, TITAN_ABILITY_HIDDEN_COLUMN )
+
+		if ( IsDisabledRef( itemRef ) )
+		    continue
 
 		CreateWeaponData( i, itemType, hidden, itemRef, isDamageSource, 0 )
 	}
@@ -3268,6 +3485,9 @@ void function InitUnlock( string ref, string parentRef, int unlockType, int unlo
 		return
 	}
 
+    if ( IsDisabledRef( ref ) || IsDisabledRef( parentRef ) )
+        return
+
 	ItemData itemData = GetItemData( ref )
 
 	if ( parentRef == "" )
@@ -3332,6 +3552,9 @@ void function InitUnlockForStatInt( string ref, string parentRef, int statValue,
 {
 	Assert ( GetStatVarType( statCategory, statAlias, statSubAlias ) == ePlayerStatType.INT )
 
+    if ( IsDisabledRef( ref ) || IsDisabledRef( parentRef ) )
+        return
+
 	if ( parentRef != "" )
 	{
 		Assert( HasSubitem( parentRef, ref ), "Item " + parentRef + " does not have a " + ref + " subitem" )
@@ -3391,6 +3614,9 @@ void function InitUnlockForStatInt( string ref, string parentRef, int statValue,
 void function InitUnlockForStatFloat( string ref, string parentRef, float statValue, string statCategory, string statAlias, string statSubAlias = "" )
 {
 	Assert ( GetStatVarType( statCategory, statAlias, statSubAlias ) == ePlayerStatType.FLOAT )
+
+    if ( IsDisabledRef( ref ) || IsDisabledRef( parentRef ) )
+        return
 
 	if ( parentRef != "" )
 	{
@@ -4649,25 +4875,6 @@ bool function ItemSupportsMods( string ref )
 	return (itemType == eItemTypes.PILOT_PRIMARY || itemType == eItemTypes.PILOT_SECONDARY || itemType == eItemTypes.TITAN_PRIMARY)
 }
 
-//function CreateDecalData( int itemType, string ref, asset image, string name, string desc, unlockReqText, unlockReqUnlockedText, bool hidden = false )
-//{
-//	Assert( PersistenceEnumValueIsValid( "titanDecals", ref ) )
-//
-//	ItemData item = CreateItemBaseRef( itemType, ref, hidden )
-//	item.name 					= name
-//	item.desc 					= desc
-//	item.longdesc 				= desc
-//	item.unlockReqText 			= unlockReqText
-//	item.unlockReqUnlockedText 	= unlockReqUnlockedText
-//	item.image 					= image
-//	item.hidden 				= hidden
-//
-//	// Set the skin number for the decal for each team
-//	local decalIndex = PersistenceGetEnumIndexForItemName( "titanDecals", ref )
-//	item.skinIndex				<- 2 + decalIndex
-//}
-
-
 void function CreateTitanData( int dataTableIndex, string titanRef, int cost, asset image, asset coreIcon )
 {
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
@@ -4695,6 +4902,9 @@ void function CreateTitanData( int dataTableIndex, string titanRef, int cost, as
 	item.i.passive1Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive1" )
 	item.i.passive2Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive2" )
 	item.i.passive3Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive3" )
+	item.i.passive4Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive4" )
+	item.i.passive5Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive5" )
+	item.i.passive6Type			<- GetTitanLoadoutPropertyPassiveType( setFile, "passive6" )
 
 	item.persistenceStruct		= "titanChassis[" + dataTableIndex + "]"
 	item.persistenceId          = dataTableIndex
@@ -4882,6 +5092,10 @@ bool function IsSubItemLocked( entity player, string ref, string parentRef )
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 			if ( !IsItemLockedForTitan( player, ref, parentRef ) )
 				return false
 
@@ -5057,6 +5271,10 @@ bool function IsSubItemOwned( entity player, string ref, string parentRef )
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 			string parentStruct = GetItemPersistenceStruct( parentRef )
 			return IsPersistenceBitSet( player, parentStruct + ".unlockedPassives", bitIndex )
 
@@ -5157,6 +5375,9 @@ bool function IsItemOwned( entity player, string ref )
 
 		case eItemTypes.CALLSIGN_ICON:
 			return IsPersistenceBitSet( player, "unlockedCallsignIcons", bitIndex )
+
+		case eItemTypes.COMMS_ICON:
+			return IsPersistenceBitSet( player, "unlockedCommsIcons", bitIndex )
 
 		default:
 			CodeWarning( "Unhandled owned type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
@@ -5490,6 +5711,10 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 				persistenceVar = "newCallsignIcons"
 				break
 
+			case eItemTypes.COMMS_ICON:
+				persistenceVar = "newCommsIcons"
+				break
+
 			default:
 				CodeWarning( "Unhandled new type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
 		}
@@ -5533,6 +5758,10 @@ bool function IsItemNew( entity player, string ref, string parentRef = "" )
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				persistenceVar = GetItemPersistenceStruct( parentRef ) + ".newPassives"
 				break
 
@@ -5604,6 +5833,7 @@ void function UpdateCachedNewItems()
 	UpdateCachedNewItemsArray( "newFactions" )
 	UpdateCachedNewItemsArray( "newCallingCards" )
 	UpdateCachedNewItemsArray( "newCallsignIcons" )
+	UpdateCachedNewItemsArray( "newCommsIcons" )
 }
 
 int function GetCachedNewItemsVar( string persistenceVar )
@@ -5752,6 +5982,10 @@ void function ClearNewStatus( var button, string ref, string parentRef = "" )
 				SetCachedPersistenceBitfield( "newCallsignIcons", bitIndex, 0 )
 				break
 
+			case eItemTypes.COMMS_ICON:
+				SetCachedPersistenceBitfield( "newCommsIcons", bitIndex, 0 )
+				break
+
 			default:
 				CodeWarning( "Unhandled ClearNewStatus type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
 		}
@@ -5784,6 +6018,10 @@ void function ClearNewStatus( var button, string ref, string parentRef = "" )
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetCachedPersistenceBitfield( parentStruct + ".newPassives", bitIndex, 0 )
 				break
@@ -5864,6 +6102,11 @@ bool function HasAnyNewTitanItems( entity player )
 	return false
 }
 
+bool function HasAnyNewDpadCommsIcons( entity player )
+{
+	return HasAnyNewItemOfType( player, eItemTypes.COMMS_ICON )
+}
+
 bool function HasAnyNewBoosts( entity player )
 {
 	return HasAnyNewItemOfType( player, eItemTypes.BURN_METER_REWARD )
@@ -5939,6 +6182,7 @@ bool function ButtonShouldShowNew( int itemType, string ref = "", string parentR
 				return IsItemNew( player, ref )
 
 		case eItemTypes.FEATURE:
+		case eItemTypes.COMMS_ICON:
 			return IsItemNew( player, ref )
 
 		case eItemTypes.TITAN:
@@ -5960,6 +6204,10 @@ bool function ButtonShouldShowNew( int itemType, string ref = "", string parentR
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 		case eItemTypes.CAMO_SKIN_TITAN:
 		case eItemTypes.TITAN_WARPAINT:
 		case eItemTypes.TITAN_NOSE_ART:
@@ -6050,6 +6298,10 @@ bool function HasAnyNewSubItemOfType( entity player, string parentRef, int refTy
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 			string parentStruct = GetItemPersistenceStruct( parentRef )
 			return IsAnyPersistenceBitSet( player, parentStruct + ".newPassives" )
 
@@ -6148,6 +6400,10 @@ bool function HasAnyNewItemOfType( entity player, int refType, int parentRefType
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				persistenceArray = "titanChassis"
 				persistenceVar = "newPassives"
 				break
@@ -6285,6 +6541,10 @@ void function SetItemOwnedStatus( entity player, string ref, string parentRef, b
 				SetPersistenceBitfield( player, "unlockedCallsignIcons", bitIndex, unlockBitVal )
 				return
 
+			case eItemTypes.COMMS_ICON:
+				SetPersistenceBitfield( player, "unlockedCommsIcons", bitIndex, unlockBitVal )
+				return
+
 			default:
 				CodeWarning( "Unhandled unlock type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
 		}
@@ -6316,6 +6576,10 @@ void function SetItemOwnedStatus( entity player, string ref, string parentRef, b
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetPersistenceBitfield( player, parentStruct + ".unlockedPassives", bitIndex, unlockBitVal )
 				return
@@ -6424,6 +6688,10 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 				SetPersistenceBitfield( player, "newCallsignIcons", bitIndex, newBitVal )
 				return
 
+			case eItemTypes.COMMS_ICON:
+				SetPersistenceBitfield( player, "newCommsIcons", bitIndex, newBitVal )
+				return
+
 			default:
 				CodeWarning( "Unhandled unlock type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
 		}
@@ -6456,6 +6724,10 @@ void function SetItemNewStatus( entity player, string ref, string parentRef, boo
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetPersistenceBitfield( player, parentStruct + ".newPassives", bitIndex, newBitVal )
 				return
@@ -6578,6 +6850,10 @@ bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 				SetPersistenceBitfield( player, "newCallsignIcons", bitIndex, 0 )
 				return true
 
+			case eItemTypes.COMMS_ICON:
+				SetPersistenceBitfield( player, "newCommsIcons", bitIndex, 0 )
+				return true
+
 			default:
 				CodeWarning( "Unhandled ClearNewStatus type: " + DEV_GetEnumStringFromIndex( "eItemTypes", refType ) + " " + ref )
 		}
@@ -6612,6 +6888,10 @@ bool function ClientCommand_ClearNewStatus( entity player, array<string> args )
 			case eItemTypes.TITAN_TONE_PASSIVE:
 			case eItemTypes.TITAN_SCORCH_PASSIVE:
 			case eItemTypes.TITAN_LEGION_PASSIVE:
+			case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 				string parentStruct = GetItemPersistenceStruct( parentRef )
 				SetPersistenceBitfield( player, parentStruct + ".newPassives", bitIndex, 0 )
 				return true
@@ -7153,11 +7433,17 @@ int function UnlockItemSort( string itemRefA, string itemRefB )
 	itemPriority[eItemTypes.TITAN_TONE_PASSIVE] <- priority++
 	itemPriority[eItemTypes.TITAN_SCORCH_PASSIVE] <- priority++
 	itemPriority[eItemTypes.TITAN_LEGION_PASSIVE] <- priority++
+	itemPriority[eItemTypes.TITAN_VANGUARD_PASSIVE] <- priority++
+	itemPriority[eItemTypes.TITAN_UPGRADE1_PASSIVE] <- priority++
+	itemPriority[eItemTypes.TITAN_UPGRADE2_PASSIVE] <- priority++
+	itemPriority[eItemTypes.TITAN_UPGRADE3_PASSIVE] <- priority++
 	itemPriority[eItemTypes.FEATURE] <- priority++
 	itemPriority[eItemTypes.RACE] <- priority++
 	itemPriority[eItemTypes.NOT_LOADOUT] <- priority++
 	itemPriority[eItemTypes.SUB_PILOT_WEAPON_MOD] <- priority++
 	itemPriority[eItemTypes.SUB_PILOT_WEAPON_ATTACHMENT] <- priority++
+	itemPriority[eItemTypes.GAME_MODE] <- priority++
+	itemPriority[eItemTypes.COMMS_ICON] <- priority++
 
 	int itemRefAType = GetItemType( itemRefA )
 	int itemRefBType = GetItemType( itemRefB )
@@ -7192,7 +7478,7 @@ string function GetNextUnlockForTitanLevel( entity player, string titanRef, int 
 
 	for ( int currentLevel = startLevel; currentLevel <= endLevel; currentLevel++ )
 	{
-		unlockedItems.extend( GetUnlockItemsForTitanLevel( titanRef, currentLevel ) )
+		unlockedItems = GetUnlockItemsForTitanLevel( titanRef, currentLevel )
 
 		if ( unlockedItems.len() == 0 )
 		{
@@ -7211,7 +7497,7 @@ string function GetNextUnlockForTitanLevel( entity player, string titanRef, int 
 				}
 				else
 				{
-					if ( !IsItemLocked( player, unlockedItems[ i ] ) )
+					if ( IsItemLocked( player, unlockedItems[ i ] ) )
 						return unlockedItems[ i ]
 				}
 			}
@@ -7480,6 +7766,22 @@ string function GetDisplayNameFromItemType( int itemType )
 			displayName = "#TITAN_LEGION_PASSIVE_TITLE"
 			break
 
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+			displayName = "#TITAN_VANGUARD_PASSIVE_TITLE"
+			break
+
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			displayName = "#TITAN_UPGRADE1_PASSIVE_TITLE"
+			break
+
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			displayName = "#TITAN_UPGRADE2_PASSIVE_TITLE"
+			break
+
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
+			displayName = "#TITAN_UPGRADE3_PASSIVE_TITLE"
+			break
+
 		case eItemTypes.TITAN_OS:
 			displayName = "#VOICE"
 			break
@@ -7689,6 +7991,9 @@ asset function GetStockAttachmentImage( string itemRef )
 
 		case "mp_weapon_doubletake":
 			return $"r2_ui/menus/loadout_icons/attachments/stock_doubletake_sight"
+
+		case "mp_weapon_rspn101_og":
+			return $"r2_ui/menus/loadout_icons/attachments/aog"
 	}
 
 	return $"r2_ui/menus/loadout_icons/attachments/iron_sights"
@@ -7754,7 +8059,7 @@ string function GetTableValueForSuit( string suit, string columnName )
 
 int function GetTitanLoadoutPropertyPassiveType( string setFile, string loadoutProperty )
 {
-	Assert( loadoutProperty == "passive1" || loadoutProperty == "passive2" || loadoutProperty == "passive3")
+	Assert( loadoutProperty == "passive1" || loadoutProperty == "passive2" || loadoutProperty == "passive3" || loadoutProperty == "passive4" || loadoutProperty == "passive5" || loadoutProperty == "passive6")
 
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
 	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "setFile" ), setFile )
@@ -7802,6 +8107,30 @@ int function GetTitanProperty_Passive3Type( string titanRef )
 	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "titanRef" ), titanRef )
 
 	return eItemTypes[ GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "passive3" ) ) ]
+}
+
+int function GetTitanProperty_Passive4Type( string titanRef )
+{
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "titanRef" ), titanRef )
+
+	return eItemTypes[ GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "passive4" ) ) ]
+}
+
+int function GetTitanProperty_Passive5Type( string titanRef )
+{
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "titanRef" ), titanRef )
+
+	return eItemTypes[ GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "passive5" ) ) ]
+}
+
+int function GetTitanProperty_Passive6Type( string titanRef )
+{
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "titanRef" ), titanRef )
+
+	return eItemTypes[ GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "passive6" ) ) ]
 }
 
 asset function GetTitanCoreIcon( string titanRef )
@@ -8114,12 +8443,20 @@ string function GetItemTypeName( int itemType, int parentItemType = -1 )
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_RONIN_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_NORTHSTAR_PASSIVE:
 			if ( parentItemType != -1 )
 				return "#ITEM_TYPE_TITAN_SPECIFIC_KIT"
 			else
 				return "#ITEM_TYPE_TITAN_GENERIC_KIT"
+
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+			return "#ITEM_TYPE_UPGRADE1"
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+			return "#ITEM_TYPE_UPGRADE2"
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
+			return "#ITEM_TYPE_UPGRADE3"
 
 		case eItemTypes.TITAN_GENERAL_PASSIVE:
 			return "#ITEM_TYPE_TITAN_GENERAL_PASSIVE"
@@ -8155,6 +8492,9 @@ string function GetItemTypeName( int itemType, int parentItemType = -1 )
 
 		case eItemTypes.PILOT_SUIT:
 			return "#ITEM_TYPE_PILOT_SPECIAL"
+
+		case eItemTypes.COMMS_ICON:
+			return "#ITEM_TYPE_COMMS_ICON"
 
 		default:
 		#if DEV
@@ -8451,6 +8791,10 @@ bool function IsSubItemType( int itemType )
 		case eItemTypes.TITAN_TONE_PASSIVE:
 		case eItemTypes.TITAN_SCORCH_PASSIVE:
 		case eItemTypes.TITAN_LEGION_PASSIVE:
+		case eItemTypes.TITAN_VANGUARD_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE1_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE2_PASSIVE:
+		case eItemTypes.TITAN_UPGRADE3_PASSIVE:
 		case eItemTypes.TITAN_NOSE_ART:
 		case eItemTypes.PRIME_TITAN_NOSE_ART:
 		case eItemTypes.SUB_PILOT_WEAPON_ATTACHMENT:
@@ -8579,6 +8923,9 @@ bool function IsItemInEntitlementUnlock( string itemRef, string parentRef = "" )
 
 void function InitUnlockAsEntitlement( string itemRef, string parentRef, int entitlementId )
 {
+    if ( IsDisabledRef( itemRef ) || IsDisabledRef( parentRef ) )
+        return
+
 #if DEV
 	if ( parentRef == "" )
 	{
@@ -8849,6 +9196,17 @@ string function GetSkinRefFromTitanClassAndPersistenceValue( string titanClass, 
 
 }
 #endif
+
+const array<string> disabledRefs = [ "vanguard", "mp_titanweapon_xo16_vanguard", "mp_titanability_rearm", "mp_titanweapon_stun_laser", "mp_titancore_upgrade" ]
+
+bool function IsDisabledRef( string ref )
+{
+    #if DEVSCRIPTS
+        return false
+    #endif
+
+    return ( disabledRefs.contains( ref ) )
+}
 
 #if DEV
 void function GenerateDataTableCRC( asset dataTableAsset )

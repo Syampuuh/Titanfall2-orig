@@ -149,6 +149,7 @@ void function InitStatsTables()
 		AddPersistentStat( "weapon_kill_stats", "npcTitans_ronin", 		ref,	"weaponKillStats[" + ref + "].npcTitans[ronin]", "#" )
 		AddPersistentStat( "weapon_kill_stats", "npcTitans_tone", 		ref,	"weaponKillStats[" + ref + "].npcTitans[tone]", "#" )
 		AddPersistentStat( "weapon_kill_stats", "npcTitans_legion", 		ref,	"weaponKillStats[" + ref + "].npcTitans[legion]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_vanguard", 		ref,	"weaponKillStats[" + ref + "].npcTitans[vanguard]", "#" )
 	}
 
 	//##############################################
@@ -183,6 +184,7 @@ void function InitStatsTables()
 	AddPersistentStat( "kills_stats", "killingSpressAs_ronin",	"",		"killStats.killingSprees[ronin]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
 	AddPersistentStat( "kills_stats", "killingSpressAs_tone",	"",		"killStats.killingSprees[tone]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
 	AddPersistentStat( "kills_stats", "killingSpressAs_legion",	"",		"killStats.killingSprees[legion]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_vanguard",	"",		"killStats.killingSprees[vanguard]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
 
 	AddPersistentStat( "kills_stats", "firstStrikes", 				"",		"killStats.firstStrikes", "#UNLOCK_KILLS_FIRST_STRIKE" )
 	AddPersistentStat( "kills_stats", "ejectingPilots", 			"",		"killStats.ejectingPilots", "#UNLOCK_KILLS_GOOSER" )
@@ -277,7 +279,7 @@ void function InitStatsTables()
 	AddPersistentStat( "deaths_stats", "whileEjecting", 		"",		"deathStats.whileEjecting" )
 
 
-	array<string> titanChassis = ["ion", "scorch", "northstar", "ronin", "tone", "legion"]
+	array<string> titanChassis = ["ion", "scorch", "northstar", "ronin", "tone", "legion", "vanguard"]
 
 	AddPersistentStatCategory( "titan_stats" )
 

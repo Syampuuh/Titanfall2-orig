@@ -1,5 +1,7 @@
 global typedef IntFromEntityCompare int functionref( entity, entity )
 
+global const bool DEVSCRIPTS = false
+
 global const bool PRE_RELEASE_DEMO = false
 
 global const DIFFICULTY_EASY = 0
@@ -44,13 +46,17 @@ global const DON = "don"
 global const SPEEDBALL = "speedball"
 global const RAID = "raid"
 global const ATCOOP = "atcoop"
+global const CONQUEST = "cq"
+global const FD = "fd"
+global const PVE_SANDBOX = "pve_sandbox"
 
 global const VERBOSE_DAMAGE_PRINTOUTS = false
 
-global const SAVEGAME_VERSION = 9 // increment when saves need to be tossed
-global const PERSISTENCE_INIT_VERSION = 219
+global const SAVEGAME_VERSION = 10 // increment when saves need to be tossed
+global const PERSISTENCE_INIT_VERSION = 221
 
 global const TEMP_NETWORTH_VAR = "activeBCID"
+global const NETWORTH_VAR = "netWorth"
 
 global const TESTCONST = 99
 global const TEAM_BOTH = 4
@@ -158,6 +164,9 @@ global struct TitanLoadoutDef
 	string 			passive1
 	string 			passive2
 	string          passive3
+	string          passive4
+	string          passive5
+	string          passive6
 	string 			voice = "titanos_bt"
 	int				skinIndex
 	int				camoIndex
@@ -669,7 +678,11 @@ global const SAFE_TITANFALL_DISTANCE = 125
 global const SAFE_TITANFALL_DISTANCE_CTF = 270
 
 global const NUM_PERSISTENT_PILOT_LOADOUTS = 10
+#if DEVSCRIPTS
+global const NUM_PERSISTENT_TITAN_LOADOUTS = 7
+#else
 global const NUM_PERSISTENT_TITAN_LOADOUTS = 6
+#endif
 
 global const EMBARK_TIMEOUT = 13.0 // how long you have to reach your titan before it stands up and bubble shield starts to fade
 
@@ -1109,9 +1122,14 @@ global enum eItemTypes
 	TITAN_TONE_PASSIVE,
 	TITAN_SCORCH_PASSIVE,
 	TITAN_LEGION_PASSIVE,
+	TITAN_VANGUARD_PASSIVE,
+	TITAN_UPGRADE1_PASSIVE,
+	TITAN_UPGRADE2_PASSIVE,
+	TITAN_UPGRADE3_PASSIVE,
 	TITAN_WARPAINT,
 	PRIME_TITAN_NOSE_ART, //Not needed anymore since Prime Titans now share nose arts, but since the comment above suggests not deleting entries we're keeping this in here
-	GAME_MODE
+	GAME_MODE,
+	COMMS_ICON,
 	COUNT
 }
 
@@ -1231,6 +1249,14 @@ global enum eTitanAvailability
 	Escalation,
 
 	LastTitanAvailability
+}
+
+global enum eBoostAvailability
+{
+	Default,
+	Disabled,
+
+	LastBoostAvailability
 }
 
 global enum eTitanExitEnabled
@@ -1419,6 +1445,7 @@ global enum ePrivateMatchMaps
 	mp_crashsite3
 	mp_complex3
 	mp_angel_city
+	mp_colony02
 }
 
 global enum ePrivateMatchModes
@@ -1523,8 +1550,9 @@ global enum eEventNotifications
 	SPEEDBALL_FlagDropped,
 	DON_Reinforcements,
 	BLEEDOUT_SelfHealPrompt,
-	BATT_HealthFull
-	BATT_Full
+	BATT_HealthFull,
+	BATT_Full,
+	VANGUARD_ShieldGain
 }
 
 global enum ePermanentEventNotifications
@@ -1571,19 +1599,22 @@ global enum eMissionType
 	MISSION_COUNT
 }
 
-global const WAVESPAWN_PROTECTION_TIME					= 3.0
+global const WAVESPAWN_PROTECTION_TIME				= 3.0
+
+global const COOP_MAX_ACTIVE_TITANS					= 10
+global const COOP_MAX_ACTIVE_CLOAKED_DRONES			= 3
 
 global const COOP_SENTRY_TURRET_MAX_COUNT_PET		= 3	// don't try to set it to more then 3
 global const COOP_SENTRY_TURRET_MAX_COUNT_INV		= 3
 
-global const GENERATOR_SHIELD_REGEN_DELAY		= 10.0
-global const GENERATOR_SHIELD_REGEN_TIME		= 10.0
+global const GENERATOR_SHIELD_REGEN_DELAY			= 10.0
+global const GENERATOR_SHIELD_REGEN_TIME			= 10.0
 
 global const GENERATOR_DAMAGE_STREAK_TIMEOUT 					= 10.0  // NPCs have to damage the generator within this amount of time to keep a "damage streak" alive
 
 global const GENERATOR_THREAT_WARN_STREAKDMG_GLOBAL 			= 10000
 global const GENERATOR_THREAT_WARN_DIST_TITAN 					= 2500
-global const GENERATOR_THREAT_WARN_STREAKDMG_MORTAR_TITANS 	= 4000  // these types of AI have to do much damage in a streak to trigger a warning
+global const GENERATOR_THREAT_WARN_STREAKDMG_MORTAR_TITANS 		= 4000  // these types of AI have to do much damage in a streak to trigger a warning
 global const GENERATOR_THREAT_WARN_STREAKDMG_SUICIDE_SPECTRES 	= 1500  // (150 dmg per suicide explosion)
 global const GENERATOR_THREAT_WARN_DIST_INFANTRY 				= 1500
 global const GENERATOR_THREAT_WARN_NUM_REQ_INFANTRY 			= 16
@@ -1592,7 +1623,7 @@ global const DEPLOYABLE_TURRET_ACCURACY_MULTIPLIER	= 2.0	// 1.0 old
 global const DEPLOYABLE_TURRET_HEALTH				= 600	// 1200 old
 
 global const TIME_BETWEEN_OBJ					= 10
-global const TIME_BEFORE_CHECKPOINT_RESTART	= 1
+global const TIME_BEFORE_CHECKPOINT_RESTART		= 1
 global const TIME_BEFORE_OBJECTIVE_RESTART		= 6
 
 global const MINION_BUBBLE_SHIELD_RADIUS		= 230
@@ -1944,15 +1975,16 @@ global const playlistVarMap = {
 //--------------------------------------------------
 
 //Table that maps the enum titanVoice (Defined in persistent data) to the string modifier used in constructing the appropriate sound alias
-global const TITAN_OS_VOICE_PACK = {
-	titanos_bt = "Bt",
-	titanos_legion = "Legion",
-	titanos_scorch = "Scorch",
-	titanos_ronin = "Ronin",
-	titanos_northstar = "Northstar",
-	titanos_ion = "ion",
-	titanos_tone = "Tone",
-}
+global const TITAN_OS_VOICE_PACK = [
+	"Bt",
+	"Legion",
+	"Scorch",
+	"Ronin",
+	"Northstar",
+	"ion",
+	"Tone",
+	"Vanguard",
+]
 
 global enum eMusicPieceID
 {
@@ -2099,6 +2131,25 @@ global const ATCOOP_SCORE_BONUS_STOLEN		= 00
 global const ATCOOP_SCORE_PILOT_MIN			= 5 //The minimum amount of bonus money you get for a player pilot kill
 global const ATCOOP_SCORE_TITAN_MIN			= 25 //The minimum amount of bonus money you get for a player titan kill
 
+global const PVE_SANDBOX_SCORE_BOUNTY_SURVIVAL	= 200
+global const PVE_SANDBOX_SCORE_BOSS   			= 50
+global const PVE_SANDBOX_SCORE_BOSS_DAMAGE		= 200
+global const PVE_SANDBOX_SCORE_TITAN   			= 0//40//100
+global const PVE_SANDBOX_SCORE_SUPER_SPECTRE 	= 25//100//50
+global const PVE_SANDBOX_SCORE_MEGATURRET		= 25
+global const PVE_SANDBOX_SCORE_SENTRYTURRET		= 5
+global const PVE_SANDBOX_SCORE_PILOT   			= 0//20
+global const PVE_SANDBOX_SCORE_AIR_DRONE 		= 5//20
+global const PVE_SANDBOX_SCORE_PROWLER  		= 5//5
+global const PVE_SANDBOX_SCORE_GRUNT   			= 5//5
+global const PVE_SANDBOX_SCORE_SPECTRE 			= 10//20//10
+global const PVE_SANDBOX_SCORE_STALKER 			= 10//30//25//10
+global const PVE_SANDBOX_SCORE_MARVIN  			= 00
+global const PVE_SANDBOX_SCORE_BONUS			= 00
+global const PVE_SANDBOX_SCORE_BONUS_STOLEN		= 00
+global const PVE_SANDBOX_SCORE_PILOT_MIN		= 5 //The minimum amount of bonus money you get for a player pilot kill
+global const PVE_SANDBOX_SCORE_TITAN_MIN		= 25 //The minimum amount of bonus money you get for a player titan kill
+
 global const ZIPLINE_IDLE_ANIM = "pt_zipline_slide_idle"
 
 global const DEFAULT_CONVERSATION_DEBOUNCE_TIME = 10.0
@@ -2196,6 +2247,7 @@ global enum ePresentationType
 	DEFAULT,
 	STORE_CAMO_PACKS,
 	STORE_FRONT,
+	STORE_PRIME_TITANS,
 	PILOT,
 	PILOT_LOADOUT_EDIT,
 	PILOT_CHARACTER,
@@ -2211,6 +2263,7 @@ global enum ePresentationType
 	CALLSIGN,
 	KNOWLEDGEBASE_MAIN,
 	KNOWLEDGEBASE_SUB,
+	PVE_MAIN,
 	COUNT
 }
 
@@ -2537,14 +2590,17 @@ global const string CAMO_PILOT_WEAPON_COST_COLUMN_NAME = "pilotWeaponCost"
 global const string CAMO_TITAN_WEAPON_COST_COLUMN_NAME = "titanWeaponCost"
 global const string CAMO_CATEGORY_COLUMN_NAME = "category"
 
+global const int CAMO_INDEX_BASE = 0
 global const int SKIN_INDEX_BASE = 0
 global const int SKIN_INDEX_IMC = 1
 global const int SKIN_INDEX_MILITIA = 0
 global const int PILOT_SKIN_INDEX_CAMO = 1
 global const int PILOT_SKIN_INDEX_GHOST = 1 // In mlt_hero_jack.qc the holo skin should really be the 3rd skin so it and camo never overlaps
 global const int TITAN_SKIN_INDEX_CAMO = 2
+global const int TITAN_WARPAINT_CAMO_INDEX = -1
 global const int WEAPON_SKIN_INDEX_CAMO = 1
 global const int WEAPON_SKIN_INDEX_GHOST = 2
+global const int PLAYER_WEAPON_SKIN_INDEX_CAMO = 1
 
 global const int FWTS_HIDDEN 		= 1 << 0
 global const int FWTS_IMC 			= 1 << 1
@@ -2574,6 +2630,7 @@ global const int IMAGE_ATLAS_HUD = 1
 global const int IMAGE_ATLAS_CALLINGCARD = 2
 global const int IMAGE_ATLAS_FACTION_LOGO = 3
 global const int IMAGE_ATLAS_CAMO = 4
+global const int IMAGE_ATLAS_COMMS = 5
 
 global const float EARN_METER_CORE_MULTIPLIER = 1.25
 
@@ -2584,6 +2641,7 @@ global const float COCKPIT_COLOR_RED = 0.15
 global const float COCKPIT_COLOR_SIEGE = 0.25
 global const float COCKPIT_COLOR_THREAT = 0.35
 global const float COCKPIT_COLOR_HIDDEN = 0.45
+global const float COCKPIT_COLOR_VANGUARD = 0.55
 
 global const SP_RODEO_BOOST = 300 // Used to boost the player off the titan to prevent rodeo spam in SP
 
@@ -2676,3 +2734,33 @@ global enum eConsoleSettingsMenu //Meant only for console, not PC
 	AUDIO_VISUAL_MENU, //console has audio/visual in one menu
 	COUNT
 }
+
+global struct Friend
+{
+	string id
+	string name
+	int status
+}
+
+global struct FriendsData
+{
+	array<Friend> friends
+	bool isValid
+}
+
+global enum eFriendStatus
+{
+	ONLINE_INVITABLE,
+	OFFLINE,
+	ONLINE_PARTY_MEMBER,
+	COUNT
+}
+
+global struct DpadCommListItem
+{
+	int phraseIndex
+	string displayString
+	string nextMenu
+	string phrase
+}
+

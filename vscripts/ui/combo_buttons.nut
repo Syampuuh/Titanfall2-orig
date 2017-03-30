@@ -10,6 +10,9 @@ global function ComboButton_SetText
 global function SetComboButtonHeaderTitle
 global function ComboButton_SetNewMail
 global function ComboButton_SetNew
+global function ComboButton_SetHasPurchase
+
+global function SetComboButtonHeaderTint
 
 global function ComboButtons_ResetColumnFocus
 
@@ -282,6 +285,20 @@ void function ComboButton_SetNew( var button, bool isNew )
 	}
 }
 
+void function ComboButton_SetHasPurchase( var button, bool hasPurchase )
+{
+	if ( "alwaysChildren" in button.s )
+	{
+		foreach ( var element in button.s.alwaysChildren )
+		{
+			if ( !Hud_IsRuiPanel( element ) )
+				continue
+
+			RuiSetBool( Hud_GetRui( element ), "hasPurchase", hasPurchase )
+		}
+	}
+}
+
 
 void function SetComboButtonHeaderTitle( var menu, int rowIndex, string titleText )
 {
@@ -295,6 +312,20 @@ void function SetComboButtonHeaderTitle( var menu, int rowIndex, string titleTex
 
 	var rui = Hud_GetRui( comboStruct.rowHeaders[rowIndex] )
 	RuiSetString( rui, "titleText", titleText )
+}
+
+void function SetComboButtonHeaderTint( var menu, int rowIndex, bool state )
+{
+	string menuName = Hud_GetHudName( menu )
+	Assert( menuName in file.comboMenuData )
+
+	ComboStruct comboStruct = file.comboMenuData[menuName]
+
+	if ( !Hud_IsRuiPanel( comboStruct.rowHeaders[rowIndex] ) )
+		return
+
+	var rui = Hud_GetRui( comboStruct.rowHeaders[rowIndex] )
+	RuiSetBool( rui, "isTitleTint", state )
 }
 
 

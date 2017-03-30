@@ -80,7 +80,7 @@ TitanLoadoutDef function GetTitanLoadoutForRow( var dataTable, int row )
 	loadout.melee			= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "melee" ) )
 	loadout.ordnance		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ordnance" ) )
 	loadout.coreAbility		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "coreAbility" ) )
-	loadout.setFileMods 	= GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3 ] )
+	loadout.setFileMods 	= GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3,loadout.passive4,loadout.passive5,loadout.passive6 ] )
 
 	return loadout
 }
@@ -180,7 +180,7 @@ void function OverwriteLoadoutWithDefaultsForSetFile_ExceptSpecialAndAntiRodeo( 
 	loadout.melee		= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "melee" ) )
 	loadout.ordnance	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ordnance" ) )
 	loadout.coreAbility	= GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "coreAbility" ) )
-	loadout.setFileMods = GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3 ] )
+	loadout.setFileMods = GetSetFileModsForSettingType( "titan", [ loadout.passive1, loadout.passive2, loadout.passive3, loadout.passive4, loadout.passive5, loadout.passive6 ] )
 	loadout.difficulty	= GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, "difficulty" ) )
 
 	#if SERVER
@@ -371,6 +371,16 @@ void function GiveTitanLoadout( entity titan, TitanLoadoutDef loadout )
 		if ( loadout.passive3 != "" )
 			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive3 ) )
 
+		if ( loadout.passive4 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive4 ) )
+
+		if ( loadout.passive5 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive5 ) )
+
+		if ( loadout.passive6 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive6 ) )
+
+
 		if ( loadout.coreAbility != "" )
 		{
 			titan.GiveOffhandWeapon( loadout.coreAbility, OFFHAND_EQUIPMENT )
@@ -485,6 +495,15 @@ void function ReplaceTitanLoadoutWhereDifferent( entity titan, TitanLoadoutDef l
 
 		if ( loadout.passive3 != "" )
 			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive3 ) )
+
+		if ( loadout.passive4 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive4 ) )
+
+		if ( loadout.passive5 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive5 ) )
+
+		if ( loadout.passive6 != "" )
+			GivePassive( soul, PassiveBitfieldFromEnum( loadout.passive6 ) )
 
 		if ( loadout.coreAbility != "" )
 		{

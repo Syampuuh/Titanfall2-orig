@@ -353,7 +353,7 @@ void function SetupCategoryButtons( array<var> buttons, array<CategoryDef> categ
 		expect CategoryDef( data )
 
 		Hud_SetVisible( button, true )
-		RHud_SetText( button, data.name )
+		RHud_SetText( button, Localize( data.name ) )
 		Hud_SetPanelAlpha( button, 0 )
 		Hud_SetEnabled( button, true )
 		Hud_SetNew( button, HasAnyNewItemOfCategory( player, itemType, data.index ) )
@@ -584,7 +584,7 @@ void function OnAbilitySelectMenu_Close()
 void function OnPassiveSelectMenu_Open()
 {
 	Assert( uiGlobal.editingLoadoutType == "pilot" || uiGlobal.editingLoadoutType == "titan" )
-	Assert( uiGlobal.editingLoadoutProperty == "passive1" || uiGlobal.editingLoadoutProperty == "passive2" || uiGlobal.editingLoadoutProperty == "passive3" )
+	Assert( uiGlobal.editingLoadoutProperty == "passive1" || uiGlobal.editingLoadoutProperty == "passive2" || uiGlobal.editingLoadoutProperty == "passive3" || uiGlobal.editingLoadoutProperty == "passive4" || uiGlobal.editingLoadoutProperty == "passive5" || uiGlobal.editingLoadoutProperty == "passive6" )
 
 	array<ItemDisplayData> unavailableItems
 

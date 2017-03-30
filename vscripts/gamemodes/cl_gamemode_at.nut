@@ -102,7 +102,7 @@ void function ClGamemodeAt_Init()
 
 void function GameModeScoreBarRules_AT( var rui )
 {
-	entity player = GetLocalViewPlayer()
+	entity player = GetLocalClientPlayer()
 	if ( !IsValid( player ) )
 		return
 

@@ -256,6 +256,16 @@ function MeleeSyncedHumanShared_Init()
 			headstabEvent.eventName = "headstab_death"
 			headstabEvent.callback = AnimEvent_headstab_death
 
+			#if SERVER
+			AnimEventData grapple_stab
+			grapple_stab.eventName = "grapple_stab"
+			grapple_stab.callback = GrappleStabSound
+
+			AnimEventData grapple_bodyfall
+			grapple_bodyfall.eventName = "grapple_bodyfall"
+			grapple_bodyfall.callback = GrappleBodyfallSound
+			#endif
+
 			SyncedMelee syncedMelee
 			syncedMelee.ref = "execution_grapple"
 			syncedMelee.direction = < -1, 0, 0 >
@@ -263,9 +273,30 @@ function MeleeSyncedHumanShared_Init()
 			syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_grapple"
 			syncedMelee.targetAnimation3p = "pt_mp_execution_victim_grapple"
 			syncedMelee.target3pAnimEvents = [headstabEvent]
+			#if SERVER
+			syncedMelee.target3pAnimEvents.append( grapple_stab )
+			syncedMelee.target3pAnimEvents.append( grapple_bodyfall )
+			#endif
 			syncedMelee.thirdPersonCameraAttachment = "VDU"
 			syncedMelee.minDot = 0.2
 		    syncedMelee.isAttackerRef = false
+			AddSyncedMelee( meleeChooser, syncedMelee )
+			#if SERVER
+				AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
+			#endif
+		}
+
+		{
+			// Placeholder for the Random Execution
+			SyncedMelee syncedMelee
+			syncedMelee.ref = "execution_random"
+			syncedMelee.direction = < -1, 0, 0 >
+			syncedMelee.distance = HUMAN_EXECUTION_RANGE
+			syncedMelee.attackerAnimation3p = "pt_mp_execution_attacker_nb"
+			syncedMelee.targetAnimation3p = "pt_mp_execution_victim_nb"
+			syncedMelee.thirdPersonCameraAttachment = "VDU"
+			syncedMelee.minDot = 0.2
+			syncedMelee.isAttackerRef = false
 			AddSyncedMelee( meleeChooser, syncedMelee )
 			#if SERVER
 				AddSyncedMeleeServerThink( meleeChooser, MeleeThread_PilotVsEnemy )
@@ -418,12 +449,27 @@ void function AnimEvent_headstab_death( entity ent )
 
 void function PhaseShiftExplodeSound( entity ent )
 {
+	PlaySoundsForBodyType( ent, "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_Robo_3P", "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_3P" )
+}
+
+void function PlaySoundsForBodyType( entity ent, string roboSound, string humanSound )
+{
 	if ( ent.IsMechanical() )
 	{
-		EmitSoundOnEntity( ent, "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_Robo_3P" )
+		EmitSoundOnEntity( ent, roboSound )
 	}
 	else
 	{
-		EmitSoundOnEntity( ent, "Pilot_Mvmt_Execution_Phaseshift_Pt4_Explo_3P" )
+		EmitSoundOnEntity( ent, humanSound )
 	}
+}
+
+void function GrappleStabSound( entity ent )
+{
+	PlaySoundsForBodyType( ent, "Pilot_Mvmt_Execution_Grapple_Robot_Pt2_Stab", "Pilot_Mvmt_Execution_Grapple_Pt2_Stab" )
+}
+
+void function GrappleBodyfallSound( entity ent )
+{
+	PlaySoundsForBodyType( ent, "Pilot_Mvmt_Execution_Grapple_Robot_Pt3_Throwdown", "Pilot_Mvmt_Execution_Grapple_Pt3_Throwdown" )
 }

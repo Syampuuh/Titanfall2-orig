@@ -221,6 +221,11 @@ asset function GetGameModeDisplayImage( string mode )
 	return GAMETYPE_ICON[ mode ]
 }
 
+array<int> function GetGameModeDisplayColor( string mode )
+{
+	return GAMETYPE_COLOR[ mode ]
+}
+
 float function GetCurrentPlaylistVarFloat( val, useVal )
 {
 	expect string( val )
@@ -439,6 +444,13 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 		printt( "#############################################" )
 	#endif //DEV
 
+	if ( Script_IsRunningTrialVersion() )
+	{
+		printt( "Achievements not awarded in trial version" )
+		return
+	}
+
+
 	Plat_UnlockAchievementByID( achievementID )
 }
 
@@ -497,4 +509,38 @@ void function PopUpOriginOverlayDisabledDialog()
 	dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
 	AddDialogButton( dialogData, "#OK" )
 	OpenDialog( dialogData )
+}
+
+void function PrintPartyData()
+{
+	Party partyData = GetParty()
+
+	printt( "PARTY DATA:" )
+
+	if ( partyData.numSlots == 0 )
+	{
+		printt( "    INVALID, numSlots: 0" )
+		return
+	}
+
+	printt( "    partyType:      ", partyData.partyType )
+	printt( "    playlistName:   ", partyData.playlistName )
+	printt( "    originatorName: ", partyData.originatorName )
+	printt( "    originatorUID:  ", partyData.originatorUID )
+	printt( "    numSlots:       ", partyData.numSlots )
+	printt( "    numClaimedSlots:", partyData.numClaimedSlots )
+	printt( "    numFreeSlots:   ", partyData.numFreeSlots )
+	printt( "    timeLeft:       ", partyData.timeLeft )
+	printt( "    amIInThis:      ", partyData.amIInThis )
+	printt( "    amILeader:      ", partyData.amILeader )
+	printt( "    searching:      ", partyData.searching )
+	print( "    members:         " )
+
+	foreach ( index, member in partyData.members )
+	{
+		if ( index != 0 )
+			print( "                     " )
+
+		printt( member.name, "uid:", member.uid, "callsignIdx:", member.callsignIdx, "skillMu:", member.skillMu )
+	}
 }

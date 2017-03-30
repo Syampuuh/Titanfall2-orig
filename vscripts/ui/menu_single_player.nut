@@ -2,8 +2,12 @@ global function InitSinglePlayerMenu
 global function NewGameSelected
 global function LoadLastCheckpoint
 global function HasStartedGameEver
+global function TrainingModeSelect
+global function TrialMissionSelect
+global function SPTrialMission_Start
 global function ServerCallback_GetObjectiveReminderOnLoad
 global function ServerCallback_ClearObjectiveReminderOnLoad
+global function ScriptCallback_Beacon_FreeTrialOverMessage
 
 struct SPLevelStartStruct
 {
@@ -273,6 +277,26 @@ bool function LevelPartSelect( int levelNum )
 	return true
 }
 
+void function TrialMissionSelect()
+{
+	if ( GetConVarInt( "sp_unlockedMission" ) < 1 )
+		TrainingStart_NormalMode()
+
+	DialogData dialogData
+	dialogData.header = "#SP_TRIAL_MENU_MISSION"
+	dialogData.message = "#SP_TRIAL_MENU_MISSION_MSG"
+
+	AddDialogButton( dialogData, "#SP_TRIAL_START_MISSION", LaunchSPTrialMission )
+
+	if ( HasValidSaveGame() )
+		AddDialogButton( dialogData, "#SP_TRIAL_CONTINUE_MISSION", LaunchSPContinue )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_ACCEPT" )
+	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )
+
+	OpenDialog( dialogData )
+}
+
 void function TrainingModeSelect()
 {
 	if ( GetConVarInt( "sp_unlockedMission" ) < 1 )
@@ -311,6 +335,7 @@ void function TrainingStart_NormalMode()
 
 void function TrainingStart_GauntletMode()
 {
+	file.selectedLevel = "sp_training"
 	file.selectedStartPoint = "Gauntlet Mode"
 	LoadSPLevel()
 	if ( uiGlobal.activeMenu == file.menu )
@@ -325,6 +350,15 @@ void function NewGameSelected()
 		NewGame_ConfirmStart()
 	else
 		NewGame_Start()
+}
+
+void function SPTrialMission_Start()
+{
+	file.selectedLevel = "sp_beacon"
+	file.selectedStartPoint = "Level Start"
+	file.playIntro = false
+
+	DifficultyMenuPopUp()
 }
 
 void function NewGame_ConfirmStart()
@@ -421,10 +455,6 @@ void function RunDifficulty()
 	}
 	else
 	{
-		EmitUISound( "menu_accept" )
-		wait 0.15
-		EmitUISound( "1_second_fadeout" )
-		wait 1.0
 		LoadSPLevel()
 	}
 
@@ -566,6 +596,26 @@ void function ServerCallback_GetObjectiveReminderOnLoad()
 void function ServerCallback_ClearObjectiveReminderOnLoad()
 {
 	file.addObjectiveReminderOnSaveLoad = false
+}
+
+void function ScriptCallback_Beacon_FreeTrialOverMessage()
+{
+	thread Beacon_FreeTrialOverMessage()
+}
+
+void function Beacon_FreeTrialOverMessage()
+{
+	DialogData dialogData
+	dialogData.header = "#SP_TRIAL_OVER_TITLE"
+	dialogData.message = "#SP_TRIAL_OVER_MSG"
+	dialogData.forceChoice = true
+
+	AddDialogButton( dialogData, "#MENU_GET_THE_FULL_GAME", SP_Trial_LaunchGamePurchase )
+	AddDialogButton( dialogData, "#CANCEL_AND_QUIT_TO_MAIN_MENU", Disconnect )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+
+	OpenDialog( dialogData )
 }
 
 void function LevelPartSelect_Pt1()

@@ -48,13 +48,15 @@ void function CleanupFXAndSoundsForDecoy( entity decoy )
 	}
 
 	decoy.decoy.loopingSounds.clear()
-
-
 }
 
 void function OnHoloPilotDestroyed( entity decoy )
 {
-	EmitSoundAtPosition( TEAM_ANY, decoy.GetOrigin(), "holopilot_end" )
+	EmitSoundAtPosition( TEAM_ANY, decoy.GetOrigin(), "holopilot_end_3P" )
+
+	entity bossPlayer = decoy.GetBossPlayer()
+	if ( IsValid( bossPlayer ) )
+		EmitSoundOnEntityOnlyToPlayer( bossPlayer, bossPlayer, "holopilot_end_1P" )
 
 	CleanupFXAndSoundsForDecoy( decoy )
 }
@@ -124,9 +126,13 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 	{
 		entity decoy = player.CreatePlayerDecoy( stickPercentToRun )
 		decoy.SetFadeDistance( DECOY_FADE_DISTANCE )
-		decoy.EnableAttackableByAI( 50 )
+		decoy.EnableAttackableByAI( 50, 0, AI_AP_FLAG_NONE )
 		decoy.SetDeathNotifications( true )
 		decoy.SetPassThroughThickness( 0 )
+		decoy.SetNameVisibleToOwner( true )
+		decoy.SetNameVisibleToFriendly( true )
+		decoy.SetNameVisibleToEnemy( true )
+		decoy.SetDecoyRandomPulseRateMax( 0.5 ) //pulse amount per second
 
 		decoy.SetMaxHealth( 50 )
 		decoy.SetHealth( 50 )

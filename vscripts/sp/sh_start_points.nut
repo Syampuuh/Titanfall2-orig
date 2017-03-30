@@ -332,6 +332,10 @@ array<string> function GetLoadingClientCommands_SetCoopersLog( string mapName, i
 	if ( logText == "" )
 		return [ "clear_loading_progress_sp_text" ]
 
+	// Make sure trial mode doesn't reveal any spoilers!
+	if ( Script_IsRunningTrialVersion() )
+		return [ "clear_loading_progress_sp_text" ]
+
 	string logTitle = GetStartPointSpLogTitle( mapName, startpoint )
 	bool isLeft = StartPointSPLogIsLeft( mapName, startpoint )
 

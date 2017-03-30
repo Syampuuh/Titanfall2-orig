@@ -131,7 +131,8 @@ int function FireMissileStream( entity weapon, WeaponPrimaryAttackParams attackP
 	bool adsPressed = weapon.IsWeaponAdsButtonPressed()
 	bool hasBurnMod = weapon.HasMod( "burn_mod_titan_rocket_launcher" )
 	bool has_s2s_npcMod = weapon.HasMod( "sp_s2s_settings_npc" )
-	if ( !adsPressed && !hasBurnMod && !has_s2s_npcMod )
+	bool has_mortar_mod = weapon.HasMod( "coop_mortar_titan" )
+	if ( !adsPressed && !hasBurnMod && !has_s2s_npcMod && !has_mortar_mod )
 	{
 		int shots = minint( weapon.GetProjectilesPerShot(), weapon.GetWeaponPrimaryClipCount() )
 		FireMissileStream_Spiral( weapon, attackParams, predicted, shots )
@@ -142,7 +143,7 @@ int function FireMissileStream( entity weapon, WeaponPrimaryAttackParams attackP
 		//attackParams.pos = attackParams.pos + Vector( 0, 0, -20 )
 		// float missileSpeed = 2800
 		float missileSpeed = 6000
-		if ( has_s2s_npcMod )
+		if ( has_s2s_npcMod || has_mortar_mod )
 			missileSpeed = 2500
 
 		int impactFlags = (DF_IMPACT | DF_GIB | DF_KNOCK_BACK)
@@ -154,6 +155,10 @@ int function FireMissileStream( entity weapon, WeaponPrimaryAttackParams attackP
 #if SERVER
 			string whizBySound = "Weapon_Sidwinder_Projectile"
 			EmitSoundOnEntity( missile, whizBySound )
+			if ( weapon.w.missileFiredCallback != null )
+			{
+				weapon.w.missileFiredCallback( missile, weaponOwner )
+	        }
 #endif // #if SERVER
 		}
 
@@ -222,6 +227,9 @@ void function FireMissileStream_Spiral( entity weapon, WeaponPrimaryAttackParams
 
 void function OnWeaponOwnerChanged_TitanWeapon_Rocketeer_RocketStream( entity weapon, WeaponOwnerChangedParams changeParams )
 {
+	#if SERVER
+	weapon.w.missileFiredCallback = null
+	#endif
 }
 
 void function OnWeaponDeactivate_TitanWeapon_Rocketeer_RocketStream( entity weapon )

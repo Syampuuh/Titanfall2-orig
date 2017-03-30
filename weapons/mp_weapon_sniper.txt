@@ -94,7 +94,7 @@ WeaponData
 	"projectile_damages_owner"						"0"
 	"projectile_ricochet_max_count"					"0"
 
-	"pass_through_depth"							"32"
+	"pass_through_depth"							"64"
 	"pass_through_damage_preserved_scale"			"1"
 
 	"bolt_speed"									"10000"

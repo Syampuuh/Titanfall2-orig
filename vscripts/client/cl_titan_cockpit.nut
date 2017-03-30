@@ -36,7 +36,9 @@ global function UpdateEjectHud_SetButtonPressTime
 global function UpdateEjectHud_SetButtonPressCount
 
 global function SetUnlimitedDash
-
+#if MP
+global function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus
+#endif
 struct TitanCockpitManagedRUI
 {
 	bool exists = false
@@ -265,6 +267,15 @@ void function ShowRUIHUD( entity cockpit )
 	RuiSetFloat( file.cockpitRui, "ejectButtonTimeOut", TITAN_EJECT_MAX_PRESS_DELAY )
 	RuiSetGameTime( file.cockpitRui, "ejectManualStartTime", -60.0 )
 	RuiSetGameTime( file.cockpitRui, "ejectButtonPressTime", -60.0 )
+	#if MP
+	string titanName = GetTitanCharacterName( player )
+	if ( titanName == "vanguard" )
+	{
+		RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
+		RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
+		RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
+	}
+	#endif
 
 #if SP
 	RuiSetBool( file.cockpitRui, "ejectIsAllowed", false )
@@ -294,6 +305,62 @@ void function ShowRUIHUD( entity cockpit )
 
 	UpdateTitanCockpitVisibility()
 }
+
+#if MP
+string function GetVanguardCoreString( entity player, int index )
+{
+	Assert( player.IsTitan() )
+
+	if ( !IsConnected() ) //Persistence isn't available when we disconnect
+		return ""
+
+	if ( player != GetLocalClientPlayer() )  //Client Persistence doesn't know about other players.
+		return ""
+
+	int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "titan" )
+	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
+
+	entity soul = player.GetTitanSoul()
+	if ( !IsValid( soul ) )
+		return ""
+
+	if ( index == 1 )
+	{
+		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 1 )
+		{
+			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( GetItemName( loadout.passive4 ) ) )
+		}
+		else
+		{
+			return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+		}
+	}
+	if ( index == 2 )
+	{
+		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 2 )
+		{
+			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( GetItemName( loadout.passive5 ) ) )
+		}
+		else
+		{
+			return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+		}
+	}
+	if ( index == 3 )
+	{
+		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 3 )
+		{
+			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( GetItemName( loadout.passive6 ) ) )
+		}
+		else
+		{
+			return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+		}
+	}
+
+	unreachable
+}
+#endif
 
 void function SetUnlimitedDash( bool active )
 {
@@ -373,7 +440,9 @@ void function UpdateTitanCockpitVisibility()
 	bool isVisible = true
 
 	int ceFlags = player.GetCinematicEventFlags()
-	if ( ceFlags & CE_FLAG_INTRO || ceFlags & CE_FLAG_TITAN_3P_CAM )
+	if ( (ceFlags & CE_FLAG_INTRO) || (ceFlags & CE_FLAG_TITAN_3P_CAM) )
+		isVisible = false
+	if ( clGlobal.isSoloDialogMenuOpen )
 		isVisible = false
 
 	for ( int i = player.p.titanCockpitRUIs.len() - 1; i >= 0; i-- )
@@ -780,7 +849,7 @@ void function PlayerPressed_Eject( entity player )
 string function RollRandomEjectString()
 {
 	const int COCKPIT_EJECT_COMMON_COUNT = 6
-	const int COCKPIT_EJECT_RARE_COUNT = 34
+	const int COCKPIT_EJECT_RARE_COUNT = 36
 	const float CHANCE_FOR_RARE = 0.15
 
 	float randForType = RandomFloat( 1.0 )
@@ -1047,6 +1116,14 @@ function PlayerPressed_QuickDisembark( player )
 
 void function PlayerPressed_EjectEnable( entity player )
 {
+	#if MP
+	#if DEVSCRIPTS
+	if ( IsDisplayingDpadComms( player ) )
+	{
+		return
+	}#endif
+	#endif
+
 	if ( !player.IsTitan() )
 		return
 
@@ -1350,3 +1427,25 @@ void function FlashCockpitHealthGreen()
 
 	RuiSetGameTime( file.cockpitRui, "startFlashGreenTime", Time() )
 }
+#if MP
+void function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus( entity soul, int oldValue, int newValue, bool actuallyChanged )
+{
+	if ( file.cockpitRui == null )
+		return
+
+	if ( actuallyChanged == false )
+		return
+
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) || !player.IsTitan() )
+		return
+
+	string titanName = GetTitanCharacterName( player )
+	if ( titanName == "vanguard" )
+	{
+		RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
+		RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
+		RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
+	}
+}
+#endif

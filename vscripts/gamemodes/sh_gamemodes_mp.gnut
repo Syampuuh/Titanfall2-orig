@@ -48,41 +48,6 @@ void function GameModes_Init_SV_CL()
 		GameMode_AddSharedInit( gameMode, GamemodeBomb_Dialogue_Init )
 	#endif
 
-	gameMode = LTS_BOMB
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeLts_Init )
-		GameMode_AddServerInit( gameMode, TeamTitanSelection_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetEvacEnabled( gameMode, false )
-	#elseif CLIENT
-		GameMode_AddClientInit( gameMode, ClGamemodeLTS_Init )
-		GameMode_AddClientInit( gameMode, CLTeamTitanSelection_Init )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareLTS )
-		GameMode_AddSharedInit( gameMode, GamemodeLtsShared_Init )
-		GameMode_AddSharedInit( gameMode, GamemodeBomb_Dialogue_Init )
-	#endif
-
-	gameMode = WINGMAN_LAST_TITAN_STANDING
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeLts_Init )
-		GameMode_AddServerInit( gameMode, TeamTitanSelection_Init )
-		GameMode_AddServerInit( gameMode, GamemodeWlts_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetEvacEnabled( gameMode, false )
-	#elseif CLIENT
-		GameMode_AddClientInit( gameMode, ClGamemodeLTS_Init )
-		GameMode_AddClientInit( gameMode, CLTeamTitanSelection_Init )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareLTS )
-		GameMode_AddSharedInit( gameMode, GamemodeWltsDialogue_Init )
-		GameMode_AddSharedInit( gameMode, GamemodeWltsShared_Init )
-	#endif
-
 	gameMode = ATTRITION
 	#if SERVER
 		GameMode_AddServerInit( gameMode, GamemodeAt_Init )
@@ -98,17 +63,6 @@ void function GameModes_Init_SV_CL()
 	#endif
 
 	gameMode = TEAM_DEATHMATCH
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
-		GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
-	#endif
-
-	gameMode = HARDCORE_TDM
 	#if SERVER
 		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Directional )
@@ -147,49 +101,9 @@ void function GameModes_Init_SV_CL()
 		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
 	#endif
 
-	gameMode = MARKED_FOR_DEATH
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeMfd_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-	#elseif CLIENT
-		GameMode_AddClientInit( gameMode, ClGamemodeMfd_Init )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareMFD )
-		GameMode_AddSharedInit( gameMode, GamemodeMfdDialogue_Init )
-		GameMode_AddSharedInit( gameMode, GamemodeMfdShared_Init )
-	#endif
-
-	gameMode = MARKED_FOR_DEATH_PRO
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeMfdPro_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-		GameMode_SetEvacEnabled( gameMode, false )
-	#elseif CLIENT
-		GameMode_AddClientInit( gameMode, ClGamemodeMfd_Init )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareMFD )
-		GameMode_AddSharedInit( gameMode, GamemodeMfdDialogue_Init )
-		GameMode_AddSharedInit( gameMode, GamemodeMfdShared_Init )
-	#endif
-
 	gameMode = PILOT_SKIRMISH
 	#if SERVER
 		GameMode_AddServerInit( gameMode, GamemodePs_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
-		GameMode_AddSharedInit( gameMode, GamemodePsShared_Init )
-	#endif
-
-	gameMode = WINGMAN_PILOT_SKIRMISH
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeWPS_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
 		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : RateSpawnpoints_Frontline )
 	#endif
@@ -227,63 +141,6 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddSharedInit( gameMode, GamemodeFFA_Dialogue_Init )
 #endif
 
-	gameMode = FREE_AGENCY
-#if SERVER
-	GameMode_AddServerInit( gameMode, FFA_Init )
-	GameMode_AddServerInit( gameMode, GamemodeFFAShared_Init )
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, GamemodeFFAShared_Init )
-	GameMode_AddClientInit( gameMode, ClGamemodeFRA_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
-	GameMode_AddSharedInit( gameMode, GamemodeFFA_Dialogue_Init )
-#endif
-
-	gameMode = FORT_WAR
-#if SERVER
-	GameMode_AddServerInit( gameMode, GamemodeFW_Init )
-	GameMode_AddServerInit( gameMode, SHGamemodeFW_Init )
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_FW )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_FW )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, CLGamemodeFW_Init )
-	GameMode_AddClientInit( gameMode, SHGamemodeFW_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareFW )
-#endif
-
-	gameMode = HUNTED
-#if SERVER
-	GameMode_AddServerInit( gameMode, GamemodeHunted_Init )
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Hunted )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Hunted )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, GamemodeHuntedClient_Init )
-	GameMode_AddClientInit( gameMode, GamemodeHuntedShared_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareHunter )
-	GameMode_AddSharedInit( gameMode, GamemodeHuntedShared_Init )
-#endif
-
-	gameMode = DON
-#if SERVER
-	GameMode_AddServerInit( gameMode, GamemodeDON_Init )
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, GamemodeDONClient_Init )
-	GameMode_AddClientInit( gameMode, GamemodeDONShared_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareKills )
-	GameMode_AddSharedInit( gameMode, GamemodeDONShared_Init )
-#endif
-
 	gameMode = SPEEDBALL
 #if SERVER
 	GameMode_AddServerInit( gameMode, GamemodeSpeedball_Init )
@@ -295,44 +152,17 @@ void function GameModes_Init_SV_CL()
 	//GameMode_AddClientInit( gameMode, SHGamemodeSpeedball_Init )
 #endif
 #if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareCTF )
+	GameMode_SetScoreCompareFunc( gameMode, CompareSpeedball )
 #endif
 
-gameMode = RAID
-#if SERVER
-	GameMode_AddServerInit( gameMode, GamemodeRaid_Init )
-	GameMode_AddServerInit( gameMode, GamemodeRaidShared_Init )
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Frontline )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, GamemodeRaidClient_Init )
-	GameMode_AddClientInit( gameMode, GamemodeRaidShared_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareKills )
-#endif
-
-gameMode = ATCOOP
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeATCOOP_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : ATCOOP_RateSpawnpoints )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, useSpawnZones ? RateSpawnpoints_SpawnZones : ATCOOP_RateSpawnpoints )
+	#if DEVSCRIPTS
+	Dev_GameModes_Init_SV_CL()
 	#endif
-	#if CLIENT
-		GameMode_AddClientInit( gameMode, ClGamemodeATCOOP_Init )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareATCOOP )
-		GameMode_AddSharedInit( gameMode, GamemodeATCOOPShared_Init )
-	#endif
-
 }
 
 #if SERVER
 void function SetTitanfallEnabled( bool state )
 {
-	printt( "SetTitanfallEnabled", state )
-	DumpStack()
 	svGlobal.titanfallEnabled = state
 	if ( !Flag( "EntitiesDidLoad" ) )
 		return

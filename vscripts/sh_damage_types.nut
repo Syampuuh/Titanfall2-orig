@@ -82,6 +82,7 @@ global enum eDamageSourceId
 	mp_titanweapon_predator_cannon_siege
 	mp_titanability_laser_trip
 	mp_titanweapon_laser_lite
+	mp_titanweapon_stun_laser
 	mp_titanability_smoke
 	mp_titanability_arc_field
 	mp_titanweapon_arc_minefield
@@ -170,6 +171,7 @@ global enum eDamageSourceId
 	melee_titan_punch_scorch
 	melee_titan_punch_northstar
 	melee_titan_punch_fighter
+	melee_titan_punch_vanguard
 	melee_titan_sword
 	melee_titan_sword_aoe
 
@@ -278,6 +280,9 @@ global enum eDamageSourceId
 	mp_titanability_power_shot
 	mp_titanability_ammo_swap
 	mp_titanability_sonar_pulse
+	mp_titanability_rearm
+	mp_titancore_upgrade
+	mp_titanweapon_xo16_vanguard
 
 	bombardment
 	bleedout
@@ -590,6 +595,7 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_punch_scorch ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_punch_legion ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_punch_fighter ]		 		= "#DEATH_TITAN_MELEE",
+		[ eDamageSourceId.melee_titan_punch_vanguard ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_sword ]						= "#DEATH_TITAN_SWORD",
 		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD"
 	}

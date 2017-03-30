@@ -294,6 +294,7 @@ void function PROTO_ThermiteCausesDamage( entity trail, entity owner, entity inf
 
 	trail.EndSignal( "OnDestroy" )
 	owner.EndSignal( "OnDestroy" )
+	inflictor.EndSignal( "OnDestroy" )
 
 	MeteorRadiusDamage meteorRadiusDamage = GetMeteorRadiusDamage( owner )
 	float METEOR_DAMAGE_TICK_PILOT = meteorRadiusDamage.pilotDamage

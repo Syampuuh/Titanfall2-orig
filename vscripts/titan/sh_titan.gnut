@@ -5,10 +5,10 @@ global function CodeCallback_PlayerInTitanCockpit
 global function DebugNewTitanModels
 global function Titan_CreatePhysicsModelsFromParentedModels
 global function TemporarilyNonSolidPlayer
-global function NPC_GetNuclearPayload
-global function NPC_SetNuclearPayload
 
 #if SERVER
+	global function NPC_GetNuclearPayload
+	global function NPC_SetNuclearPayload
 	global function TempAirControl
 	global function TempLossOfAirControl
 	global function TitanEjectPlayer
@@ -202,6 +202,16 @@ void function UpdateTitanPanel( entity soul )
 	batteryContainer.Anim_Play( GetAnimFromAlias( titanType, "hatch_rodeo_up_idle" ) )
 
 }
+
+int function NPC_GetNuclearPayload( entity npc )
+{
+	return npc.ai.nukeCore
+}
+
+void function NPC_SetNuclearPayload( entity npc, int doSet = 4 )
+{
+	npc.ai.nukeCore = doSet
+}
 #endif //Server only
 
 function DebugNewTitanModels()
@@ -209,21 +219,6 @@ function DebugNewTitanModels()
 	return GetCurrentPlaylistVarInt( "r2_titan_models", 0 )
 }
 
-function NPC_GetNuclearPayload( entity npc )
-{
-	if ( !( "nuclearCore" in npc.s ) )
-		return 0
-	else
-		return npc.s.nuclearCore
-}
-
-function NPC_SetNuclearPayload( entity npc, bool doSet )
-{
-	if ( doSet && !( "nuclearCore" in npc.s ) )
-		npc.s.nuclearCore <- 4  // this is an npc nuke. regular nuke; super nuke = 3 (see GetNuclearPayload)
-	else if ( !doSet && "nuclearCore" in npc.s )
-		delete npc.s.nuclearCore
-}
 /*
 open
 openIdle
@@ -368,6 +363,10 @@ function TitanEjectPlayer( entity ejectTitan, bool instant = false ) //TODO: Thi
 
 	soul.SetEjecting( true )
 	ejectTitan.SetInvulnerable()  //Give both player and ejectTitan temporary invulnerability in the course of ejecting. Player invulnerability gets cleared in ClearEjectInvulnerability
+
+	#if SERVER
+		StatusEffect_StopAll( expect entity( e.titan ), eStatusEffect.lockon_detected_titan )
+	#endif
 
 	#if HAS_STATS
 	if ( IsValid( e.player ) )
@@ -536,6 +535,7 @@ function TitanEjectPlayer( entity ejectTitan, bool instant = false ) //TODO: Thi
 		titan.s.disableAutoTitanConversation <- true // no auto titan chatter
 
 	titan.SetInvulnerable() //Titan dies at the end of eject sequence by script
+	titan.SetNPCPriorityOverride_NoThreat()	// AI shouldn't consider this ejecting titan as an enemy and shoot it, etc
 
 	if ( e.nuclearPayload )
 	{
@@ -1082,6 +1082,7 @@ bool function TitanStagger( entity titan, damageInfo )
 		// case eDamageSourceId.mp_titanweapon_flame_wall:
 		case eDamageSourceId.mp_titanweapon_shoulder_rockets:
 		case eDamageSourceId.mp_titanweapon_laser_lite:
+		case eDamageSourceId.mp_titanweapon_stun_laser:
 		case eDamageSourceId.mp_titanweapon_arc_wave:
 		case eDamageSourceId.mp_titanweapon_dumbfire_rockets:
 		case eDamageSourceId.mp_titanability_power_shot:

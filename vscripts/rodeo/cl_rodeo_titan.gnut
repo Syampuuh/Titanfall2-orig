@@ -7,6 +7,8 @@ global function Pressed_OfferRodeoBattery
 global function Pressed_RequestRodeoBattery
 global function TryOfferRodeoBatteryHint
 
+global function PlayBatteryScreenFX
+
 global function ShowBatteryHint
 
 const BATTERY_FX_SCREEN = $"P_battery_screen"

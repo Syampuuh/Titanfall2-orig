@@ -31,19 +31,19 @@
 {
   script_const: ET_DLC1_BUNDLE
     pc:        TITANFALL2_DLC1_BUNDLE
-    ps4:       D1BUNO0000000000
+    ps4:       D1EVER0000000000
     xb1:       Titanfall2.DLC1.Bundle
-    pc_offer: ""
-    xb1_offer: ""
+    pc_offer: "Origin.OFR.50.0001883"
+    xb1_offer: "b2a7eef3-005e-43e1-ba12-d8b43cc9488d"
 }
 
 {
   script_const: ET_DLC3_BUNDLE
     pc:        TITANFALL2_DLC3_BUNDLE
-    ps4:       D3BUNO0000000000
+    ps4:       D3EVER0000000000
     xb1:       Titanfall2.DLC3.Bundle
-    pc_offer: ""
-    xb1_offer: ""
+    pc_offer: "Origin.OFR.50.0001915"
+    xb1_offer: "3af14234-f1e0-462e-b60e-69792c183424"
 }
 
 {
@@ -220,9 +220,9 @@
 {
   script_const: ET_DLC3_PRIME_LEGION
     pc:       TITANFALL2_DLC3_LEGIONPRIMETITAN
-    ps4:      D3PRLG0000000000
+    ps4:      D3PRLE0000000000
     xb1:      Titanfall2.DLC3.LegionPrime
-    pc_offer: ""
+    pc_offer: "Origin.OFR.50.0001916"
     xb1_offer: "a0574e8f-6b12-4f05-9bc3-6ae44735d686"
 }
 

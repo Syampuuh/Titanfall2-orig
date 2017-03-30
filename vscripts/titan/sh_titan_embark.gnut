@@ -1486,6 +1486,10 @@ void function PlayerDisembarksTitanWithSequenceFuncs( entity player, FirstPerson
 	FirstPersonSequenceStruct playerSequence = playerSequenceFunc( player, titan )
 	FirstPersonSequenceStruct titanSequence = titanSequenceFunc( player, titan )
 
+	#if SERVER
+		StatusEffect_StopAll( player, eStatusEffect.lockon_detected_titan )
+	#endif
+
 	player.ForceStand()
 
 	thread FirstPersonSequence( titanSequence, titan )

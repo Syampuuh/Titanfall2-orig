@@ -15,6 +15,8 @@ global table<string, asset> GAMETYPE_ICON = {
 	[ RANKED_PLAY ] 			= $"ui/scoreboard_secret_logo",
 }
 
+global table<string, array<int> > GAMETYPE_COLOR = {}
+
 global string GAMETYPE
 global int MAX_TEAMS
 global string GAMEDESC_CURRENT
@@ -542,6 +544,10 @@ global const CAPTURE_POINT_ENEMIES					= "Contested: %d/%d"
 global const CAPTURE_POINT_EMPTY					= ""
 global const CAPTURE_POINT_SECURE					= "Secured" // Controlled
 
+// Conquest Specific Consts
+global const CAPTURE_DURATION_PILOT_CAPTURE = 8
+global const CAPTURE_DURATION_TITAN_CAPTURE = 20
+
 //------------------------------------------------------
 // Round Winning Kill Replay consts
 //------------------------------------------------------
@@ -674,13 +680,13 @@ global const OVERDRIVE_DAMAGE_LEVEL3 = 1.1
 
 
 global const BALL_LIGHTNING_BURST_NUM = 1
-global const BALL_LIGHTNING_BURST_DELAY = 0.3
-global const BALL_LIGHTNING_BURST_PAUSE = 0.3
+global const BALL_LIGHTNING_BURST_DELAY = 0.4
+global const BALL_LIGHTNING_BURST_PAUSE = 0.3 //Only applied if BALL_LIGHTNING_BURST_NUM > 1
 
 global const BALL_LIGHTNING_ZAP_LIFETIME = 0.3
 global const BALL_LIGHTNING_ZAP_FX = $"P_wpn_arcball_beam"
 global const BALL_LIGHTNING_FX_TABLE = ""
-global const BALL_LIGHTNING_ZAP_RADIUS = 800
+global const BALL_LIGHTNING_ZAP_RADIUS = 400
 global const BALL_LIGHTNING_ZAP_HUMANSIZE_RADIUS = 200
 global const BALL_LIGHTNING_ZAP_HEIGHT = 300
 global const BALL_LIGHTNING_ZAP_SOUND = "weapon_arc_ball_tendril"
@@ -752,7 +758,7 @@ global const COCKPIT_HEALTHBARS						= 1
 // 				TITAN HEALTH REGEN
 //--------------------------------------------------
 
-global const float CORE_BUILD_PERCENT_FROM_TITAN_DAMAGE_INFLICTED	= 0.010		// converts damage -> core %
+global const float CORE_BUILD_PERCENT_FROM_TITAN_DAMAGE_INFLICTED	= 0.0075	// converts damage -> core %
 global const float CORE_BUILD_PERCENT_FROM_TITAN_DAMAGE_RECEIVED	= 0.002		// converts damage -> core %
 global const float CORE_BUILD_PERCENT_FROM_DOOM_INFLICTED			= 10.0		// core %
 global const float CORE_BUILD_PERCENT_FROM_DOOM_ENTERED				= 0.0		// core %

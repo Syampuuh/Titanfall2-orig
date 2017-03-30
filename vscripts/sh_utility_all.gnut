@@ -396,6 +396,7 @@ table<string, string> function GetByTitanTypes()
 		byTitan_ronin		=	"ronin"
 		byTitan_tone		=	"tone"
 		byTitan_legion		=	"legion"
+		byTitan_vanguard	=	"vanguard"
 		}
 }
 
@@ -408,6 +409,7 @@ table<string, string> function GetAsTitanTypes()
 		asTitan_ronin		=	"ronin"
 		asTitan_tone		=	"tone"
 		asTitan_legion		=	"legion"
+		asTitan_vanguard	=	"vanguard"
 		}
 }
 
@@ -420,6 +422,7 @@ table<string, string> function GetAsNPCTitanTypes()
 		byNPCTitans_ronin		=	"ronin"
 		byNPCTitans_tone		=	"tone"
 		byNPCTitans_legion		=	"legion"
+		byNPCTitans_vanguard	=	"vanguard"
 		}
 }
 
@@ -432,6 +435,7 @@ table<string, string> function GetPluralTitanTypes()
 		titans_ronin		= 	"ronin"
 		titans_tone		= 	"tone"
 		titans_legion		= 	"legion"
+		titans_vanguard		= 	"vanguard"
 		}
 }
 
@@ -444,6 +448,7 @@ table<string, string> function GetCapitalizedTitanTypes()
 		Ronin 	= 	"ronin"
 		Tone 	= 	"tone"
 		Legion 	= 	"legion"
+		Vanguard 	= 	"vanguard"
 		}
 }
 
@@ -457,6 +462,7 @@ bool function ValidateTitanType( titanSubClass )
 		case "ronin":
 		case "tone":
 		case "legion":
+		case "vanguard":
 			return true
 	}
 
@@ -744,6 +750,13 @@ array<string> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanA
 		bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
 		if ( allowed )
 		{
+			string titanRef = GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "titanRef" ) )
+
+			#if MP
+			if ( IsDisabledRef( titanRef ) )
+				continue
+			#endif
+
 			list.append( GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) ) )
 		}
 	}
@@ -868,6 +881,9 @@ array<string> function GetAllDeprecatedNPCSettings()
 		npc_soldier_specialist_militia = true
 		npc_soldier_spyglass = true
 		npc_soldier_training_sentry = true
+		npc_soldier_pve_sandbox = true
+		npc_soldier_pve_specialist = true
+		npc_soldier_pve_eliteguard = true
 		npc_spectre = true
 		npc_stalker = true
 		//npc_stalker_crawling = true
@@ -881,11 +897,13 @@ array<string> function GetAllDeprecatedNPCSettings()
 		npc_titan_atlas = true
 		npc_titan_atlas_stickybomb = true
 		npc_titan_atlas_tracker = true
+		npc_titan_atlas_vanguard = true
 		npc_titan_auto = true
 		npc_titan_auto_atlas = true
 		npc_titan_auto_atlas_rocketeer = true
 		npc_titan_auto_atlas_stickybomb = true
 		npc_titan_auto_atlas_tracker = true
+		npc_titan_auto_atlas_vanguard = true
 		npc_titan_auto_ogre = true
 		npc_titan_auto_ogre_fighter = true
 		npc_titan_auto_ogre_meteor = true
@@ -929,6 +947,7 @@ array<string> function GetAllDeprecatedNPCSettings()
 		npc_turret_sentry_windup = true
 		npc_titan_atlas_stickybomb_bounty = true
 		npc_titan_atlas_tracker_bounty = true
+		npc_titan_atlas_vanguard_bounty = true
 		npc_titan_stryder_leadwall_bounty = true
 		npc_titan_stryder_sniper_bounty = true
 		npc_titan_ogre_meteor_bounty = true
@@ -1446,5 +1465,16 @@ void function UnlockSPLocally()
 	file.devUnlockedSPMissions = true
 }
 
+bool function CoinFlip()
+{
+	return RandomInt( 2 ) != 0
+}
 
-
+bool function EmotesEnabled()
+{
+	#if DEVSCRIPTS
+		return ( GetCurrentPlaylistVarInt( "enable_emotes", 0 ) == 1 )
+	#else
+		return false
+	#endif
+}

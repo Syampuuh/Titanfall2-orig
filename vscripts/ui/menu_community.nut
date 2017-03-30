@@ -8,6 +8,9 @@ global function UICodeCallback_CommunitySaveFailed
 global function UICodeCallback_ShowCommunityJoinRequest
 global function OnSwitchButton_Activate
 global function OnBrowseNetworksButton_Activate
+#if DEVSCRIPTS
+global function OnInviteFriendsToNetworkButton_Activate
+#endif
 
 const int ADVOCATE_NETWORK = 1
 
@@ -1711,10 +1714,13 @@ void function BrowseCommunities_OnChange( var list )
 	}
 	else
 	{
-		int communityId = int( itemName )
-		printt( "Showing community info for communityId " + communityId )
-		Signal( uiGlobal.signalDummy, "StopCommunityLookups" )
-		thread GetCommunityInfoThread( communityId )
+		if ( !IsBrowserFetchingMoreData() )
+		{
+			int communityId = int( itemName )
+			printt( "Showing community info for communityId " + communityId + " (item " + itemName + " in list)" )
+			Signal( uiGlobal.signalDummy, "StopCommunityLookups" )
+			thread GetCommunityInfoThread( communityId )
+		}
 	}
 	UpdateFooterOptions()
 }
@@ -1907,6 +1913,9 @@ bool function CanJoinNetwork()
 	if ( uiGlobal.activeMenu != file.browseCommunitiesMenu )
 		return false
 
+	if ( BrowseCommunities_ListNotFocused() )
+		return false
+
 	string itemName = Hud_GetListPanelSelectedItem( file.browseCommunitiesPanel_ListWidget )
 	Assert( IsValid( itemName ) )
 	if ( itemName == "" )
@@ -2096,7 +2105,7 @@ void function InitCommunitiesMenu()
 	AddMenuEventHandler( file.browseCommunitiesMenu, eUIEvent.MENU_NAVIGATE_BACK, OnBrowseMentworksMenu_NavigateBack )
 
 	AddMenuFooterOption( file.browseCommunitiesMenu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( file.browseCommunitiesMenu, BUTTON_A, "#COMMUNITY_JOINCOMMUNITY_ABUTTON", "#COMMUNITY_JOINCOMMUNITY", BrowseCommunities_OnSelect, CanJoinNetwork )
+	AddMenuFooterOption( file.browseCommunitiesMenu, BUTTON_A, "#COMMUNITY_JOINCOMMUNITY_ABUTTON", "#COMMUNITY_JOINCOMMUNITY", null, CanJoinNetwork )
 	AddMenuFooterOption( file.browseCommunitiesMenu, BUTTON_X, "#COMMUNITY_REPORTABUSE_XBUTTON", "#COMMUNITY_REPORTABUSE", ReportAbuse_OnClick, CanReportAbuse )
 
 	AddEventHandlerToButton( file.browseCommunitiesPanel, "CommunityFilterType", UIE_CLICK, Browse_ChangeCommunityType_Activate )
@@ -2640,3 +2649,10 @@ string function GetMyRegion_Localized()
 
 	return myRegion_localized
 }
+
+#if DEVSCRIPTS
+void function OnInviteFriendsToNetworkButton_Activate( var button )
+{
+	AdvanceMenu( GetMenu( "InviteFriendsToNetworkMenu" ) )
+}
+#endif

@@ -1,5 +1,5 @@
 global function OnWeaponPrimaryAttack_weapon_arc_launcher
-const ARC_LAUNCHER_ZAP_DAMAGE = 300
+const ARC_LAUNCHER_ZAP_DAMAGE = 350
 
 var function OnWeaponPrimaryAttack_weapon_arc_launcher( entity weapon, WeaponPrimaryAttackParams attackParams )
 {

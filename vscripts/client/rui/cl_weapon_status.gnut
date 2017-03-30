@@ -435,6 +435,11 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 	RuiTrackFloat( rui, "readyFrac", weapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
 	RuiTrackFloat( rui, "dryfireFrac", weapon, RUI_TRACK_WEAPON_DRYFIRE_FRACTION )
 
+	RuiSetFloat( rui, "chargeFracCaution", 0.0 )
+	RuiSetFloat( rui, "chargeFracAlert", 0.0 )
+	RuiSetFloat( rui, "chargeFracAlertSpeed", 16.0 )
+	RuiSetFloat( rui, "chargeFracAlertScale", 1.0 )
+
 	switch ( weapon.GetWeaponInfoFileKeyField( "cooldown_type" ) )
 	{
 		case "ammo":
@@ -450,6 +455,26 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
 			break
 
+		case "ammo_swordblock":
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_STOCKPILE_REGEN_FRAC )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+
+			RuiSetFloat( rui, "chargeFracCaution", 0.6 )
+			RuiSetFloat( rui, "chargeFracAlert", 0.0 )
+			break
+
+		case "ammo_alert":
+			RuiSetFloat( rui, "chargeFrac", 0.0 )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+
+			RuiSetFloat( rui, "chargeFracCaution", 0.01 )
+			RuiSetFloat( rui, "chargeFracAlert", -1.0 )
+			RuiSetFloat( rui, "chargeFracAlertSpeed", 5.0 )
+			RuiSetFloat( rui, "chargeFracAlertScale", 0.6 )
+			break
+
 		case "ammo_instant":
 		case "ammo_deployed":
 			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
@@ -458,6 +483,20 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 
 			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
 			RuiSetInt( rui, "segments", ammoClipSize / ammoPerShot )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+
+			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
+			break
+
+		case "ammo_per_shot":
+			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", 1 )
 
 			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
 			RuiSetFloat( rui, "readyFrac", 0.0 )
@@ -534,7 +573,7 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 
 		case "grapple":
 			int ammoClipSize = 100
-			float ammoMinToFire = expect float( player.GetPlayerSettingsField( "grapple_power_required" ) )
+			float ammoMinToFire = weapon.GetWeaponSettingFloat( eWeaponVar.grapple_power_required )
 
 			RuiSetFloat( rui, "minFireFrac", ammoMinToFire / float ( ammoClipSize ) )
 			RuiSetInt( rui, "segments", int( ammoClipSize / ammoMinToFire ) )

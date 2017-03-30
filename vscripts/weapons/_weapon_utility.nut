@@ -104,8 +104,10 @@ global const PROJECTILE_NOT_PREDICTED = false
 global const PROJECTILE_LAG_COMPENSATED = true
 global const PROJECTILE_NOT_LAG_COMPENSATED = false
 
-const FX_EMP_BODY_HUMAN			= $"P_emp_body_human"
-const FX_EMP_BODY_TITAN			= $"P_emp_body_titan"
+const asset FX_EMP_BODY_HUMAN			= $"P_emp_body_human"
+const asset FX_EMP_BODY_TITAN			= $"P_emp_body_titan"
+const asset FX_VANGUARD_ENERGY_BODY_HUMAN		= $"P_monarchBeam_body_human"
+const asset FX_VANGUARD_ENERGY_BODY_TITAN		= $"P_monarchBeam_body_titan"
 const SOUND_EMP_REBOOT_SPARKS = "marvin_weld"
 const FX_EMP_REBOOT_SPARKS = $"weld_spark_01_sparksfly"
 const EMP_GRENADE_BEAM_EFFECT	= $"wpn_arc_cannon_beam"
@@ -188,6 +190,8 @@ function WeaponUtility_Init()
 	PrecacheParticleSystem( EMP_GRENADE_BEAM_EFFECT )
 	PrecacheParticleSystem( FX_EMP_BODY_TITAN )
 	PrecacheParticleSystem( FX_EMP_BODY_HUMAN )
+	PrecacheParticleSystem( FX_VANGUARD_ENERGY_BODY_HUMAN )
+	PrecacheParticleSystem( FX_VANGUARD_ENERGY_BODY_TITAN )
 	PrecacheParticleSystem( FX_EMP_REBOOT_SPARKS )
 
 	PrecacheImpactEffectTable( CLUSTER_ROCKET_FX_TABLE )
@@ -198,6 +202,7 @@ function WeaponUtility_Init()
 		//AddDamageCallbackSourceID( eDamageSourceId.mp_titanweapon_rocketeer_rocketstream, TitanRocketLauncher_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_smr, SMR_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_flak_rifle, PROTO_Flak_Rifle_DamagedPlayerOrNPC )
+		AddDamageCallbackSourceID( eDamageSourceId.mp_titanweapon_stun_laser, VanguardEnergySiphon_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_proximity_mine, EMP_DamagedPlayerOrNPC )
 		AddDamageCallbackSourceID( eDamageSourceId[ CHARGE_TOOL ], EMP_DamagedPlayerOrNPC )
@@ -2956,6 +2961,16 @@ array<entity> function GetActiveThermiteBurnsWithinRadius( vector origin, float 
 
 void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 {
+	Elecriticy_DamagedPlayerOrNPC( ent, damageInfo, FX_EMP_BODY_HUMAN, FX_EMP_BODY_TITAN )
+}
+
+void function VanguardEnergySiphon_DamagedPlayerOrNPC( entity ent, var damageInfo )
+{
+	Elecriticy_DamagedPlayerOrNPC( ent, damageInfo, FX_VANGUARD_ENERGY_BODY_HUMAN, FX_VANGUARD_ENERGY_BODY_TITAN  )
+}
+
+void function Elecriticy_DamagedPlayerOrNPC( entity ent, var damageInfo, asset humanFx, asset titanFx )
+{
 	if ( !IsValid( ent ) )
 		return
 
@@ -2973,12 +2988,12 @@ void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	if ( ent.IsTitan() )
 	{
 		tag = "exp_torso_front"
-		effect = FX_EMP_BODY_TITAN
+		effect = titanFx
 	}
 	else if ( IsStalker( ent ) || IsSpectre( ent ) )
 	{
 		tag = "CHESTFOCUS"
-		effect = FX_EMP_BODY_HUMAN
+		effect = humanFx
 		if ( !ent.ContextAction_IsActive() && IsAlive( ent ) && ent.IsInterruptable() )
 		{
 			ent.Anim_ScriptedPlayActivityByName( "ACT_STUNNED", true, 0.1 )
@@ -2987,7 +3002,7 @@ void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	else if ( IsSuperSpectre( ent ) )
 	{
 		tag = "CHESTFOCUS"
-		effect = FX_EMP_BODY_HUMAN
+		effect = humanFx
 
 		if ( ent.GetParent() == null && !ent.ContextAction_IsActive() && IsAlive( ent ) && ent.IsInterruptable() )
 		{
@@ -2997,7 +3012,7 @@ void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	else if ( IsGrunt( ent ) )
 	{
 		tag = "CHESTFOCUS"
-		effect = FX_EMP_BODY_HUMAN
+		effect = humanFx
 		if ( !ent.ContextAction_IsActive() && IsAlive( ent ) && ent.IsInterruptable() )
 		{
 			ent.Anim_ScriptedPlayActivityByName( "ACT_STUNNED", true, 0.1 )
@@ -3007,21 +3022,21 @@ void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	else if ( IsPilot( ent ) )
 	{
 		tag = "CHESTFOCUS"
-		effect = FX_EMP_BODY_HUMAN
+		effect = humanFx
 	}
 	else if ( IsAirDrone( ent ) )
 	{
 		if ( GetDroneType( ent ) == "drone_type_marvin" )
 			return
 		tag = "HEADSHOT"
-		effect = FX_EMP_BODY_HUMAN
-		thread NpcEmpRebootPrototype( ent, damageInfo )
+		effect = humanFx
+		thread NpcEmpRebootPrototype( ent, damageInfo, humanFx, titanFx )
 	}
 	else if ( IsGunship( ent ) )
 	{
 		tag = "ORIGIN"
-		effect = FX_EMP_BODY_TITAN
-		thread NpcEmpRebootPrototype( ent, damageInfo )
+		effect = titanFx
+		thread NpcEmpRebootPrototype( ent, damageInfo, humanFx, titanFx )
 	}
 
 	ent.Signal( "ArcStunned" )
@@ -3083,7 +3098,7 @@ void function EMP_DamagedPlayerOrNPC( entity ent, var damageInfo )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HACK: might make sense to move this to code
-void function NpcEmpRebootPrototype( entity npc, var damageInfo )
+void function NpcEmpRebootPrototype( entity npc, var damageInfo, asset humanFx, asset titanFx )
 {
 	if ( !IsValid( npc ) )
 		return
@@ -3148,7 +3163,7 @@ void function NpcEmpRebootPrototype( entity npc, var damageInfo )
 	*/
 
 
-	thread EmpRebootFxPrototype( npc )
+	thread EmpRebootFxPrototype( npc, humanFx, titanFx )
 	npc.EnableNPCFlag( NPC_IGNORE_ALL )
 	npc.SetNoTarget( true )
 	npc.EnableNPCFlag( NPC_DISABLE_SENSING )	// don't do traces to look for enemies or players
@@ -3173,7 +3188,7 @@ void function NpcEmpRebootPrototype( entity npc, var damageInfo )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HACK: might make sense to move this to code
-function EmpRebootFxPrototype( npc )
+function EmpRebootFxPrototype( npc, asset humanFx, asset titanFx )
 {
 	expect entity( npc )
 
@@ -3200,13 +3215,13 @@ function EmpRebootFxPrototype( npc )
 		case "npc_drone":
 			if ( GetDroneType( npc ) == "drone_type_marvin" )
 				return
-			fxEMPdamage = FX_EMP_BODY_HUMAN
+			fxEMPdamage = humanFx
 			fxTag = "HEADSHOT"
 			rebootTime = DRONE_REBOOT_TIME
 			soundEMPdamage = "Titan_Blue_Electricity_Cloud"
 			break
 		case "npc_gunship":
-			fxEMPdamage = FX_EMP_BODY_TITAN
+			fxEMPdamage = titanFx
 			fxTag = "ORIGIN"
 			rebootTime = GUNSHIP_REBOOT_TIME
 			soundEMPdamage = "Titan_Blue_Electricity_Cloud"
@@ -3361,8 +3376,11 @@ function EMPGrenade_EffectsPlayer( entity player, damageInfo )
 	float duration = EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN + ( ( EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MAX - EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN ) * frac ) - fadeoutDuration
 	local origin = inflictor.GetOrigin()
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.mp_weapon_proximity_mine )
-		strength *= 0.25
+	int dmgSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( dmgSource == eDamageSourceId.mp_weapon_proximity_mine || dmgSource == eDamageSourceId.mp_titanweapon_stun_laser )
+	{
+		strength *= 0.1
+	}
 
 	if ( player.IsTitan() )
 	{
@@ -3754,7 +3772,7 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon )
 
 			#if MP
 				string weaponName = offhandWeapon.GetWeaponClassName()
-				if ( weaponName != "mp_ability_grapple" ) // handled in CodeCallback_OnGrapple
+				if ( weaponName != "mp_ability_grapple" ) // handled in CodeCallback_OnGrapple   // nope, it's not (?)
 				{
 					string category
 					float duration

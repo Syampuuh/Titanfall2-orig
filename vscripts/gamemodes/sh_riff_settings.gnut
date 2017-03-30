@@ -13,6 +13,7 @@ global function Riff_OSPState
 global function Riff_AmmoLimit
 global function Riff_EliminationMode
 global function Riff_TitanQueueLimit
+global function Riff_BoostAvailability
 
 #if SERVER
 	global function Riff_IsTitanAvailable
@@ -20,6 +21,7 @@ global function Riff_TitanQueueLimit
 	global function Riff_ForceTitanAvailability
 	global function Riff_ForceTitanExitEnabled
 	global function Riff_ForcePlayerBleedout
+	global function Riff_ForceBoostAvailability
 
 	global function Riff_ForceSetEliminationMode
 	global function Riff_ForceAllowNPCs
@@ -33,7 +35,6 @@ function RiffSettings_Init()
 {
 	#if SERVER
 		level.damageModifierForAiLethality <- {}
-
 
 		int spawnAsTitan = GetCurrentPlaylistVarInt( "riff_spawn_as_titan", eSpawnAsTitan.Default )
 		Assert( spawnAsTitan < eSpawnAsTitan.LastSpawnAsTitan )
@@ -87,6 +88,9 @@ function RiffSettings_Init()
 		int riff_titan_queue = GetCurrentPlaylistVarInt( "riff_titan_queue", 0 )
 		level.nv.titanQueueLimit = riff_titan_queue
 
+		int boostsAvailable = GetCurrentPlaylistVarInt( "boosts_enabled", eBoostAvailability.Default )
+		level.nv.boostAvailability = boostsAvailable
+
 		level.titanAvailabilityCheck <- function( player ) { return false }
 	#endif // SERVER
 }
@@ -114,6 +118,12 @@ function Riff_ForceTitanAvailability( eState )
 {
 	Assert( eState < eTitanAvailability.LastTitanAvailability )
 	level.nv.titanAvailability = eState
+}
+
+void function Riff_ForceBoostAvailability( eState )
+{
+	Assert( eState < eBoostAvailability.LastBoostAvailability )
+	level.nv.boostAvailability = eState
 }
 
 function Riff_ForceTitanExitEnabled( eState )
@@ -180,6 +190,11 @@ function Riff_SpawnAsTitan()
 function Riff_TitanAvailability()
 {
 	return GetServerVar( "titanAvailability" )
+}
+
+int function Riff_BoostAvailability()
+{
+	return expect int( GetServerVar( "boostAvailability" ) )
 }
 
 function Riff_TitanExitEnabled()

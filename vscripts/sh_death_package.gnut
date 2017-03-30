@@ -3,6 +3,8 @@ untyped
 #endif
 
 global function Death_Package_Init
+global function PrintDamageFlags
+global function GetDescStringForDamageFlags
 
 #if SERVER
 	table bodyGroupSkeletons
@@ -20,7 +22,6 @@ global function Death_Package_Init
 
 	global function DoomTitan
 	global function UndoomTitan_Body
-	global function PrintDamageFlags
 
 	global function GetNumBrokenLimbs
 	global function TryHeadshotDeathFX
@@ -621,53 +622,6 @@ function GetTagsForBodyGroup( ent, bodyGroupName )
 	return tags
 }
 
-function PrintDamageFlags( flags )
-{
-	local Table =
-	{
-		[DF_GIB					] = "::DF_GIB",
-		[DF_DISSOLVE			] = "::DF_DISSOLVE",
-		[DF_INSTANT				] = "::DF_INSTANT",
-		[DF_NO_SELF_DAMAGE		] = "::DF_NO_SELF_DAMAGE",
-		[DF_IMPACT				] = "::DF_IMPACT",
-		[DF_BYPASS_SHIELD		] = "::DF_BYPASS_SHIELD",
-		[DF_RAGDOLL				] = "::DF_RAGDOLL",
-		[DF_TITAN_STEP 			] = "::DF_TITAN_STEP",
-		[DF_ELECTRICAL 			] = "::DF_ELECTRICAL",
-		[DF_BULLET 				] = "::DF_BULLET",
-		[DF_EXPLOSION			] = "::DF_EXPLOSION",
-		[DF_MELEE				] = "::DF_MELEE",
-		[DF_NO_INDICATOR		] = "::DF_NO_INDICATOR",
-		[DF_KNOCK_BACK			] = "::DF_KNOCK_BACK",
-		[DF_STOPS_TITAN_REGEN	] = "::DF_STOPS_TITAN_REGEN",
-		[DF_DISMEMBERMENT		] = "::DF_DISMEMBERMENT",
-		[DF_MAX_RANGE			] = "::DF_MAX_RANGE",
-		[DF_SHIELD_DAMAGE		] = "::DF_SHIELD_DAMAGE",
-		[DF_CRITICAL			] = "::DF_CRITICAL",
-		[DF_SKIP_DAMAGE_PROT	] = "::DF_SKIP_DAMAGE_PROT",
-		[DF_HEADSHOT			] = "::DF_HEADSHOT",
-		[DF_VORTEX_REFIRE		] = "::DF_VORTEX_REFIRE",
-		[DF_RODEO				] = "::DF_RODEO",
-		[DF_BURN_CARD_WEAPON	] = "::DF_BURN_CARD_WEAPON",
-		[DF_KILLSHOT			] = "::DF_KILLSHOT",
-		[DF_SHOTGUN				] = "::DF_SHOTGUN",
-		[DF_SKIPS_DOOMED_STATE	] = "::DF_SKIPS_DOOMED_STATE",
-		[DF_DOOMED_HEALTH_LOSS	] = "::DF_DOOMED_HEALTH_LOSS",
-		[DF_DOOM_PROTECTED		] = "::DF_DOOM_PROTECTED",
-		[DF_DOOM_FATALITY		] = "::DF_DOOM_FATALITY",
-		[DF_NO_HITBEEP			] = "::DF_NO_HITBEEP"
-	}
-
-	foreach ( key, value in Table )
-	{
-		if ( flags & key )
-		{
-			printt( "Damage Flag: " + value + " was set    (" + key + ")" )
-		}
-	}
-
-}
-
 function PlayTitanDeathFx( entity titan )
 {
 	PlayTitanDeathFx_Internal( titan, FX_PATTACH_POINT_FOLLOW )
@@ -689,3 +643,67 @@ function PlayTitanDeathFx_Internal( entity titan, int attachType )
 		PlayImpactFXTable( results.endPos, titan, TITAN_EXPLOSION_GROUNDWASH_FX_TABLE )
 }
 #endif
+
+const table<int, string> damageFlagsToNames =
+{
+	[DF_GIB					] = "DF_GIB",
+	[DF_DISSOLVE			] = "DF_DISSOLVE",
+	[DF_INSTANT				] = "DF_INSTANT",
+	[DF_NO_SELF_DAMAGE		] = "DF_NO_SELF_DAMAGE",
+	[DF_IMPACT				] = "DF_IMPACT",
+	[DF_BYPASS_SHIELD		] = "DF_BYPASS_SHIELD",
+	[DF_RAGDOLL				] = "DF_RAGDOLL",
+	[DF_TITAN_STEP 			] = "DF_TITAN_STEP",
+	[DF_RADIUS_DAMAGE 		] = "DF_RADIUS_DAMAGE",
+	[DF_ELECTRICAL 			] = "DF_ELECTRICAL",
+	[DF_BULLET 				] = "DF_BULLET",
+	[DF_EXPLOSION			] = "DF_EXPLOSION",
+	[DF_MELEE				] = "DF_MELEE",
+	[DF_NO_INDICATOR		] = "DF_NO_INDICATOR",
+	[DF_KNOCK_BACK			] = "DF_KNOCK_BACK",
+	[DF_STOPS_TITAN_REGEN	] = "DF_STOPS_TITAN_REGEN",
+	[DF_DISMEMBERMENT		] = "DF_DISMEMBERMENT",
+	[DF_MAX_RANGE			] = "DF_MAX_RANGE",
+	[DF_SHIELD_DAMAGE		] = "DF_SHIELD_DAMAGE",
+	[DF_CRITICAL			] = "DF_CRITICAL",
+	[DF_SKIP_DAMAGE_PROT	] = "DF_SKIP_DAMAGE_PROT",
+	[DF_HEADSHOT			] = "DF_HEADSHOT",
+	[DF_VORTEX_REFIRE		] = "DF_VORTEX_REFIRE",
+	[DF_RODEO				] = "DF_RODEO",
+	[DF_BURN_CARD_WEAPON	] = "DF_BURN_CARD_WEAPON",
+	[DF_KILLSHOT			] = "DF_KILLSHOT",
+	[DF_SHOTGUN				] = "DF_SHOTGUN",
+	[DF_SKIPS_DOOMED_STATE	] = "DF_SKIPS_DOOMED_STATE",
+	[DF_DOOMED_HEALTH_LOSS	] = "DF_DOOMED_HEALTH_LOSS",
+	[DF_DOOM_PROTECTED		] = "DF_DOOM_PROTECTED",
+	[DF_DOOM_FATALITY		] = "DF_DOOM_FATALITY",
+	[DF_NO_HITBEEP			] = "DF_NO_HITBEEP"
+}
+
+void function PrintDamageFlags( int flags )
+{
+	foreach ( int key, string value in damageFlagsToNames )
+	{
+		if ( flags & key )
+			printt( "Damage Flag: " + value + " was set    (" + key + ")" )
+	}
+}
+
+string function GetDescStringForDamageFlags( int flags )
+{
+	string appendedNames
+	int foundCount = 0
+	foreach ( int key, string value in damageFlagsToNames )
+	{
+		if ( !(flags & key) )
+			continue
+
+		if ( foundCount != 0 )
+			appendedNames += ", "
+		appendedNames = value
+
+		foundCount++
+	}
+
+	return ("(" + appendedNames + ")")
+}

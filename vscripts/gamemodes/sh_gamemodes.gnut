@@ -1,6 +1,21 @@
 
 global function GameModes_Init
 
+global function GameMode_Create
+global function GameMode_SetName
+global function GameMode_SetGameModeAttackAnnouncement
+global function GameMode_SetGameModeDefendAnnouncement
+global function GameMode_SetAttackDesc
+global function GameMode_SetDefendDesc
+global function GameMode_SetIcon
+global function GameMode_SetDefaultScoreLimits
+global function GameMode_AddScoreboardColumnData
+global function GameMode_SetGameModeAnnouncement
+global function GameMode_SetDefaultTimeLimits
+global function GameMode_SetDesc
+global function GameMode_SetColor
+global function GameMode_SetSuddenDeath
+
 global function GameMode_GetScoreLimit
 global function GameMode_GetRoundScoreLimit
 global function GameMode_GetTimeLimit
@@ -11,6 +26,7 @@ global function GameMode_GetGameModeDefendAnnouncement
 global function GameMode_GetDesc
 global function GameMode_GetName
 global function GameMode_GetIcon
+global function GameMode_GetColor
 global function GameMode_GetAttackDesc
 global function GameMode_GetDefendDesc
 global function GameMode_GetPilotSpawnpointsRatingFunc
@@ -37,6 +53,8 @@ global function GameMode_SetPilotSpawnpointsRatingFunc
 global function GameMode_SetTitanSpawnpointsRatingFunc
 global function GameMode_SetCustomIntroAnnouncement
 
+global function GameMode_GetGameModeId
+
 global function GameMode_SetEvacEnabled
 
 global struct GamemodeSettings
@@ -50,6 +68,7 @@ global struct GamemodeSettings
 	string gameModeAttackAnnoucement = ""
 	string gameModeDefendAnnoucement = ""
 	asset icon = $"ui/menu/playlist/classic"
+	array<int> color = [127, 127, 127, 255]
 	array< void functionref() > serverInits
 	array< void functionref() > clientInits
 	array< void functionref() > sharedInits
@@ -89,53 +108,39 @@ global enum eGameModes
 	MARKED_FOR_DEATH_PRO_ID =			8,
 	COOPERATIVE_ID =					9,
 	GAMEMODE_SP_ID =					10,
-	BOMB_ID =							11,
+	PROTOTYPE1 =						11,
 	FFA_ID =							12,
-	SST_ID =							13,
+	PROTOTYPE2 =						13,
 	WINGMAN_PILOT_SKIRMISH_ID =			14,
-	T_DAY_ID = 							15,
-	HARDCORE_TDM_ID = 					16,
-	FREE_AGENCY_ID = 					17,
-	FORT_WAR_ID =						18,
+	PROTOTYPE3 = 						15,
+	PROTOTYPE4 = 						16,
+	PROTOTYPE5 = 						17,
+	PROTOTYPE6 =						18,
 	COLISEUM_ID =						19,
-	LTS_BOMB_ID =						20,
+	PROTOTYPE7 =						20,
 	AI_TDM_ID =							21,
-	HUNTED_ID =							22,
-	DON_ID = 							23,
+	PROTOTYPE8 =						22,
+	PROTOTYPE9 = 						23,
 	SPEEDBALL_ID =						24,
-	RAID_ID = 							25,
-	ATCOOP_ID = 						26
+	PROTOTYPE10 = 						25,
+	PROTOTYPE11 = 						26,
+	PROTOTYPE12 = 						27,
+	PROTOTYPE13 = 						28,
+	PROTOTYPE14 =						29,
 }
 
-
-
-global const table<string, int> gameModesStringToIdMap = {
+const table<string, int> gameModesStringToIdMap = {
 	[ TEAM_DEATHMATCH ] 					= eGameModes.TEAM_DEATHMATCH_ID,
 	[ PILOT_SKIRMISH ] 						= eGameModes.PILOT_SKIRMISH_ID,
 	[ CAPTURE_POINT ] 						= eGameModes.CAPTURE_POINT_ID,
 	[ ATTRITION ]							= eGameModes.ATTRITION_ID,
 	[ CAPTURE_THE_FLAG ] 					= eGameModes.CAPTURE_THE_FLAG_ID,
-	[ MARKED_FOR_DEATH ]	 				= eGameModes.MARKED_FOR_DEATH_ID,
 	[ LAST_TITAN_STANDING ] 				= eGameModes.LAST_TITAN_STANDING_ID,
-	[ WINGMAN_LAST_TITAN_STANDING ] 		= eGameModes.WINGMAN_LAST_TITAN_STANDING_ID,
-	[ MARKED_FOR_DEATH_PRO ] 				= eGameModes.MARKED_FOR_DEATH_PRO_ID,
 	[ GAMEMODE_SP ] 						= eGameModes.GAMEMODE_SP_ID,
-	[ BOMB ]								= eGameModes.BOMB_ID,
 	[ FFA ]									= eGameModes.FFA_ID,
-	[ SST ]									= eGameModes.SST_ID,
-	[ WINGMAN_PILOT_SKIRMISH ] 				= eGameModes.WINGMAN_PILOT_SKIRMISH_ID,
-	[ T_DAY ]				 				= eGameModes.T_DAY_ID,
-	[ HARDCORE_TDM ]				 		= eGameModes.HARDCORE_TDM_ID,
-	[ FREE_AGENCY ]				 			= eGameModes.FREE_AGENCY_ID,
-	[ FORT_WAR ]							= eGameModes.FORT_WAR_ID,
 	[ COLISEUM ]							= eGameModes.COLISEUM_ID,
-	[ LTS_BOMB ]							= eGameModes.LTS_BOMB_ID,
 	[ AI_TDM ]								= eGameModes.AI_TDM_ID,
-	[ HUNTED ]								= eGameModes.HUNTED_ID,
-	[ DON ]									= eGameModes.DON_ID,
 	[ SPEEDBALL ]							= eGameModes.SPEEDBALL_ID,
-	[ RAID ]								= eGameModes.RAID_ID,
-	[ ATCOOP ]								= eGameModes.ATCOOP_ID
 }
 
 struct
@@ -170,6 +175,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSAULT", PGS_ASSAULT_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEFENSE", PGS_DEFENSE_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [46, 188, 180, 255] )
 
 	gameMode = LAST_TITAN_STANDING
 	GameMode_Create( gameMode )
@@ -185,41 +191,7 @@ void function GameModes_Init()
 	GameMode_SetDefaultTimeLimits( gameMode, 5, 4.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_DAMAGE", PGS_ASSAULT_SCORE, 6 )
-
-	gameMode = LTS_BOMB
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_last_titan_standing_bomb" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAttackAnnouncement( gameMode, "lts_modeDesc" )
-		GameMode_SetGameModeDefendAnnouncement( gameMode, "lts_modeDesc" )
-	#else
-		GameMode_SetGameModeAttackAnnouncement( gameMode, "GameModeAnnounce_LTS" )
-		GameMode_SetGameModeDefendAnnouncement( gameMode, "GameModeAnnounce_LTS" )
-	#endif
-	GameMode_SetAttackDesc( gameMode, "#PL_last_titan_standing_bomb_hint_attack" )
-	GameMode_SetDefendDesc( gameMode, "#PL_last_titan_standing_bomb_hint_defend" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/lts" )
-	GameMode_SetDefaultScoreLimits( gameMode, 0, 4 )
-	GameMode_SetDefaultTimeLimits( gameMode, 5, 4.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_DETONATION", PGS_DETONATION_SCORE, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_DEFUSE", PGS_DEFENSE_SCORE, 2 )
-
-
-	gameMode = WINGMAN_LAST_TITAN_STANDING
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_wingman_lts" )
-
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "lts_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_WLTS" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_wingman_lts_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/wingman_lts" )
-	GameMode_SetDefaultScoreLimits( gameMode, 0, 4 )
-	GameMode_SetDefaultTimeLimits( gameMode, 5, 4.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [223, 94, 0, 255] )
 
 	gameMode = ATTRITION
 	GameMode_Create( gameMode )
@@ -236,6 +208,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BONUS", PGS_SCORE, 4 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [88, 172, 67, 255] )
 
 	gameMode = TEAM_DEATHMATCH
 	GameMode_Create( gameMode )
@@ -252,20 +225,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
-
-	gameMode = HARDCORE_TDM
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#GAMEMODE_HARDCORE_PILOT_HUNTER" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_TDM" )
-	#endif
-	GameMode_SetDesc( gameMode, "#GAMEMODE_HARDCORE_PILOT_HUNTER_HINT" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 12, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 
 	gameMode = AI_TDM
 	GameMode_Create( gameMode )
@@ -284,6 +244,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 1 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_GRUNT_KILLS", PGS_NPC_KILLS, 2 )
 	// GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_SetColor( gameMode, [200, 40, 40, 255] )
 
 	gameMode = COLISEUM
 	GameMode_Create( gameMode )
@@ -298,34 +259,7 @@ void function GameModes_Init()
 	GameMode_SetDefaultScoreLimits( gameMode, 15, 2 )
 	GameMode_SetDefaultTimeLimits( gameMode, 0, 4.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-
-	gameMode = MARKED_FOR_DEATH
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_marked_for_death" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "mfd_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_MFD" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_marked_for_death_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/mfd" )
-	GameMode_SetDefaultScoreLimits( gameMode, 10, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 10, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-
-	gameMode = MARKED_FOR_DEATH_PRO
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_marked_for_death_pro" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "mfd_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_MFD_PRO" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_marked_for_death_pro_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/mfd" )
-	GameMode_SetDefaultScoreLimits( gameMode, 0, 6)
-	GameMode_SetDefaultTimeLimits( gameMode, 0, 6.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [151, 71, 175, 255] )
 
 	gameMode = PILOT_SKIRMISH
 	GameMode_Create( gameMode )
@@ -342,20 +276,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
-
-	gameMode = WINGMAN_PILOT_SKIRMISH
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_wingman_pilot_skirmish" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "pvp_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_wingman_pilot_skirmish_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetDefaultScoreLimits( gameMode, 20, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 6, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [207, 191, 59, 255] )
 
 	gameMode = CAPTURE_THE_FLAG
 	GameMode_Create( gameMode )
@@ -373,6 +294,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_CAPTURES", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_RETURNS", PGS_DEFENSE_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_SetColor( gameMode, [61, 117, 193, 255] )
 
 	gameMode = FFA
 	GameMode_Create( gameMode )
@@ -389,70 +311,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 2 )
-
-	gameMode = FREE_AGENCY
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_free_agents" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "freea_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_FREE_AGENCY" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_free_agents_hint" )
-	GameMode_SetIcon( gameMode, FFA_MODE_ICON )
-	GameMode_SetDefaultScoreLimits( gameMode, 10, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 10, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 2 )
-
-	gameMode = FORT_WAR
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_titan_war" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "tw_modeName" ) //TODO: This is just the mode name as opposed to instructions...
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_TDM" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_titan_war_hint" )
-	GameMode_SetIcon( gameMode, SST_MODE_ICON )
-	GameMode_SetDefaultScoreLimits( gameMode, 0, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSAULT", PGS_ASSAULT_SCORE, 4 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEFENSE", PGS_DEFENSE_SCORE, 4 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-
-	gameMode = HUNTED
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_hunted" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "pvp_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_hunted_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetDefaultScoreLimits( gameMode, 100, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_HUNTER", PGS_ASSAULT_SCORE, 4 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_HUNTED", PGS_DEFENSE_SCORE, 4 )
-
-	gameMode = DON
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_don" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "pvp_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_don_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetDefaultScoreLimits( gameMode, 100, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
 
 	gameMode = SPEEDBALL
 	GameMode_Create( gameMode )
@@ -466,47 +325,14 @@ void function GameModes_Init()
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/ctf" )
 	GameMode_SetDefaultScoreLimits( gameMode, 0, 5 )
 	GameMode_SetDefaultTimeLimits( gameMode, 0, 1.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_FLAGS_SECURED", PGS_ASSAULT_SCORE, 2 )
-	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PICKUPS", PGS_DEFENSE_SCORE, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_SetColor( gameMode, [225, 141, 8, 255] )
 
-	gameMode = RAID
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_raid" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "hp_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_PS" )
+	#if DEVSCRIPTS
+	DevGameModes_Init()
 	#endif
-	GameMode_SetDesc( gameMode, "#PL_raid_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetSuddenDeath( gameMode, true )
-	GameMode_SetDefaultScoreLimits( gameMode, 0, 5 )
-	GameMode_SetDefaultTimeLimits( gameMode, 0, 5.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_PLANT", PGS_ASSAULT_SCORE, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_BOMB_DEFUSE", PGS_DEFENSE_SCORE, 2 )
-
-	gameMode = ATCOOP
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "#PL_atcoop" )
-	#if FACTION_DIALOGUE_ENABLED
-		GameMode_SetGameModeAnnouncement( gameMode, "bh_modeDesc" )
-	#else
-		GameMode_SetGameModeAnnouncement( gameMode, "GameModeAnnounce_AT" )
-	#endif
-	GameMode_SetDesc( gameMode, "#PL_atcoop_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/at" )
-	GameMode_SetDefaultScoreLimits( gameMode, 5000, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 4 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_NPC_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "$", PGS_SCORE, 4 )
-	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_SCORE", PGS_SCORE, 4 )
-
-
 
 	#if SERVER || CLIENT
 	GameModes_Init_SV_CL()
@@ -578,6 +404,12 @@ void function GameMode_SetIcon( string gameModeName, asset icon )
 {
 	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
 	file.gameModeDefs[gameModeName].icon = icon
+}
+
+void function GameMode_SetColor( string gameModeName, array<int> color )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].color = color
 }
 
 void function GameMode_SetSuddenDeath( string gameModeName, bool state )
@@ -732,6 +564,12 @@ asset function GameMode_GetIcon( string gameModeName )
 	return file.gameModeDefs[gameModeName].icon
 }
 
+array<int> function GameMode_GetColor( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].color
+}
+
 string function GameMode_GetAttackDesc( string gameModeName )
 {
 	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
@@ -849,9 +687,7 @@ void function GameMode_VerifyModes()
 {
 	foreach ( gameModeName, gameModeData in file.gameModeDefs )
 	{
-		Assert( gameModeName in gameModesStringToIdMap, "GAMEMODE " + gameModeName + " not defined in gameModesStringToIdMap!" )
-
-		int gameModeId = gameModesStringToIdMap[gameModeName]
+		int gameModeId = GameMode_GetGameModeId( gameModeName )
 		bool foundGameModeIdString = false
 		foreach ( idString, gameModeEnumId in eGameModes )
 		{
@@ -866,10 +702,26 @@ void function GameMode_VerifyModes()
 		GAMETYPE_TEXT[gameModeName] <- gameModeData.name_localized
 		GAMETYPE_DESC[gameModeName] <- gameModeData.desc_localized
 		GAMETYPE_ICON[gameModeName] <- gameModeData.icon
+		GAMETYPE_COLOR[gameModeName] <- gameModeData.color
 		#if CLIENT
 			PrecacheHUDMaterial( GAMETYPE_ICON[gameModeName] )
 		#endif
 	}
+}
+
+int function GameMode_GetGameModeId( string gameModeName )
+{
+	if ( gameModeName in gameModesStringToIdMap )
+		return gameModesStringToIdMap[gameModeName]
+
+	#if DEVSCRIPTS
+	if ( gameModeName in devGameModesStringToIdMap )
+		return devGameModesStringToIdMap[gameModeName]
+	#endif
+
+	Assert( false, "GAMEMODE " + gameModeName + " not defined in gameModesStringToIdMap" )
+
+	return 0
 }
 
 bool function GameMode_IsDefined( string gameModeName )

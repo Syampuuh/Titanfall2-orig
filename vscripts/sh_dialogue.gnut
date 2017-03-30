@@ -204,7 +204,7 @@ bool function ShouldPlaySquadConversation( entity player, conversationType, allo
 function RegisterAutoTitanConversations()
 {
 
-	foreach( _, modifiedAliasSuffix in  TITAN_OS_VOICE_PACK )
+	foreach(  modifiedAliasSuffix in  TITAN_OS_VOICE_PACK )
 	{
 		if ( modifiedAliasSuffix != "Bt" )
 			RegisterConversation( "diag_gs_titan" + modifiedAliasSuffix + "_autoEngagePilot", VO_PRIORITY_PLAYERSTATE )

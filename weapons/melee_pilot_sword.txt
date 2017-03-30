@@ -22,11 +22,11 @@ WeaponData
 	// Melee
 	"melee_can_hit_humansized"						"1"
 	"melee_can_hit_titans"							"0"
-	"melee_raise_recovery_animtime_normal"			"0.75"
-	"melee_raise_recovery_animtime_quick"			"0.4"
+	"melee_raise_recovery_animtime_normal"			"0.25"
+	"melee_raise_recovery_animtime_quick"			"0.01"
 	"melee_range"									"40"
 	"melee_rumble_on_hit"							"pilot_melee_hit"
-	"melee_freezelook_on_hit"						"0.25"
+	"melee_freezelook_on_hit"						"0.0"
 	"melee_sound_attack_1p"							"Player_Melee_Backhand_1P"
 	"melee_sound_attack_3p"							"player_melee_kick_3p"
 	"melee_anim_1p_number"							"1"								// ACT_VM_MELEE_ATTACK1, 2, or 3
@@ -140,5 +140,40 @@ WeaponData
 
 	Mods
 	{
+		pm0
+		{
+			"melee_lunge_time"						"1.250"
+			"melee_lunge_target_angle"				"50"
+			"melee_lunge_target_range"				"150"
+			"melee_range"							"75"
+			"impulse_force"   						"150000"
+
+			"impact_effect_table"					"titan_sniper" // titan_sniper
+		}
+
+		pm1
+		{
+			"melee_lunge_time"						"1.250"
+			"melee_lunge_target_angle"				"50"
+			"melee_lunge_target_range"				"768"
+			"melee_range"							"100"
+			"impulse_force"   						"200000"
+
+			"impact_effect_table"					"titan_sniper" // titan_sniper, melee_titan,
+		}
+
+		pm2
+		{
+			"melee_lunge_time"						"1.250"
+			"melee_lunge_target_angle"				"50"
+			"melee_lunge_target_range"				"768"
+			"melee_range"							"125"
+			"impulse_force"   						"250000"
+
+			"impact_effect_table"					"exp_arc_ball"
+
+			"melee_can_hit_titans"					"1"
+			"melee_damage_heavyarmor"				"1000"
+		}
 	}
 }

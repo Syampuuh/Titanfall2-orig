@@ -195,7 +195,7 @@ function DeployLaserPylon( entity projectile )
 
 	entity tower = CreatePropScript( LASER_TRIP_MODEL, origin, angles, SOLID_VPHYSICS )
 	tower.kv.collisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
-	tower.EnableAttackableByAI( 20 )
+	tower.EnableAttackableByAI( 20, 0, AI_AP_FLAG_NONE )
 	SetTargetName( tower, "Laser Tripwire Base" )
 	tower.SetMaxHealth( LASER_TRIP_HEALTH )
 	tower.SetHealth( LASER_TRIP_HEALTH )

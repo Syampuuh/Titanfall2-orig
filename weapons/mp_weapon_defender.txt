@@ -438,8 +438,8 @@ WeaponData
 
 		quick_charge
 		{
-			"charge_time" 									"0.01"
-			"charge_cooldown_time"							"0.66"
+			"charge_time" 									"*0.33"
+			"charge_cooldown_time"							"*0.66"
 			"charge_cooldown_delay"   						"0.0"
 			"charge_end_forces_fire"						"0"
 

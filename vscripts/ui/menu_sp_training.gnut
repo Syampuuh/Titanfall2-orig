@@ -1,6 +1,7 @@
 global function ScriptCallback_OpenInvertLookDialog
 global function ScriptCallback_OpenAutosprintDialogForGauntlet
 global function ScriptCallback_Training_SelectSPDifficulty
+global function ScriptCallback_Training_FreeTrialMessage
 global function OpenInvertLookDialog
 
 void function ScriptCallback_OpenInvertLookDialog()
@@ -244,6 +245,27 @@ void function SelectSPDifficulty( int difficulty )
 {
 	SetConVarInt( "sp_difficulty", difficulty )
 	ShowSPDifficultyConfirmation()
+}
+
+void function ScriptCallback_Training_FreeTrialMessage()
+{
+	thread Training_FreeTrialMessage()
+}
+
+void function Training_FreeTrialMessage()
+{
+	DialogData dialogData
+	dialogData.header = "#SP_TRIAL_TRAINING_COMPLETE_HEADER"
+	dialogData.message = "#SP_TRIAL_TRAINING_COMPLETE_MSG"
+	dialogData.forceChoice = true
+
+	AddDialogButton( dialogData, "#SP_TRIAL_START_MISSION" )
+	AddDialogButton( dialogData, "#MENU_GET_THE_FULL_GAME", LaunchGamePurchase )
+	AddDialogButton( dialogData, "#CANCEL_AND_QUIT_TO_MAIN_MENU", Disconnect )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+
+	OpenDialog( dialogData )
 }
 
 /* DEPRECATED

@@ -27,6 +27,7 @@ struct {
 	var settingsHeader
 	var storeHeader
 	var faqButton
+	var dpadCommsButton
 
 	var inboxButton
 	int inboxHeaderIndex
@@ -36,6 +37,8 @@ struct {
 
 	var callsignCard
 	bool chatroomWidgetState
+
+	ComboStruct &lobbyComboStruct
 } file
 
 
@@ -126,7 +129,7 @@ void function OnSearchMenu_Open()
 		UpdateCallsignElement( file.callsignCard )
 		RefreshCreditsAvailable()
 
-		//bool emotesAreEnabled = EmotesEnabled()
+		bool emotesAreEnabled = EmotesEnabled()
 		// "Customize"
 		{
 			bool anyNewPilotItems = HasAnyNewPilotItems( player )
@@ -139,9 +142,8 @@ void function OnSearchMenu_Open()
 			ComboButton_SetNew( file.pilotButton, anyNewPilotItems )
 			ComboButton_SetNew( file.titanButton, anyNewTitanItems )
 			ComboButton_SetNew( file.boostsButton, anyNewBoosts )
-		//	ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
+			ComboButton_SetNew( file.dpadCommsButton, anyNewCommsIcons )
 
-			/*
 			if ( !emotesAreEnabled )
 			{
 				Hud_Hide( file.dpadCommsButton )
@@ -151,7 +153,6 @@ void function OnSearchMenu_Open()
 			{
 				Hud_Show( file.dpadCommsButton )
 			}
-			*/
 		}
 
 		// "Store"
@@ -247,6 +248,7 @@ void function Search_UpdateInboxButtons()
 void function CreateButtons( var menu )
 {
 	ComboStruct comboStruct = ComboButtons_Create( menu )
+	file.lobbyComboStruct = comboStruct
 
 	int headerIndex = 0
 	int buttonIndex = 0
@@ -261,6 +263,8 @@ void function CreateButtons( var menu )
 	Hud_AddEventHandler( titanButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditTitanLoadoutsMenu" ) ) )
 	file.boostsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_BOOSTS" )
 	Hud_AddEventHandler( file.boostsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "BurnCardMenu" ) ) )
+	file.dpadCommsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_COMMS" )
+	Hud_AddEventHandler( file.dpadCommsButton, UIE_CLICK, OnDpadCommsButton_Activate )
 //	file.storeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_STORE" )
 //	Hud_AddEventHandler( file.storeButton, UIE_CLICK, OnStoreButton_Activate )
 //	var armoryButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_ARMORY" )

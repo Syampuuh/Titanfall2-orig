@@ -67,6 +67,17 @@ bool function IsCaptureMode()
 	return GameRules_GetGameMode() == CAPTURE_POINT
 }
 
+bool function GameModeWantsToSkipBoostsAndTitanEarning()
+{
+	string modeName = GameRules_GetGameMode()
+	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+		return true
+	if ( Riff_BoostAvailability() == eBoostAvailability.Disabled )
+		return true
+
+	return false
+}
+
 IntFromEntityCompare function GetScoreboardCompareFunc()
 {
 	return ScoreboardCompareFuncForGamemode( GameRules_GetGameMode() )

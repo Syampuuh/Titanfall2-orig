@@ -22,6 +22,7 @@ global function UICodeCallback_OnSpLogDisplayed
 global function UICodeCallback_EntitlementsChanged
 global function UICodeCallback_StoreTransactionCompleted
 global function UICodeCallback_GamePurchased
+global function UICodeCallback_PartyUpdated
 
 global function AdvanceMenu
 global function OpenSubmenu // REMOVE
@@ -33,7 +34,6 @@ global function CloseAllInGameMenus
 global function CloseAllDialogs
 global function CloseAllToTargetMenu
 global function PrintMenuStack
-global function SetLoadoutSelectionFinished
 global function CleanupInGameMenus
 global function GetActiveMenu
 global function GetMenu
@@ -42,15 +42,12 @@ global function GetAllMenuPanels
 global function InitGamepadConfigs
 global function InitMenus
 global function AdvanceMenuEventHandler
-global function OldPCBackButton_Activate
 global function PCSwitchTeamsButton_Activate
 global function PCToggleSpectateButton_Activate
 global function AddMenuElementsByClassname
 global function FocusDefault
 global function SetPanelDefaultFocus
 global function PanelFocusDefault
-global function GetCurrentBreadCrumbs
-global function SetMenuBreadCrumbs
 global function OpenMenuWrapper
 global function CloseMenuWrapper
 global function IsLevelMultiplayer
@@ -59,8 +56,6 @@ global function AddPanelEventHandler
 global function AddButtonEventHandler
 global function AddEventHandlerToButton
 global function AddEventHandlerToButtonClass
-global function ButtonCallback_MenuShoulderRight
-global function ButtonCallback_MenuShoulderLeft
 global function DisableMusic
 global function EnableMusic
 global function PlayMusic
@@ -69,6 +64,7 @@ global function IsMenuInMenuStack
 global function GetTopNonDialogMenu
 global function IsDialog
 global function IsDialogActive
+global function IsDialogOnlyActiveMenu
 global function SetNavUpDown
 global function IsTrialPeriodActive
 global function LaunchGamePurchaseOrDLCStore
@@ -109,7 +105,7 @@ void function UICodeCallback_ActivateMenus()
 	if ( IsConnected() )
 		return
 
-	printt( "UICodeCallback_ActivateMenus:", uiGlobal.activeMenu && uiGlobal.activeMenu.GetHudName() )
+	printt( "UICodeCallback_ActivateMenus:", uiGlobal.activeMenu && Hud_GetHudName( uiGlobal.activeMenu ) )
 
 	if ( uiGlobal.menuStack.len() == 0 )
 	{
@@ -290,13 +286,12 @@ void function UICodeCallback_LevelInit( string levelname )
 		Assert( gameModeString == GetConVarString( "mp_gamemode" ) )
 		Assert( gameModeString != "" )
 
-		Assert( gameModeString in gameModesStringToIdMap, "'" + gameModeString + "' must exist in gameModesStringToIdMap table" )
-	    local gameModeId = gameModesStringToIdMap[gameModeString]
+	    int gameModeId = GameMode_GetGameModeId( gameModeString )
 
-	    local mapId = eMaps.invalid
+	    int mapId = eMaps.invalid
 	    if ( levelname in getconsttable().eMaps )
 	    {
-	    	mapId = getconsttable().eMaps[ levelname ]
+	    	mapId = expect int( getconsttable().eMaps[ levelname ] )
 	    }
 	    else
 	    {
@@ -305,8 +300,8 @@ void function UICodeCallback_LevelInit( string levelname )
 		    //	CodeWarning( "No map named '" + levelname + "' exists in eMaps, all shipping maps should be in this enum" )
 	    }
 
-	    local difficultyLevelId = 0
-	    local roundId = 0
+	    int difficultyLevelId = 0
+	    int roundId = 0
 
 	    if ( isLobby )
 	    	Durango_OnLobbySessionStart( gameModeId, difficultyLevelId )
@@ -534,7 +529,7 @@ void function AdvanceMenu( var menu, bool replaceCurrent = false )
 		else
 		{
 			CloseMenu( uiGlobal.activeMenu )
-			printt( uiGlobal.activeMenu.GetHudName(), "menu closed" )
+			printt( Hud_GetHudName( uiGlobal.activeMenu ), "menu closed" )
 		}
 	}
 
@@ -564,7 +559,7 @@ void function SetFooterPanelVisibility( var menu, bool visible )
 	Hud_SetVisible( panel, visible )
 }
 
-function OpenSubmenu( menu, updateMenuPos = true )
+void function OpenSubmenu( var menu, bool updateMenuPos = true )
 {
 	Assert( menu )
 	Assert( menu.GetType() == "submenu" )
@@ -576,7 +571,7 @@ function OpenSubmenu( menu, updateMenuPos = true )
 			return
 	}
 
-	local submenuPos = GetFocus().GetAbsPos()
+	local submenuPos = Hud_GetAbsPos( GetFocus() )
 
 	uiGlobal.menuStack.push( menu )
 	uiGlobal.activeMenu = menu
@@ -592,7 +587,7 @@ function OpenSubmenu( menu, updateMenuPos = true )
 	Signal( uiGlobal.signalDummy, "ActiveMenuChanged" )
 }
 
-function CloseSubmenu( openStackMenu = true )
+void function CloseSubmenu( bool openStackMenu = true )
 {
 	if ( !uiGlobal.activeMenu )
 		return
@@ -622,7 +617,7 @@ void function CloseActiveMenuNoParms()
 	CloseActiveMenu()
 }
 
-void function CloseActiveMenu( cancelled = false, openStackMenu = true )
+void function CloseActiveMenu( bool cancelled = false, bool openStackMenu = true )
 {
 	bool updateBlur = true
 	bool wasDialog = false
@@ -683,7 +678,7 @@ void function CloseActiveMenu( cancelled = false, openStackMenu = true )
 	Signal( uiGlobal.signalDummy, "ActiveMenuChanged" )
 }
 
-function CloseAllMenus()
+void function CloseAllMenus()
 {
 	if ( IsDialog( uiGlobal.activeMenu ) )
 		CloseActiveMenu( true )
@@ -726,20 +721,32 @@ void function CloseAllToTargetMenu( var targetMenu )
 		CloseActiveMenu( true, false )
 }
 
-function PrintMenuStack()
+void function PrintMenuStack()
 {
-	foreach ( menu in uiGlobal.menuStack )
+	array<var> stack = clone uiGlobal.menuStack
+	stack.reverse()
+
+	printt( "MENU STACK:" )
+
+	foreach ( menu in stack )
 	{
 		if ( menu )
-			printt( menu.GetHudName() )
+			printt( "   ", Hud_GetHudName( menu ) )
 		else
-			printt( "null" )
+			printt( "    null" )
 	}
 }
 
-function UpdateMenusOnConnect( string levelname )
+// Happens on any level load
+void function UpdateMenusOnConnect( string levelname )
 {
+	EndSignal( uiGlobal.signalDummy, "LevelShutdown" ) // HACK fix because UICodeCallback_LevelInit() incorrectly runs when disconnected by client error. Test with "script_error_client" while a level is loaded.
+
 	CloseAllDialogs()
+
+	var mainMenu = GetMenu( "MainMenu" )
+	if ( IsMenuInMenuStack( mainMenu ) && !IsMenuInMenuStack( null ) )
+		CloseAllToTargetMenu( mainMenu )
 
 	Assert( uiGlobal.activeMenu != null || uiGlobal.menuStack.len() == 0 )
 
@@ -777,21 +784,6 @@ function UpdateMenusOnConnect( string levelname )
 	}
 }
 
-
-function SetLoadoutSelectionFinished()
-{
-	uiGlobal.loadoutSelectionFinished = true
-
-	ClientCommand( "InGameMPMenuClosed" )
-}
-
-function ClearLoadoutSelectionFinished()
-{
-	uiGlobal.loadoutSelectionFinished = false
-
-	ClientCommand( "InGameMPMenuOpened" )
-}
-
 bool function IsMenuInMenuStack( var searchMenu )
 {
 	foreach ( menu in uiGlobal.menuStack )
@@ -823,7 +815,7 @@ var function GetTopNonDialogMenu()
 	return null
 }
 
-function CleanupInGameMenus()
+void function CleanupInGameMenus()
 {
 	Signal( uiGlobal.signalDummy, "CleanupInGameMenus" )
 
@@ -866,7 +858,7 @@ array<var> function GetAllMenuPanels( var menu )
 	return menuPanels
 }
 
-function InitGamepadConfigs()
+void function InitGamepadConfigs()
 {
 	uiGlobal.buttonConfigs = [ { orthodox = "gamepad_button_layout_default.cfg", southpaw = "gamepad_button_layout_default_southpaw.cfg" } ]
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_bumper_jumper.cfg", southpaw = "gamepad_button_layout_bumper_jumper_southpaw.cfg" } )
@@ -898,7 +890,7 @@ function InitGamepadConfigs()
 	SetStandardAbilityBindingsForPilot( GetLocalClientPlayer() )
 }
 
-function InitMenus()
+void function InitMenus()
 {
 	InitGlobalMenuVars()
 	SpShWeaponsInit()
@@ -909,6 +901,10 @@ function InitMenus()
 
 	AddMenu( "PlayVideoMenu", $"resource/ui/menus/play_video.menu", InitPlayVideoMenu )
 	AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu, "#LOBBY" )
+
+	#if DEVSCRIPTS
+	AddMenu( "PVELobbyMenu", $"resource/ui/menus/pvelobby.menu", InitPVELobbyMenu, "#PVELOBBY" )
+	#endif
 	AddMenu( "PlaylistMenu", $"resource/ui/menus/playlist.menu", InitPlaylistMenu )
 	AddMenu( "PlaylistMixtapeMenu", $"resource/ui/menus/playlist_mixtape.menu", InitPlaylistMixtapeMenu )
 	AddMenu( "PlaylistMixtapeChecklistMenu", $"resource/ui/menus/playlist_mixtape_checklist.menu", InitPlaylistMixtapeChecklistMenu )
@@ -929,6 +925,10 @@ function InitMenus()
 	AddMenu( "CommunityEditMenu", $"resource/ui/menus/community_edit.menu" )
 	AddMenu( "CommunityAdminSendMessage", $"resource/ui/menus/community_sendMessage.menu" )
 	AddMenu( "CommunityAdminInviteRequestMenu", $"resource/ui/menus/community_inviteRequest.menu" )
+#if DEVSCRIPTS
+	AddMenu( "InviteFriendsToNetworkMenu", $"resource/ui/menus/invite_friends.menu", InitInviteFriendsToNetworkMenu )
+	//AddMenu( "InviteFriendsToPartyMenu", $"resource/ui/menus/invite_friends.menu", InitInviteFriendsToPartyMenu )
+#endif
 
 	AddMenu( "InGameMPMenu", $"resource/ui/menus/ingame_mp.menu", InitInGameMPMenu )
 	AddMenu( "InGameSPMenu", $"resource/ui/menus/ingame_sp.menu", InitInGameSPMenu )
@@ -941,6 +941,7 @@ function InitMenus()
 	AddMenu( "ReviewTermsDialog", $"resource/ui/menus/dialog_review_terms.menu", InitReviewTermsDialog )
 	AddMenu( "RegistrationDialog", $"resource/ui/menus/dialog_registration.menu", InitRegistrationDialog )
 	AddMenu( "AdvocateGiftDialog", $"resource/ui/menus/dialog_advocate_gift.menu", InitAdvocateGiftDialog )
+	AddMenu( "PathChooserDialog", $"resource/ui/menus/dialog_pathchooser.menu", InitPathChooserDialog )
 
 	AddMenu( "ControlsMenu", $"resource/ui/menus/controls.menu", InitControlsMenu, "#CONTROLS" )
 	AddMenu( "ControlsAdvancedLookMenu", $"resource/ui/menus/controls_advanced_look.menu", InitControlsAdvancedLookMenu, "#CONTROLS_ADVANCED_LOOK" )
@@ -975,6 +976,10 @@ function InitMenus()
 	AddMenu( "NoseArtSelectMenu", $"resource/ui/menus/noseartselect.menu", InitNoseArtSelectMenu )
 	AddMenu( "CallsignCardSelectMenu", $"resource/ui/menus/callsigncardselect.menu", InitCallsignCardSelectMenu )
 	AddMenu( "CallsignIconSelectMenu", $"resource/ui/menus/callsigniconselect.menu", InitCallsignIconSelectMenu )
+#if DEVSCRIPTS
+	AddMenu( "EditDpadCommsMenu", $"resource/ui/menus/editdpadcomms.menu", InitEditDpadCommsMenu )
+	AddMenu( "DpadCommsSelectMenu", $"resource/ui/menus/selectdpadcomms.menu", InitSelectDpadCommsMenu )
+#endif
 
 	AddMenu( "PrivateLobbyMenu", $"resource/ui/menus/private_lobby.menu", InitPrivateMatchMenu, "#PRIVATE_MATCH" )
 	AddMenu( "MapsMenu", $"resource/ui/menus/map_select.menu", InitMapsMenu )
@@ -1008,11 +1013,14 @@ function InitMenus()
 	AddMenu( "ArmoryMenu", $"resource/ui/menus/armory.menu", InitArmoryMenu, "#ARMORY_MENU" )
 
 	AddMenu( "StoreMenu", $"resource/ui/menus/store.menu", InitStoreMenu, "#STORE_MENU" )
+	AddMenu( "StoreMenu_Bundles", $"resource/ui/menus/store_bundles.menu", InitStoreMenuBundles, "#STORE_BUNDLES" )
 	AddMenu( "StoreMenu_PrimeTitans", $"resource/ui/menus/store_prime_titans.menu", InitStoreMenuPrimeTitans, "#STORE_PRIME_TITANS" )
 	AddMenu( "StoreMenu_Customization", $"resource/ui/menus/store_customization.menu", InitStoreMenuCustomization, "#STORE_CUSTOMIZATION_PACKS" )
 	AddMenu( "StoreMenu_CustomizationPreview", $"resource/ui/menus/store_customization_preview.menu", InitStoreMenuCustomizationPreview, "#STORE_CUSTOMIZATION_PACKS" )
 	AddMenu( "StoreMenu_Camo", $"resource/ui/menus/store_camo.menu", InitStoreMenuCamo, "#STORE_CAMO_PACKS" )
+	AddMenu( "StoreMenu_CamoPreview", $"resource/ui/menus/store_camo_preview.menu", InitStoreMenuCamoPreview, "#STORE_CAMO_PACKS" )
 	AddMenu( "StoreMenu_Callsign", $"resource/ui/menus/store_callsign.menu", InitStoreMenuCallsign, "#STORE_CALLSIGN_PACKS" )
+	AddMenu( "StoreMenu_CallsignPreview", $"resource/ui/menus/store_callsign_preview.menu", InitStoreMenuCallsignPreview, "#STORE_CALLSIGN_PACKS" )
 
 	AddMenu( "KnowledgeBaseMenu", $"resource/ui/menus/knowledgebase.menu", InitKnowledgeBaseMenu )
 	AddMenu( "KnowledgeBaseMenuSubMenu", $"resource/ui/menus/knowledgebase_submenu.menu", InitKnowledgeBaseMenuSubMenu )
@@ -1022,9 +1030,6 @@ function InitMenus()
 
 	foreach ( menu in uiGlobal.allMenus )
 	{
-		AddOldPCFooterButtonHandlers( menu )
-		InitFocusFade( menu )
-
 		if ( uiGlobal.menuData[ menu ].initFunc != null )
 			uiGlobal.menuData[ menu ].initFunc()
 
@@ -1055,7 +1060,7 @@ function InitMenus()
 		array<var> buttons = GetElementsByClassname( menu, "DefaultFocus" )
 		foreach ( button in buttons )
 		{
-			var panel = button.GetParent()
+			var panel = Hud_GetParent( button )
 
 			//Assert( elems.len() == 1, "More than 1 panel element set as DefaultFocus!" )
 			Assert( panel != null, "no parent panel found for button " + Hud_GetHudName( button ) )
@@ -1089,20 +1094,7 @@ void functionref( var ) function AdvanceMenuEventHandler( var menu )
 	}
 }
 
-function AddOldPCFooterButtonHandlers( menu )
-{
-	array<var> buttons = GetElementsByClassname( menu, "PCBackButtonClass" )
-	menu.s.pcBackButtons <- buttons
-	foreach ( button in buttons )
-		Hud_AddEventHandler( button, UIE_CLICK, OldPCBackButton_Activate )
-}
-
 void function PCBackButton_Activate( var button )
-{
-	UICodeCallback_NavigateBack()
-}
-
-function OldPCBackButton_Activate( button )
 {
 	UICodeCallback_NavigateBack()
 }
@@ -1117,26 +1109,7 @@ void function PCToggleSpectateButton_Activate( var button )
 	ClientCommand( "PrivateMatchToggleSpectate" )
 }
 
-function InitFocusFade( menu )
-{
-	array<var> elements = GetElementsByClassname( menu, "FocusFadeClass" )
-	local button
-
-	foreach ( element in elements )
-	{
-		button = element.GetParent()
-		button.s.focusFade <- element
-		Hud_AddEventHandler( button, UIE_LOSE_FOCUS, FocusFade )
-	}
-}
-
-function FocusFade( button )
-{
-	Hud_SetAlpha( button.s.focusFade, 255 )
-	Hud_FadeOverTime( button.s.focusFade, 0, 0.3 )
-}
-
-function ToggleButtonStates( button )
+void function ToggleButtonStates( var button )
 {
 	for ( ;; )
 	{
@@ -1159,7 +1132,7 @@ function ToggleButtonStates( button )
 	}
 }
 
-function AddMenuElementsByClassname( menu, classname )
+void function AddMenuElementsByClassname( var menu, string classname )
 {
 	array<var> elements = GetElementsByClassname( menu, classname )
 
@@ -1167,13 +1140,6 @@ function AddMenuElementsByClassname( menu, classname )
 		menu.classElements[classname] <- []
 
 	menu.classElements[classname].extend( elements )
-}
-
-function AppendElementsByClassname( menu, classname, Array )
-{
-	array<var> elements = GetElementsByClassname( menu, classname )
-	foreach ( element in elements )
-		Array.append( element )
 }
 
 void function FocusDefault( var menu )
@@ -1227,49 +1193,7 @@ void function PanelFocusDefault( var panel )
 	}
 }
 
-function GetCurrentBreadCrumbs()
-{
-	local menuStack = clone uiGlobal.menuStack
-	if ( menuStack.len() && menuStack.top() )
-	menuStack.pop()
-
-	local textArray = []
-	while ( menuStack.len() && menuStack.top() )
-	{
-		local menu = menuStack.pop()
-		textArray.append( menu.GetDisplayName() )
-	}
-
-	textArray.reverse()
-
-	return textArray
-}
-
-function SetMenuBreadCrumbs( menu, textArray )
-{
-	array<var> elements = GetElementsByClassname( menu, "BreadCrumbsClass" )
-	int num = expect int( textArray.len() )
-
-	foreach ( element in elements )
-	{
-		if ( num == 0 )
-			Hud_SetText( element, "" )
-		else if ( num == 1 )
-			Hud_SetText( element, "#MENU_BREADCRUMBS_1", textArray[0] )
-		else if ( num == 2 )
-			Hud_SetText( element, "#MENU_BREADCRUMBS_2", textArray[0], textArray[1] )
-		else if ( num == 3 )
-			Hud_SetText( element, "#MENU_BREADCRUMBS_3", textArray[0], textArray[1], textArray[2] )
-		else if ( num == 4 )
-			Hud_SetText( element, "#MENU_BREADCRUMBS_4", textArray[0], textArray[1], textArray[2], textArray[3] )
-		else if ( num == 5 )
-			Hud_SetText( element, "#MENU_BREADCRUMBS_5", textArray[0], textArray[1], textArray[2], textArray[3], textArray[4] )
-		else
-			Assert( false, "Update breadcrumbs to support more than 5!!!" )
-	}
-}
-
-function AddMenuEventHandler( var menu, int event, void functionref() func )
+void function AddMenuEventHandler( var menu, int event, void functionref() func )
 {
 	if ( event == eUIEvent.MENU_OPEN )
 	{
@@ -1303,7 +1227,7 @@ function AddMenuEventHandler( var menu, int event, void functionref() func )
 	}
 }
 
-function AddPanelEventHandler( var panel, int event, void functionref() func )
+void function AddPanelEventHandler( var panel, int event, void functionref() func )
 {
 	if ( event == eUIEvent.PANEL_SHOW )
 		uiGlobal.panelData[ panel ].showFunc = func
@@ -1315,7 +1239,7 @@ function AddPanelEventHandler( var panel, int event, void functionref() func )
 void function OpenMenuWrapper( var menu, bool focusDefault )
 {
 	OpenMenu( menu )
-	printt( menu.GetHudName(), "menu opened" )
+	printt( Hud_GetHudName( menu ), "menu opened" )
 
 	Assert( menu in uiGlobal.menuData )
 	if ( uiGlobal.menuData[ menu ].openFunc != null )
@@ -1327,23 +1251,20 @@ void function OpenMenuWrapper( var menu, bool focusDefault )
 	if ( focusDefault )
 		FocusDefault( menu )
 
-	// TODO: These shouldn't actually be needed for dialogs
-	SetMenuBreadCrumbs( menu, GetCurrentBreadCrumbs() )
-
 	//UpdateMenuTabs()
 	UpdateFooterOptions()
 }
 
-function CloseMenuWrapper( menu )
+void function CloseMenuWrapper( var menu )
 {
 	CloseMenu( menu )
-	printt( menu.GetHudName(), "menu closed" )
+	printt( Hud_GetHudName( menu ), "menu closed" )
 
 	Assert( menu in uiGlobal.menuData )
 	if ( uiGlobal.menuData[ menu ].closeFunc != null )
 	{
 		thread uiGlobal.menuData[ menu ].closeFunc()
-		//printt( "Called closeFunc for:", menu.GetHudName() )
+		//printt( "Called closeFunc for:", Hud_GetHudName( menu ) )
 	}
 }
 
@@ -1352,18 +1273,18 @@ bool function IsLevelMultiplayer( string levelname )
 	return levelname.find( "mp_" ) == 0
 }
 
-function AddButtonEventHandler( var button, int event, void functionref( var ) func )
+void function AddButtonEventHandler( var button, int event, void functionref( var ) func )
 {
 	Hud_AddEventHandler( button, event, func )
 }
 
-function AddEventHandlerToButton( var menu, string buttonName, int event, void functionref( var ) func )
+void function AddEventHandlerToButton( var menu, string buttonName, int event, void functionref( var ) func )
 {
 	var button = Hud_GetChild( menu, buttonName )
 	Hud_AddEventHandler( button, event, func )
 }
 
-function AddEventHandlerToButtonClass( var menu, string classname, int event, void functionref( var ) func )
+void function AddEventHandlerToButtonClass( var menu, string classname, int event, void functionref( var ) func )
 {
 	array<var> buttons = GetElementsByClassname( menu, classname )
 
@@ -1374,35 +1295,25 @@ function AddEventHandlerToButtonClass( var menu, string classname, int event, vo
 	}
 }
 
-function ButtonCallback_MenuShoulderRight( player )
-{
-	printt( "r left" )
-}
-
-function ButtonCallback_MenuShoulderLeft( player )
-{
-	printt( "s left" )
-}
-
 // Added slight delay to main menu music to work around a hitch caused when the game first starts up
-function PlayMusicAfterDelay()
+void function PlayMusicAfterDelay()
 {
 	wait MAINMENU_MUSIC_DELAY
 	if ( uiGlobal.playingMusic )
 		EmitUISound( "MainMenu_Music" )
 }
 
-function DisableMusic()
+void function DisableMusic()
 {
 	EmitUISound( "Movie_MuteAllGameSound" )
 }
 
-function EnableMusic()
+void function EnableMusic()
 {
 	StopUISoundByName( "Movie_MuteAllGameSound" )
 }
 
-function PlayMusic()
+void function PlayMusic()
 {
 	if ( !uiGlobal.playingMusic && !uiGlobal.playingVideo && !uiGlobal.playingCredits )
 	{
@@ -1416,7 +1327,7 @@ function PlayMusic()
 	}
 }
 
-function StopMusic()
+void function StopMusic()
 {
 	//printt( "StopMusic() called. Stopping: MainMenu_Music" )
 	StopUISound( "MainMenu_Music" )
@@ -1747,6 +1658,8 @@ void function UpdateIsPrivateMatch()
 
 void function InviteFriends( var button )
 {
+	//AdvanceMenu( GetMenu( "InviteFriendsToPartyMenu" ) )
+
 	#if DURANGO_PROG
 		Durango_InviteFriends()
 	#elseif PS4_PROG
@@ -1814,6 +1727,27 @@ bool function IsDialogActive( DialogData dialogData )
 	return uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData == dialogData
 }
 
+bool function IsDialogOnlyActiveMenu()
+{
+	if ( !IsDialog( uiGlobal.activeMenu ) )
+		return false
+
+	int stackLen = uiGlobal.menuStack.len()
+	if ( stackLen < 1 )
+		return false
+
+	if ( uiGlobal.menuStack[stackLen - 1] != uiGlobal.activeMenu )
+		return false
+
+	if ( stackLen == 1 )
+		return true
+
+	if ( uiGlobal.menuStack[stackLen - 2] == null )
+		return true
+
+	return false
+}
+
 void function SetNavUpDown( array<var> buttons, var wrap = true )
 {
 	Assert( buttons.len() > 0 )
@@ -1860,12 +1794,12 @@ void function UICodeCallback_EntitlementsChanged()
 			EmitUISound( "UI_Menu_Store_Purchase_Success" )
 			break
 
-		case GetMenu( "StoreMenu_Camo" ):
+		case GetMenu( "StoreMenu_CamoPreview" ):
 			EntitlementsChanged_Camo()
 			EmitUISound( "UI_Menu_Store_Purchase_Success" )
 			break
 
-		case GetMenu( "StoreMenu_Callsign" ):
+		case GetMenu( "StoreMenu_CallsignPreview" ):
 			EntitlementsChanged_Callsign()
 			EmitUISound( "UI_Menu_Store_Purchase_Success" )
 			break
@@ -1922,4 +1856,8 @@ void function LaunchGamePurchaseOrDLCStore()
 	{
 		OpenStoreMenu( "StoreMenu" )
 	}
+}
+
+void function UICodeCallback_PartyUpdated()
+{
 }

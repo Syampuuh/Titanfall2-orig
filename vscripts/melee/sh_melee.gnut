@@ -89,7 +89,7 @@ struct
 	table<SyncedMeleeChooser, array<void functionref( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target )> > syncedMeleeServerCallbacks
 	table<SyncedMeleeChooser, bool functionref( SyncedMelee action, entity player, entity target ) > syncedMeleeServerThink
 
-
+	string lastExecutionUsed = ""
 } file
 
 function MeleeShared_Init()
@@ -581,6 +581,7 @@ bool function DoSyncedMelee( entity player, entity target )
 #if SERVER
 	if ( player.IsPlayer() )
 	{
+
 		player.ForceStand()
 		player.UnforceStand()
 		PlayerMelee_FinishLagCompensateTarget( player )
@@ -592,12 +593,16 @@ bool function DoSyncedMelee( entity player, entity target )
 
 	expect SyncedMelee( action )
 
+
+
 	player.Signal( "OnSyncedMelee" )
 	target.Signal( "OnSyncedMelee" )
 	player.Signal( "OnSyncedMeleeAttacker" )
 	target.Signal( "OnSyncedMeleeVictim" )
 
 #if SERVER
+	player.p.lastExecutionUsed = action.ref
+	
 	if ( actions in file.syncedMeleeServerCallbacks )
 		thread SyncedMeleeServerCallbacks( actions, action, player, target )
 	bool functionref( SyncedMelee action, entity player, entity target ) think = file.syncedMeleeServerThink[ actions ]
@@ -816,6 +821,15 @@ SyncedMelee ornull function FindBestSyncedMelee( entity attacker, entity target,
 			float dot = relTargetToPlayerDir.Dot( action.direction )
 			if ( dot < action.minDot )
 				break
+
+#if SERVER
+			//Random Execution
+			if ( string( attacker.GetPersistentVar( "activePilotLoadout.execution" )) == "execution_random")
+			{
+				returnVal = PickRandomExecution(actions, attacker)
+				break
+			}
+#endif
 
 			returnVal = action
 			break
@@ -1092,19 +1106,14 @@ bool function CheckVerticallyCloseEnough( entity attacker, entity target )
 
 entity function GetLungeTargetForPlayer( entity player )
 {
+	// Titan melee does not lunge
+	if ( player.IsTitan() )
+		return null
+
 	if ( player.IsPhaseShifted() )
 		return null
 
-	entity lungeTarget
-	if ( player.IsTitan() )
-	{
-		lungeTarget = PlayerMelee_AttackConeTrace( player, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
-	}
-	else
-	{
-		lungeTarget = PlayerMelee_LungeConeTrace( player, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
-	}
-
+	entity lungeTarget = PlayerMelee_LungeConeTrace( player, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
 	return lungeTarget
 }
 
@@ -1156,3 +1165,31 @@ bool function IsAttackerRef( SyncedMelee action, entity target )
 
 	return false
 }
+
+#if MP
+#if SERVER
+SyncedMelee ornull function PickRandomExecution( SyncedMeleeChooser actions, entity attacker )
+{
+	array<SyncedMelee> possibleExecutions = []
+
+	SyncedMelee neckSnap
+
+	foreach ( action in actions.syncedMelees )
+	{
+		if (action.ref == "execution_neck_snap")
+			neckSnap = action
+
+		if(!IsItemLocked( attacker, action.ref ) && action.ref != "execution_random" && action.ref != attacker.p.lastExecutionUsed)
+
+			possibleExecutions.append(action)
+	}
+
+	if (possibleExecutions.len() == 0)
+		return neckSnap
+
+	possibleExecutions.randomize()
+
+	return possibleExecutions[0]
+}
+#endif
+#endif

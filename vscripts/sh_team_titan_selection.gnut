@@ -167,6 +167,9 @@ asset function GetTitanImageFromName( string name )
 		case "LEGION" :
 			return $"rui/menu/postgame/legion_icon"
 
+		case "VANGUARD" :
+			return $"rui/menu/postgame/vanguard_icon"
+
 		default:
 			printt( "Warning, titan is not supported for Team Selection Display" )
 			return $"rui/hud/titanImages/placeholder_ronin"
@@ -195,6 +198,9 @@ string function GetLocalizedTitanName( string name )
 
 		case "LEGION" :
 			return Localize( "#TITAN_LEGION" )
+
+		case "VANGUARD" :
+			return Localize( "#TITAN_VANGUARD" )
 
 		default:
 			printt( "Warning, titan is not supported for Team Selection Display" )

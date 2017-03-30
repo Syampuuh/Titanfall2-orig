@@ -19,6 +19,10 @@ global function SetGameModeScoreBarUpdateRules
 
 global function DisplayPostMatchTop3
 
+global function GetGameStartTime
+
+global function ClGameState_RegisterGameStateAsset
+
 const int PTS_TYPE_NONE 			= 0
 const int PTS_TYPE_PILOT 			= 1
 const int PTS_TYPE_DEAD 			= 2
@@ -49,6 +53,8 @@ struct
 	void functionref( var ) gameModeScoreBarUpdateRules
 
 	table< int, PilotTitanStatus> pilotTitanStatus
+
+	asset gameStateRuiAsset = $""
 } file
 
 
@@ -140,16 +146,18 @@ asset function GetGameStateAsset()
 	if ( GAMETYPE == SPEEDBALL )
 		return $"ui/gamestate_info_speedball.rpak"
 
-	if ( GAMETYPE == RAID)
-		return $"ui/gamestate_info_raid.rpak"
-
 	if ( GAMETYPE == MARKED_FOR_DEATH )
 		return $"ui/gamestate_info_mfd.rpak"
 
-	if ( GAMETYPE == ATCOOP )
-		return $"ui/gamestate_info_atcoop.rpak"
+	if ( file.gameStateRuiAsset != $"" )
+		return file.gameStateRuiAsset
 
 	return $"ui/gamestate_info.rpak"
+}
+
+void function ClGameState_RegisterGameStateAsset( asset gameStateAsset )
+{
+	file.gameStateRuiAsset = gameStateAsset
 }
 
 void function ClGameState_AddClient( entity player )
@@ -675,6 +683,9 @@ void function ClGameState_Changed()
 			Announcement_SetDuration( announcement, announcementDuration )
 			Announcement_SetPurge( announcement, true )
 
+			EmitSoundOnEntity( player, "UI_InGame_HalftimeText_Enter" )
+			EmitSoundOnEntityAfterDelay( player, "UI_InGame_HalftimeText_Exit", announcementDuration )
+
 			local friendlyTeam = player.GetTeam()
 			local enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
 
@@ -1018,4 +1029,10 @@ void function DisplayPostMatchTop3()
 			RuiSetBool( rui, "isFriendly" + i, localTeam == players[i].GetTeam() )
 		}
 	}
+}
+
+
+float function GetGameStartTime()
+{
+	return expect float( level.nv.gameStartTime.tofloat() )
 }

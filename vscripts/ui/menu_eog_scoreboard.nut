@@ -90,7 +90,6 @@ function ShowEOGScoreboard()
 		return
 	EmitUISound( "EOGSummary.XPBreakdownPopup" )
 
-
 	local logos = {}
 	logos[ TEAM_IMC ] <- $"ui/scoreboard_imc_logo"
 	logos[ TEAM_MILITIA ] <- $"ui/scoreboard_mcorp_logo"

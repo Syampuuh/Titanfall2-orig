@@ -17,6 +17,7 @@ global function ArcCannon_HideIdleEffect
 global function GetArcCannonChargeFraction
 
 global function IsEntANeutralMegaTurret
+global function CreateArcCannonBeam
 
 
 // Aiming & Range

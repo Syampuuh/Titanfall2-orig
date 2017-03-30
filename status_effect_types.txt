@@ -51,5 +51,7 @@
 
     bleedoutDOF
 
+    lockon_detected_titan
+
 /////////////////////////////
 //}

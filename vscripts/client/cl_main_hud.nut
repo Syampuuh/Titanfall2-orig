@@ -1634,6 +1634,9 @@ bool function ShouldMainHudBeVisible( entity player )
 	if ( ceFlags & CE_FLAG_TITAN_3P_CAM )
 		return false
 
+	if ( clGlobal.isSoloDialogMenuOpen )
+		return false
+
 	entity viewEntity = GetViewEntity()
 	if ( IsValid( viewEntity ) && viewEntity.IsNPC() )
 		return false

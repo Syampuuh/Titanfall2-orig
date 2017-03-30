@@ -146,6 +146,19 @@ global struct CommunityFriends
 	array<string>  names
 }
 
+global struct  CommunityFriendsData
+{
+	string id
+	string name
+	bool online
+}
+
+global struct CommunityFriendsWithPresence
+{
+	bool isValid
+	array<CommunityFriendsData>  friends
+}
+
 global struct CommunityUserInfo
 {
 	string hardware
@@ -164,6 +177,14 @@ global struct CommunityUserInfo
 	int numCommunities
 }
 
+global struct PartyMember
+{
+	string name
+	string uid
+	int callsignIdx
+	float skillMu
+}
+
 global struct OpenInvite
 {
 	string inviteType
@@ -176,6 +197,24 @@ global struct OpenInvite
 	float timeLeft
 	bool amIInThis
 	bool amILeader
+	array<PartyMember> members
+}
+
+
+global struct Party
+{
+	string partyType
+	string playlistName
+	string originatorName
+	string originatorUID
+	int numSlots
+	int numClaimedSlots
+	int numFreeSlots
+	float timeLeft
+	bool amIInThis
+	bool amILeader
+	bool searching
+	array<PartyMember> members
 }
 
 global struct RemoteClientInfoFromMatchInfo
@@ -185,7 +224,7 @@ global struct RemoteClientInfoFromMatchInfo
 	int score
 	int kills
 	int deaths
-};
+}
 
 global struct RemoteMatchInfo
 {

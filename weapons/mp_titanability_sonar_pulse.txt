@@ -27,7 +27,8 @@ WeaponData
 	"ammo_min_to_fire"								"200"
 	"ammo_per_shot"									"200"
 	"ammo_stockpile_max"							"200"
-	"fire_rate"   									"2"
+	"fire_rate"   									"1.5"
+	"burst_fire_delay"								"0.7"
 	"regen_ammo_refill_rate"						"12"
 	"regen_ammo_refill_start_delay"					"0.0"
 
@@ -48,7 +49,7 @@ WeaponData
 	}
 
 	// Charge settings
-	"charge_time" 									"3.0" //Audio is based on this being 3.0s
+	"charge_time" 									"0.01" //Audio is based on this being 3.0s
 	"charge_cooldown_time"							"15.0"
 	"charge_cooldown_delay"   						"0.0"
 	"charge_end_forces_fire"  						"1"

@@ -139,6 +139,14 @@ global const HUNTED_GRENADE_LOCKER = $"models/containers/pelican_case_large.mdl"
 global const HUNTED_GRENADE_LOCKER_OPEN = $"models/containers/pelican_case_large_open.mdl"
 
 //-------------------------------------------------------
+// Frontier Defense
+//-------------------------------------------------------
+global const MODEL_IMC_SHIELD_CAPTAIN = $"models/humans/grunts/imc_grunt_shield_captain.mdl"
+global const MODEL_FRONTIER_DEFENSE_TURRET_SITE	= $"models/props/turret_base/turret_base.mdl"
+global const MODEL_FRONTIER_DEFENSE_PORT = $"models/props/battery_port/battery_port_animated.mdl"
+global const MODEL_FRONTIER_DEFENSE_FOUNDATION_PLATE = $"models/industrial/grate_mod.mdl"
+
+//-------------------------------------------------------
 // Double or Nothing
 //-------------------------------------------------------
 global const DON_RESPAWN_PANEL = $"models/props/global_access_panel_button/global_access_panel_button_console.mdl"

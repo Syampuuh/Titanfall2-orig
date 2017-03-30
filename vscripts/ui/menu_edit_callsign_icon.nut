@@ -76,7 +76,7 @@ void function OnCallsignIconSelectMenu_Open()
 
 	file.gridData.currentPage = 0
 
-	Grid_MenuOpened( file.menu )
+	Grid_RegisterPageNavInputs( file.menu )
 
 	// UI_SetPresentationType( ePresentationType.CALLSIGN )
 	UI_SetPresentationType( ePresentationType.NO_MODELS )
@@ -98,7 +98,7 @@ void function OnCallsignIconSelectMenu_Close()
 	if ( !file.selectionMade )
 		Update2DCallsignElement( file.callsignCard )
 
-	Grid_MenuClosed( file.menu )
+	Grid_DeregisterPageNavInputs( file.menu )
 
 	entity player = GetUIPlayer()
 	if ( !IsValid( player ) )
@@ -128,7 +128,7 @@ bool function CallsignIconButton_Init( var button, int elemNum )
 
 	Hud_SetSelected( button, isActiveIndex )
 
-	if ( isActiveIndex )
+	if ( IsControllerModeActive() && isActiveIndex )
 		Hud_SetFocused( button )
 
 	int itemType = GetItemType( ref )
@@ -149,9 +149,9 @@ void function CallsignIconButton_GetFocus( var button, int elemNum )
 	CallsignIcon callsignIcon = CallsignIcon_GetByRef( item.ref )
 
 	entity player = GetUIPlayer()
-	if ( IsItemLocked( player, item.ref ) && IsItemInRandomUnlocks( item.ref ) )
+	/*if ( IsItemLocked( player, item.ref ) && IsItemInRandomUnlocks( item.ref ) )
 		Reset2DCallsignIconElement( file.callsignCard, player )
-	else
+	else*/
 		Update2DCallsignIconElement( file.callsignCard, callsignIcon )
 
 	string title = Localize( GetItemName( item.ref ) )

@@ -685,10 +685,6 @@ void function EOGSetUnlockedItems()
 			if ( PersistenceEnumValueIsValid( "BlackMarketUnlocks", item.ref ) )
 				continue
 
-			local previouslyUnlocked = player.GetPersistentVar( "decalsUnlocked[" + item.ref + "]" )
-			if ( previouslyUnlocked )
-				continue
-
 			if ( !IsItemLocked( player, item.ref ) )
 				uiGlobal.eog_unlocks.items.append( { ref = item.ref, childRef = null } )
 		}

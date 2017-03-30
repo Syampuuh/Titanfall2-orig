@@ -5,6 +5,7 @@ global function OnWeaponAttemptOffhandSwitch_titanweapon_tracker_rockets
 global function OnWeaponActivate_titanweapon_tracker_rockets
 global function MpTitanWeaponTrackerRockets_Init
 
+
 #if SERVER
 global function OnWeaponNPCPrimaryAttack_titanweapon_tracker_rockets
 #endif
@@ -59,6 +60,23 @@ var function OnWeaponPrimaryAttack_titanweapon_tracker_rockets( entity weapon, W
 		weapon.SetWeaponChargeFractionForced( weapon.GetWeaponChargeFraction() + shotFrac )
 	}
 
+	var allTargets = weapon.SmartAmmo_GetTargets()
+	foreach ( target in allTargets )
+	{
+		if ( SmartAmmo_EntHasEnoughTrackedMarks( weapon, expect entity( target.ent ) ) )
+		{
+			#if SERVER
+			if (target.ent.IsPlayer() && target.ent in weapon.w.targetLockEntityStatusEffectID)
+			{
+				int statusID = weapon.w.targetLockEntityStatusEffectID[expect entity(target.ent)]
+				thread DelayedDisableToneLockOnNotification( expect entity(target.ent), statusID )
+			}
+
+			owner.Signal("TrackerRocketsFired")
+			#endif
+		}
+	}
+
 	if ( weapon.GetBurstFireShotsPending() == 1 )
 	{
 		if ( owner.IsPlayer() )
@@ -85,12 +103,14 @@ function MissileThink( weapon, missile )
 			float homingSpeed = min( missile.GetHomingSpeed() + 15, 200.0 )
 			missile.SetHomingSpeeds( homingSpeed, homingSpeed )
 		}
+
 	#endif
 }
 
 bool function OnWeaponAttemptOffhandSwitch_titanweapon_tracker_rockets( entity weapon )
 {
 	var allTargets = weapon.SmartAmmo_GetTargets()
+
 	foreach ( target in allTargets )
 	{
 		if ( SmartAmmo_EntHasEnoughTrackedMarks( weapon, expect entity( target.ent ) ) )
@@ -124,3 +144,14 @@ void function TrackerRockets_OnPlayerClassChanged( entity player )
 }
 #endif
 
+//This function checks the player being targeted and removes the lockon status effect IF there are no more lock ons
+void function DelayedDisableToneLockOnNotification(entity target, int statusID)
+{
+	//Wait 1 because it feels better to have a little delay between the weapon firing and the target lockon HUD status clearing
+	wait 1
+
+	#if SERVER
+		StatusEffect_Stop( target, statusID )
+	#endif
+
+}

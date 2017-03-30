@@ -78,7 +78,7 @@ void function InitRandomUnlocks()
 		string ref = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ref" ) )
 		string parentRef
 		float weight = GetDataTableFloat( dataTable, row, GetDataTableColumnByName( dataTable, "weight" ) )
-
+		Assert( weight > 0, "weight needs to be greater than 0 for " + parentRef + " " + ref + " in unlocks_random.csv" )
 		var periodPos = ref.find( "." )
 		if ( periodPos != null )
 		{
@@ -86,6 +86,9 @@ void function InitRandomUnlocks()
 			parentRef = ref.slice( 0, periodPos )
 			ref = ref.slice( periodPos + 1 )
 		}
+
+		if ( IsDisabledRef( ref ) || IsDisabledRef( parentRef ) )
+			continue
 
 #if DEV
 		int itemType = GetItemType( ref )
@@ -125,7 +128,7 @@ void function InitRandomUnlocks()
 					Assert( false, "Unhandled sub item type " + itemType + " " + ref )
 			}
 		}
-#endif // DEV
+#endif //  DEV
 
 		InitRandomUnlockItem( ref, parentRef, weight )
 	}

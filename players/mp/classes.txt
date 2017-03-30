@@ -43,6 +43,7 @@
 	import	"titan_atlas_stickybomb.set"
 	import	"titan_atlas_ion_prime.set"
 	import	"titan_atlas_tracker.set"
+	import	"titan_atlas_vanguard.set"
 
 	import	"titan_buddy.set"
 	import	"titan_buddy_spare.set"

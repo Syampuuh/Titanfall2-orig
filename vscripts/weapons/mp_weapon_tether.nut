@@ -214,7 +214,7 @@ void function ProximityTetherThink( entity projectile, entity owner )
 	if ( projectile.proj.projectileBounceCount > 0 )
 		return
 
-	projectile.EnableAttackableByAI( 30 )
+	projectile.EnableAttackableByAI( 30, 0, AI_AP_FLAG_NONE )
 
 	projectile.proj.projectileBounceCount++
 	projectile.proj.startPlanting = false

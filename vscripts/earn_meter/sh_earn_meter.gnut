@@ -213,6 +213,9 @@ bool function EarnMeterMP_IsTitanEarnGametype()
 	if ( GAMETYPE == SPEEDBALL )
 		return false
 
+	if ( GAMETYPE == COLISEUM )
+		return false
+
 	if ( GAMETYPE == FREE_AGENCY )
 		return false
 

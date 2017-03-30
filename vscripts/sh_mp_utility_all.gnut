@@ -108,6 +108,23 @@ AllModesAndMapsCompleteData function GetPlayerAllModesAndMapsCompleteData( entit
 	return data
 }
 
+float function _GetDaysSinceVar( entity player, string variable )
+{
+	// Assert( IsServer() )
+	Assert( IsValid( player ) )
+	Assert( player.IsPlayer() )
+
+	int storedTime = player.GetPersistentVarAsInt( variable )
+	int currentTime = Daily_GetCurrentTime()
+
+	if ( storedTime <= 0 || currentTime <= storedTime )
+		return 0
+
+	int secondsElapsed = currentTime - storedTime
+
+	return ( secondsElapsed / float( SECONDS_PER_DAY ) )
+}
+
 int function Daily_GetCurrentTime()
 {
 	// Returns the unix timestap offset to the timezone we want to use
@@ -298,8 +315,8 @@ void function SetAvailableCredits( entity player, int credits )
 	if ( credits > currentCredits )
 	{
 		int additionalCredits = credits - currentCredits
-		int netWorth = player.GetPersistentVarAsInt( TEMP_NETWORTH_VAR )
-		player.SetPersistentVar( TEMP_NETWORTH_VAR, netWorth + additionalCredits )
+		int netWorth = player.GetPersistentVarAsInt( NETWORTH_VAR )
+		player.SetPersistentVar( NETWORTH_VAR, netWorth + additionalCredits )
 	}
 
 	player.SetPersistentVar( "credits", credits )

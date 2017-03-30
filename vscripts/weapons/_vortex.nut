@@ -80,6 +80,8 @@ global const VORTEX_REFIRE_GRENADE_LONG_FUSE	= "grenade_long_fuse"
 
 const VortexIgnoreClassnames = {
 	["mp_titancore_flame_wave"] = true,
+	["mp_ability_grapple"] = true,
+	["mp_ability_shifter"] = true,
 }
 
 table vortexImpactWeaponInfo

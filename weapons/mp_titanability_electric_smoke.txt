@@ -65,4 +65,13 @@ WeaponData
 	"reload_enabled"  								"1"
 	"allow_empty_click"   							"1"
 	"empty_reload_only"   							"0"
+
+
+	Mods
+	{
+		maelstrom
+		{
+			"hud_icon"										"rui/titan_loadout/passive/vanguard_core2"
+		}
+	}
 }

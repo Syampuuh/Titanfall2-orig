@@ -6,6 +6,10 @@ global function Minimap_AddLayer
 global function Minimap_AddCustomLayer
 
 global function RegisterMinimapPackage
+
+global function Minimap_SetZoomScale
+global function Minimap_SetSizeScale
+
 #if DEV
 global function DumpMinimapHandles
 #endif
@@ -26,6 +30,9 @@ struct {
 #endif
 
 	float threatMaxDist
+
+	float minimapZoomScale = 1
+	float minimapSizeScale = 1
 } file
 
 
@@ -109,6 +116,9 @@ void function ClMinimap_Init()
 	RegisterDefaultMinimapPackage( "npc_spectre", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
 	RegisterDefaultMinimapPackage( "npc_stalker", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
 	RegisterDefaultMinimapPackage( "npc_super_spectre", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_drone_rocket", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_frag_drone", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_drone", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
 	RegisterDefaultMinimapPackage( "npc_dropship", $"ui/minimap_object.rpak", MinimapPackage_NPCDropShipInit )
 	RegisterDefaultMinimapPackage( "prop_script", $"", MinimapPackage_DummyInit )
 	RegisterDefaultMinimapPackage( "item_titan_battery", $"ui/minimap_fw_battery.rpak", MinimapPackage_BatteryInit )
@@ -126,6 +136,7 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE_TURRET, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE_SHIELDED, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_HARVESTER, $"ui/minimap_fw_camp.rpak", MinimapPackage_FDHarvester )
 	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_A, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampA )
 	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_B, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampB )
 	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_C, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampC )
@@ -184,11 +195,27 @@ void function ClMinimap_Init()
 		file.threatMaxDist = max( threatMaxDist, 1800 )
 
 	file.minimap_base = CreateCockpitRui( $"ui/minimap_base.rpak", MINIMAP_Z_BASE )
+
+	RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
+
 	file.minimap_wedges = CreateCockpitRui( $"ui/minimap_wedges.rpak", MINIMAP_Z_THREAT_WEDGES )
+
+	RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
+	RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
+
 	file.minimap_you = CreateCockpitRui( $"ui/minimap_you.rpak", MINIMAP_Z_YOU )
+
+	RuiSetFloat( file.minimap_you, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_you, "minimapSizeScale", file.minimapSizeScale )
+
 	file.minimap_jammed_layer = null
 
 	file.minimap_indicator = CreateCockpitRui( $"ui/minimap_indicator.rpak", -1 )
+
+	RuiSetFloat( file.minimap_indicator, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_indicator, "minimapSizeScale", file.minimapSizeScale )
 
 	StatusEffect_RegisterEnabledCallback( eStatusEffect.minimap_jammed, MinimapJammed_Enabled )
 	StatusEffect_RegisterDisabledCallback( eStatusEffect.minimap_jammed, MinimapJammed_Disabled )
@@ -295,6 +322,8 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
 	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 
 	minimapAssetMap[className][customState].initFunction( ent, rui )
 
@@ -343,6 +372,8 @@ var function Minimap_AddLayer( asset layerImage, bool isFriendly )
 	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
 	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
 	RuiSetFloat( rui, "mapScale", mapScale )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 
 	RuiSetBool( rui, "isFriendly", isFriendly )
 
@@ -370,6 +401,8 @@ var function Minimap_AddCustomLayer( asset ruiAsset, int sortKey = MINIMAP_Z_LAY
 	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
 	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
 	RuiSetFloat( rui, "mapScale", mapScale )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 
 	return rui
 }
@@ -402,6 +435,7 @@ void function OnPlayerCreate( entity player )
 	RuiTrackFloat3( file.minimap_wedges, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiTrackFloat3( file.minimap_wedges, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
 	RuiSetFloat3( file.minimap_wedges, "distances", <threatDistNear / file.threatMaxDist, 1.0 - (threatDistFar / file.threatMaxDist), 1.0> )
+	RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
 
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeCenter", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_CENTER )
 
@@ -422,6 +456,13 @@ void function OnPlayerCreate( entity player )
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter5", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_SW )
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter6", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_W )
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter7", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_NW )
+
+
+	RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
+
+	RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 }
 
 
@@ -536,6 +577,11 @@ void function MinimapPackage_HardpointC( entity ent, var rui )
 	RuiSetFloat( rui, "objectRadius", 0.001 )
 }
 
+void function MinimapPackage_FDHarvester( entity ent, var rui )
+{
+	RuiSetFloat( rui, "objectRadius", 0.001 )
+}
+
 void function MinimapPackage_FWCampA( entity ent, var rui )
 {
 	RuiTrackInt( rui, "alertLevel", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "fwCampAlertA" ) )
@@ -607,6 +653,8 @@ void function MinimapJammed_Enabled( entity ent, int statusEffect, bool actually
 	if ( actuallyChanged )
 		RuiSetGameTime( file.minimap_jammed_layer, "startTime", Time() )
 
+	RuiSetFloat( file.minimap_jammed_layer, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_jammed_layer, "minimapSizeScale", file.minimapSizeScale )
 	RuiTrackFloat( file.minimap_jammed_layer, "scriptAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
 
 	RuiTrackFloat( file.minimap_wedges, "scriptInverseAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
@@ -678,4 +726,18 @@ void function FadeOutStaticSoundAfterDelay( entity ent, float delay )
 		}
 	)
 	wait delay
+}
+
+void function Minimap_SetZoomScale( float scale )
+{
+	file.minimapZoomScale = scale
+
+	if ( file.minimap_wedges != null )
+	{
+		RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
+	}
+}
+void function Minimap_SetSizeScale( float scale )
+{
+	file.minimapSizeScale = scale
 }
