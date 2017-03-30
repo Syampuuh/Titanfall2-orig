@@ -1,6 +1,156 @@
 # Latest Client Changes
 
-## 23 February 2016 - The Live Fire Patch
+## 30 March 2017 - Colony Reborn
+
+*(includes server-sided changes made immediately following the Live Fire patch, and who knows how many subsequent changes made quietly)*
+
+### Content and Feature Additions:
+
+* New Map: Colony
+* New Weapon: R-101 Carbine
+  * "Factory issue scoped predecessor of the R-201 rifle."
+  * Comes with an AOG in place of iron sights
+  * Stats are identical to the R-201
+* New Execution: Curb Check
+* Prime Titan: Legion Prime
+* Prime Titan: Northstar Prime
+* Trial gameplay added for 2 SP levels
+* A shitton of new patches, camos, banners, etc. purchaseable and free
+* Ticks should now appear on the player's minimap like a normal minion
+* 2 hot new eject lines
+* New options to randomly select an execution from those you've unlocked
+* Coin flip added for tie breaker after 3 ties in a match
+
+### Rebalancing:
+
+#### All Titans
+
+* Core points earned from damage dealt to other Titans decreased from 0.01% per damage to 0.075% damage (decreased by 25%)
+* Electric Smoke maximum effective radius increased from 21.9 feet to 23.4 feet
+
+#### Scorch
+
+* Incendiary Trap, Firewall, and Flame Core flames no longer extinguished by Electric Smoke
+* Fuel for the Fire kit no longer extend Firewall duration, instead decreasing cooldown from 10 seconds to 8 seconds
+* Thermal Shield recharge/active time increased from 3 seconds to 4 seconds
+* Inferno Shield kit now raises recharge/active time by 1.5x instead of 2.0x to retain its increase to 6 seconds of recharge/active time as it was pre-patch
+
+#### Tone
+
+* Targeted Titans will now be notified of locked and firing tracker rockets
+* Sonar Pulse firing animation time decreased from 2.0 seconds to 1.5 seconds
+* Inactive delay after firing Tracker Rockets increased from 0.5 seconds to 0.7 seconds
+
+#### Legion
+
+* Smart Core lock on time decreased from 0.5 seconds to 0.3 seconds
+
+#### Dice Roll
+
+* Activation cost raised from 36% meter to 50%
+
+#### Pilot Sentry
+
+* Damage scaling ranges decreased from 75-150 feet to 62.5-93.75 feet
+
+#### Pilot Melee
+
+* Positional check added to prevent lunges locking onto pilots who move outside of the initiator's line of sight or way beyond reach
+* Lunges should no longer lock onto pilots who are in mid-air if the initiator is on the ground
+
+#### Amped Wall
+
+* No longer invincible, with 1000 HP (for comparison, Hard Cover has 850 HP)
+
+#### Holo Pilot
+
+* Plays an alert sound to the owner when destroyed
+* Displays owner HP bar and name when aimed at as if a regular player
+* Will randomly pulse on enemy maps every 0.5 seconds as if firing a weapon
+
+#### Hemlok BF-R
+
+* Close range damage decreased from 35 to 33, far damage decreased from 30 to 25
+* Amped close range damage decreased from 50 to 45
+
+#### X-55 Devotion
+
+* Close range damage decreased from 40 to 35, far damage decreased from 35 to 30
+
+#### Mastiff
+
+* Quick Reload actually works now
+
+#### Kraber
+
+* Pass-through depth increased from 32 to 64; shots can go through Reapers now
+
+#### Charge Rifle
+
+* Instead of firing instantly, Charge Hack will now reduce the charge time from the base 1.3 seconds to 0.429 seconds (33%) and the cooldown time between shots from 1.0 seconds to 0.66 seconds (66%)
+
+#### LG-97 Thunderbolt
+
+* First zap delay increased from 0.3s to 0.4s; does not affect zaps after it's first hit something
+* Zap radius against Titans decreased from 50 feet to 25 feet
+* Damage per zap against Titans increased from 300 to 350
+* Flight speed decreased from 34 MPH to 21 MPH
+
+### Fixes:
+
+* Spectres have a new property that seems to prevent them from cowering like Grunts
+* For whatever reason, some grappling hook related properties were removed from the base Titan datablock
+* Pilot levels now display during killcams
+* Improvements made to audio when spectatin and rapidly swapping between viewpoints/perspectives
+* Grappling hooks should not longer be caught in Vortex Shields
+
+### Future Content:
+*(note: details are somewhat speculatory based on sparse amounts of game code and text bank tokens)*
+
+* Vanguards are *definitely* coming to MP, with new AI classes, models, weapons, and equipment kits having all been added for them
+  * Primary Weapon: XO-16 Chaingun. "20mm armor piercing automatic rifle." You know what it is
+  * Offensive: Rocket Salvo. "Launches an unguided rocket swarm."
+  * Defensive: Energy Siphon (internally, Stun Laser). "Slows enemies and generates Shields. Heavily armored targets generate more Shield." Seems to be a laser shot with these effects
+  * Utility: Rearm. "Refreshes the cooldown of your Dash, Ordnance, and Defensive Ability."
+  * Core: Upgrade Core. "Recharges your Titan's shields and upgrades your Titan in order of the upgrades above."
+    * Level 1
+	  * Rapid Rearm. Rearm activates in only 0.1 seconds instead of 0.5 seconds
+	  * Maelstrom. Increases Electric Smoke DPS against Pilots from 45 to 90 and DPS against Titans from 450 to 1350
+	  * Energy Transfer Field. Energy Siphon's explosion radius increases from 3 feet to 25 feet
+	* Level 2
+	  * Multi-Target Missile System. Replaces your ordnance with the MTMS.
+	  * Superior Chassis. Details unknown.
+	  * Arc Rounds. Loads your XO-16 with electrified rounds for apparently increased damage. Details are a little vague.
+  * Unique Titan Kits:
+	* "Rearm": Decreases Rearm cooldown from 17.6 seconds to 10 seconds
+	* "Missile Racks": Increases rockets fired by the Rocket Salvo from 6 to 12, and improves firing speed. Unknown how it will affect the MTMS when equipped
+	* "Shield", details unknown, obvious guess is that the Vanguard will deploy with an overshield
+	* "Core Meter", details unknown
+	* "Doom", details unknown
+  * There's even a Prime model in the item database
+  * There are separate voice entries for "Vanguard" and "BT", I'd bet that BT will be the Prime voice
+  * Occasionally referred to internally as "Monarch"
+* Coop Bounty Hunt development continues, having now been fully rebranded internally as Frontier Defense, with some new NPC classes added for the mode:
+  * No clear indications yet what Elite Guards are; my bet's on Shield Captains, but for now it's only clear that they have a new model
+  * Specialists seems to be using the Phase Shift pilot model, spawn with L-STARs and *ticks* as an ordnance
+  * Mortar Titans and Nuke Titans seem to be returning, using Tone and Scorch as their bases respectively
+  * There's also a "Sandbox" NPC class that is likely an AI test dummy, with a Sandbox PVE mode also added for devs
+  * Harvester will be the defense objective once more, with entities added for it
+  * Seems to use a MOBA-style internal leveling system, with players choosing a "path" of tactical and following upgrades to their tactical. The tacticals themselves are Phase Shift, Grapple, and... Sword Block?
+    * Leveling the Grappling Hook in PVE will increase the effective line length, and at the maximum level charging the throw will make the hook explode on impact
+	* Leveling Phase Shift in PVE will at the maximum level allow the player to charge their shift creating an explosion upon unshifting
+	* Leveling the Sword Block in PVE (in general, the Pilot Sword, because I guess that'll be a thing now) increases the sword's lunge range and at the maximum level even allows damage to Titans with the sword
+* Previously leaked modes have had code moved into their own files from the global MP properties file, development moving along
+* Communications and emoticons are likely to come *very* soon, with [an announcement text already being the in textbanks] (https://my.mixtape.moe/rwrqqi.png) to be rolled out at any time
+  * Seems it'll be a simple quick chat menu to point out objectives, commend teammates, and send emoji? No clue if it'll be voiced or anything
+* Some support added for the minimap to be zoomed in or out by the player, surprised this isn't already implemented
+* Seems like it'll be possible to invite friends to a network from within the game rather than having to mess with the official website
+
+---
+
+# Older Changes
+
+## 23 February 2017 - The Live Fire Patch
 
 *(includes server-sided changes made on 23 January, does **not** include server-sided changes made post-patch such as the Hemlok nerf)*
 
@@ -253,8 +403,6 @@
 #### Prime Titan: Legion
 
 ---
-
-# Older Changes
 
 ## 29 November 2016 - The Angel City Patch
 
