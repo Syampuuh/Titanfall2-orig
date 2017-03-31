@@ -107,41 +107,88 @@
 ### Future Content:
 *(note: details are somewhat speculatory based on sparse amounts of game code and text bank tokens)*
 
-* Vanguards are *definitely* coming to MP, with new AI classes, models, weapons, and equipment kits having all been added for them
+* New Titan: **Monarch**
+  * *"Mid-range Vanguard-class Titan that can upgrade itself on the battlefield."*
+  * Likely exclusive to Frontier Defense, god help us all if she isn't
   * Primary Weapon: XO-16 Chaingun. "20mm armor piercing automatic rifle." You know what it is
   * Offensive: Rocket Salvo. "Launches an unguided rocket swarm."
   * Defensive: Energy Siphon (internally, Stun Laser). "Slows enemies and generates Shields. Heavily armored targets generate more Shield." Seems to be a laser shot with these effects
   * Utility: Rearm. "Refreshes the cooldown of your Dash, Ordnance, and Defensive Ability."
   * Core: Upgrade Core. "Recharges your Titan's shields and upgrades your Titan in order of the upgrades above."
-    * Level 1
-	  * Rapid Rearm. Rearm activates in only 0.1 seconds instead of 0.5 seconds
-	  * Maelstrom. Increases Electric Smoke DPS against Pilots from 45 to 90 and DPS against Titans from 450 to 1350
-	  * Energy Transfer Field. Energy Siphon's explosion radius increases from 3 feet to 25 feet
-	* Level 2
-	  * Multi-Target Missile System. Replaces your ordnance with the MTMS.
-	  * Superior Chassis. Details unknown.
-	  * Arc Rounds. Loads your XO-16 with electrified rounds for apparently increased damage. Details are a little vague.
+    * ***Level 1***
+      * **Arc Rounds** - Increases ammo capacity and XO-16 rounds break through Defensive Abilities.
+	    * Increases magazine capacity from 30 to 40 and seems to go through all shields
+      * **Missile Racks** - Rocket Salvo fires twice the amount of missiles.
+	    * As found earlier, 12 rockets per salvo instead of 6
+      * **Energy Field** - Energy Siphon affects a large area around the point of impact.
+	    * As found earlier, Energy Siphon's explosion radius increases from 3 feet to 25 feet
+    * ***Level 2***
+      * **Swift Rearm** - Rearm is almost instantaneous.
+	    * As found earlier, 0.1 second activation time instead of 0.5 seconds
+      * **Maelstrom** - Electric Smoke is intensified, dealing more damage to Titans and Pilots.
+	    * As found earlier, increases Electric Smoke DPS against Pilots from 45 to 90 and DPS against Titans from 450 to 1350
+      * **Energy Transfer** - Energy Siphon gives Shield to friendly Titans.
+    * ***Level 3***
+      * **Multi-Target Missiles** - Rocket Salvo can lock onto Titans and Reapers. Missiles fly faster and deal more damage.
+	    * Apparently not yet implemented, I presume they are working on getting the MTMS to not lock onto human sized targets
+      * **Superior Chassis** - Upgrades Monarch's health, dash, and melee capabilities.
+	    * Not yet implemented, and no numbers to be found yet.
+      * **XO-16 Battle Rifle** - Unlocks the hidden power of the XO-16, increasing precision, damage, and critical damage.
+	    * Not yet implemented, and no numbers to be found yet.
   * Unique Titan Kits:
-	* "Rearm": Decreases Rearm cooldown from 17.6 seconds to 10 seconds
-	* "Missile Racks": Increases rockets fired by the Rocket Salvo from 6 to 12, and improves firing speed. Unknown how it will affect the MTMS when equipped
-	* "Shield", details unknown, obvious guess is that the Vanguard will deploy with an overshield
-	* "Core Meter", details unknown
-	* "Doom", details unknown
+	* **Data Siphon** - Core Meter is earned 25% faster.
+    * **Shield Amplifier** - Increases your Titan's max shield strength by 50%
+	  * This would mean a shield with 3750 HP rather than 2500.
+    * **Rapid Rearm** - Reduces the cooldown of Rearm by 5 seconds.
+    * **Survival of the Fittest** - Batteries can repair the Monarch out of Doomed State.
+    * **Apex Titan** - Enables a fourth and final upgrade.
+	  * Apparently not yet implemented, with no fourth upgrade to be found just yet
+    * No apparent fifth kit yet
   * There's even a Prime model in the item database
   * There are separate voice entries for "Vanguard" and "BT", I'd bet that BT will be the Prime voice
-  * Occasionally referred to internally as "Monarch"
-* Coop Bounty Hunt development continues, having now been fully rebranded internally as Frontier Defense, with some new NPC classes added for the mode:
+* Coop Bounty Hunt development continues, having now been fully rebranded internally as **Frontier Defense**, with some new NPC classes added for the mode:
   * No clear indications yet what Elite Guards are; my bet's on Shield Captains, but for now it's only clear that they have a new model
   * Specialists seems to be using the Phase Shift pilot model, spawn with L-STARs and *ticks* as an ordnance
   * Mortar Titans and Nuke Titans seem to be returning, using Tone and Scorch as their bases respectively
   * There's also a "Sandbox" NPC class that is likely an AI test dummy, with a Sandbox PVE mode also added for devs
   * Harvester will be the defense objective once more, with entities added for it
   * Seems to use a MOBA-style internal leveling system, with players choosing a "path" of tactical and following upgrades to their tactical. The tacticals themselves are Phase Shift, Grapple, and... Sword Block?
-    * Leveling the Grappling Hook in PVE will increase the effective line length, and at the maximum level charging the throw will make the hook explode on impact
-	* Leveling Phase Shift in PVE will at the maximum level allow the player to charge their shift creating an explosion upon unshifting
-	* Leveling the Sword Block in PVE (in general, the Pilot Sword, because I guess that'll be a thing now) increases the sword's lunge range and at the maximum level even allows damage to Titans with the sword
+    * * *Path 1* - ***The Ghost***
+	  * Level 1 - **The Ghost**
+        * Enter and Exit Phase Shift at Will
+	  * Level 2 - **The Wisp**
+	    * Fast Travel in Phase Shift
+		  * More specifically, you seem to be permanently stimmed when inside the Phase realm
+	  * Level 3 - **The Banshee**
+	    * Destructive Exits from Phase Shift
+		  * Explosions when you exit phase, with an impressive radius of 30 feet
+	* *Path 2* - ***The Hook***
+	  * Level 1 - **The Hook**
+        * Unlimited Grapple
+      * Level 2 - **The Acrobat**
+        * Long-Distance Grapple
+	      * Dramatically increases maximum line distance from 68 feet to 187 feet
+      * Level 3 - **The Devastator**
+         * Assault Grapple
+	      * As found earlier, the hook explodes when making contact with surfaces
+	* *Path 3* - ***The Blade***
+      * Level 1 - The Blade
+	    * Hold to Block, Powerful Melee
+	      * Gives you a Pilot Sword for your melee, and Sword Block as your tactical. Not 100% clear on how its damage mitigation works yet
+	  * Level 2 - The Assassin
+		* Strike from Far Away
+		  * As found earlier, drastically increases melee lunge distance from the base 8 feet to 48 feet
+	  * Level 3 - The Machine Hunter
+		* Effective Against Titans
+		  * As found earlier, the sword's power increases and become capable of damage to Titans for 1000 damage per swing
+	* *Path 4* - ***The Wall***
+	  * No details currently available, but it doesn't take datamining to guess that this will be the Amped Wall's tactical path
+	* *Path 5* - ***The Hound***
+	  * No details currently available, but I'm willing to bet this path will belong to the Pulse Blade
+	* *Path 6* - ***The Jester***
+	  * No details currently available, but this should be the Holo Pilot guessing from the name
 * Previously leaked modes have had code moved into their own files from the global MP properties file, development moving along
-* Communications and emoticons are likely to come *very* soon, with [an announcement text already being the in textbanks] (https://my.mixtape.moe/rwrqqi.png) to be rolled out at any time
+* Communications and emoticons are likely to come *very* soon, with an announcement text already being the in textbanks (https://my.mixtape.moe/rwrqqi.png) to be rolled out at any time
   * Seems it'll be a simple quick chat menu to point out objectives, commend teammates, and send emoji? No clue if it'll be voiced or anything
 * Some support added for the minimap to be zoomed in or out by the player, surprised this isn't already implemented
 * Seems like it'll be possible to invite friends to a network from within the game rather than having to mess with the official website
