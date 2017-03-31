@@ -153,7 +153,7 @@
   * There's also a "Sandbox" NPC class that is likely an AI test dummy, with a Sandbox PVE mode also added for devs
   * Harvester will be the defense objective once more, with entities added for it
   * Seems to use a MOBA-style internal leveling system, with players choosing a "path" of tactical and following upgrades to their tactical. The tacticals themselves are Phase Shift, Grapple, and... Sword Block?
-    * * *Path 1* - ***The Ghost***
+    * *Path 1* - ***The Ghost***
 	  * Level 1 - **The Ghost**
         * Enter and Exit Phase Shift at Will
 	  * Level 2 - **The Wisp**
